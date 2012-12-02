@@ -1,0 +1,20 @@
+(\f. (\x. f $ x x) (\x. f $ x x))  doesn't work
+
+how about
+
+-- (\f. \a1. (\x. f a1 $ \an. (x an)(x an)) (\an. \x. f a1 $ x x)) ?
+
+
+(\f. (\a. x. f a $ x x) a (\a. \x. f a $ x x))
+
+((desired: Y g a = g a (Y g a) ))
+
+Y(g)(a)
+= (\a. 
+
+
+fact = \n. \myself.
+	case n of 0     => 1
+	          S(n') => n * myself(n')
+
+YR (fact) (5)
