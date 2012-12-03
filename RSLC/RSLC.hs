@@ -128,6 +128,16 @@ ycomb = let f = "ycomb_f"
                (Lam x1 $ var f $$ (var x1 $$ var x1)) $$
                (Lam x2 $ var f $$ (var x2 $$ var x2))
 
+ycomb_rntz = -- (\x.xx)(\ygab.gab(yyg)) -- doesn't quite work; a still captured
+    let x = "rntz_x"
+        y = "rntz_y"
+        g = "rntz_g"
+        a = "rntz_a"
+        b = "rntz_b"
+    in (Lam x $ var x $$ var x) $$
+       (Lam y $ Lam g $ Lam a $ Lam b $
+        var g $$ var a $$ var b $$ (var y $$ var y $$ var g))
+
 true = Lam "church_t" $ Lam "church_t2" $ var "church_t"
 false = Lam "church_f" $ Lam "church_f2" $ var "church_f2"
 
@@ -163,7 +173,7 @@ tonat n = if n > 0 then Suc $ tonat $ n-1 else error "?????"
 
 terms = [
     -- randombit,
-    rand $$ tonat 10 ]
+    rand $$ tonat 6 ]
     -- randomnat]
 
 main :: IO ()
