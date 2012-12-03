@@ -18,8 +18,6 @@ data Expr = Var String [Expr]
           | Zero
           | Suc Expr
           | Natrec Expr Expr String Expr
-          | Y1 Expr
-          | Y2 Expr
 
 instance Show Expr where
     show (Var name es) = name ++ show es
@@ -38,8 +36,6 @@ instance Show Expr where
     show (Natrec e e1 name e2) =
         "(natrec " ++ show e ++ " 0 => " ++ show e1 ++
         "| S(" ++ name ++ ") => " ++ show e2 ++ ")"
-    show (Y1 e) = "Y1 " ++ show e
-    show (Y2 e) = "Y2 " ++ show e
 
 ----
 
@@ -57,8 +53,6 @@ subst_shadow e0 name (Suc e) = Suc $ subst_shadow e0 name e
 subst_shadow e0 name (Natrec e e1 name2 e2) =
     -- natrec [e0/name]e: 0 => [e0/name]e1 | S(name2) => [e0/name]e2
     Natrec (subst_shadow e0 name e) (subst_shadow e0 name e1) name2 (subst_shadow e0 name e2) -- capture-seeking, again
-subst_shadow e0 name (Y1 e) = Y1 $ subst_shadow e0 name e
-subst_shadow e0 name (Y2 e) = Y2 $ subst_shadow e0 name e
 
 
 subst_pull :: Expr -> String -> Expr -> IO Expr
@@ -87,8 +81,8 @@ subst_pull e0 name (Natrec e e1 name2 e2) =
               else
                   subst_pull e0 name e2
        return $ Natrec e' e1' name2 e2'
-subst_pull e0 name (Y1 e) = Y1 <$> subst_pull e0 name e
-subst_pull e0 name (Y2 e) = Y2 <$> subst_pull e0 name e
+
+        
 
 eval :: Expr -> IO Expr
 eval (Var name es) =
@@ -97,8 +91,6 @@ eval (Var name es) =
     --    -- when (length es > 1) $
     --    --     putStrLn $ "Choosing " ++ show (es!!i) ++ " for " ++ name ++ " from " ++ show es
     --    eval $ es !! i
-eval (App (Y1 e1) e2) = eval $ e1 $$ e2 $$ Y1 e1
-eval (App (App (Y2 e1) e2) e3) = eval $ e1 $$ e2 $$ e3 $$ Y2 e1
 eval (App e1 e2) =
     do e1' <- eval e1
        case e1' of
@@ -112,8 +104,6 @@ eval (Natrec e e1 name e2) =
        case e' of Zero -> eval e1
                   Suc e'' -> do e2' <- subst_pull e'' name e2; eval e2'
                   _ -> error $ "crap" ++ show e'
-eval (Y1 e) = error "eval Y1??" -- return $ Y2 e
-eval (Y2 e) = error "eval Y2??" -- return $ Y2 e
 
 ----
 
@@ -144,8 +134,8 @@ randombit = truefalse $$ Zero $$ Suc Zero
 randomnat =
     let f = "randomnat_f"
         n = "randomnat_n"
-        r = Lam n $ Lam f $ truefalse $$ var n $$ (var f $$ (Suc $ var n))
-    in Y1 r $$ Zero
+        r = Lam f $ Lam n $ truefalse $$ var n $$ (var f $$ (Suc $ var n))
+    in ycomb $$ r $$ Zero
 
 rand =
     let x = "r_x" -- this is the one that gets "captured"
@@ -153,17 +143,17 @@ rand =
         thing = "r_thing"
         n = "r_n"
         n2 = "r_n2"
-        r = Lam thing $ Lam n $ Lam myself $
+        r = Lam myself $ Lam thing $ Lam n $
                 Natrec (var n) (var thing $$ Zero) -- 0 => thing 0
                        n2 (var myself $$ ((Lam x $ var thing) $$ var n) $$ var n2)
-    in Y2 r $$ (Lam x $ var x)
+    in ycomb $$ r $$ (Lam x $ var x)
 
 tonat 0 = Zero
 tonat n = if n > 0 then Suc $ tonat $ n-1 else error "?????"
 
 terms = [
     -- randombit,
-    rand $$ tonat 10 ]
+    rand $$ tonat 4 ]
     -- randomnat]
 
 main :: IO ()
