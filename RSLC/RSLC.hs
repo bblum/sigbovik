@@ -109,6 +109,7 @@ eval Zero = return Zero
 eval (Suc e) = Suc <$> eval e
 eval (Natrec e e1 name e2) =
     do e' <- eval e
+       -- trace ("Eval'ed 'case " ++ show e ++ "' ...to... " ++ show e') $ return ()
        case e' of Zero -> eval e1
                   Suc e'' -> do e2' <- subst_pull e'' name e2; eval e2'
                   _ -> error $ "crap" ++ show e'
@@ -212,7 +213,6 @@ add = -- \mn. case m of 0 => n | S(m2) => S(add m2 n)
                       m2 (Lam myself $ Suc $ y2 "add" $$ var m2 $$ var n $$ var myself)
     in Lam arg1 $ Lam arg2 $ y2 "add" $$ var arg1 $$ var arg2 $$ add_inner
 
--- XXX: Something about this is currently broken.
 times = -- \mn. case m of 0 => 0 | s(m2) => add n (times m2 n)
     let n = "times_n"
         m = "times_m"
@@ -220,10 +220,12 @@ times = -- \mn. case m of 0 => 0 | s(m2) => add n (times m2 n)
         myself = "times_myself"
         arg1 = "times_arg1"
         arg2 = "times_arg2"
+        -- Oddly, saying "S(m2) => add n (times m2 n)" ...
+        -- instead of... "S(m2) => add (times m2 n) n" doesn't work.
         times_inner =
             Lam m $ Lam n $
                 Natrec (var m) (Lam myself $ Zero)
-                       m2 (Lam myself $ add $$ var n $$ (y2 "times" $$ var m2 $$ var n $$ var myself))
+                       m2 (Lam myself $ add $$ (y2 "times" $$ var m2 $$ var n $$ var myself) $$ var n)
     in Lam arg1 $ Lam arg2 $ y2 "times" $$ var arg1 $$ var arg2 $$ times_inner
 
 -- Broken even worse than times. Probably same problem.
@@ -234,13 +236,13 @@ fact = -- \n. case n of 0 => 1 | s(n2) => times n (fact n2)
         arg = "fact_arg"
         fact_inner =
             Lam n $ Natrec (var n) (Lam myself $ Suc Zero)
-                           n2 (Lam myself $ times $$ var n $$ (y1 "fact" $$ var n2 $$ var myself))
+                           n2 (Lam myself $ times $$ (y1 "fact" $$ var n2 $$ var myself) $$ var n)
     in Lam arg $ y1 "fact" $$ var arg $$ fact_inner
 
 -- Testing
 
-terms =
-    map (\list -> map (\(n,m) -> add $$ tonat n $$ tonat m) list) $ [
+table =
+    map (\list -> map (\(n,m) -> times $$ tonat n $$ tonat m) list) $ [
         [(0,0),(0,1),(0,2),(0,3),(0,4),(0,5),(0,6),(0,7),(0,8),(0,9)],
         [(1,0),(1,1),(1,2),(1,3),(1,4),(1,5),(1,6),(1,7),(1,8),(1,9)],
         [(2,0),(2,1),(2,2),(2,3),(2,4),(2,5),(2,6),(2,7),(2,8),(2,9)],
@@ -252,6 +254,8 @@ terms =
         [(8,0),(8,1),(8,2),(8,3),(8,4),(8,5),(8,6),(8,7),(8,8),(8,9)],
         [(9,0),(9,1),(9,2),(9,3),(9,4),(9,5),(9,6),(9,7),(9,8),(9,9)]]
 
+terms = map (\x -> fact $$ tonat x) [2]
 
 main :: IO ()
-main = do terms' <- sequence $ map (mapM eval) terms; mapM_ (putStrLn . show) terms'
+-- main = do terms' <- sequence $ map (mapM eval) table; mapM_ (putStrLn . show) terms'
+main = do terms' <- mapM eval terms; mapM_ (putStrLn . show) terms'
