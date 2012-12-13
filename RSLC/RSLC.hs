@@ -163,9 +163,9 @@ rand =
         thing = "r_thing"
         n = "r_n"
         n2 = "r_n2"
-        r = Lam thing $ Lam n $ Lam myself $
-                Natrec (var n) (var thing $$ Zero) -- 0 => thing 0
-                       n2 (var myself $$ ((Lam x $ var thing) $$ var n) $$ var n2)
+        r = Lam thing $ Lam n $ -- Lam myself $
+                Natrec (var n) (Lam myself $ var thing $$ Zero) -- 0 => thing 0
+                       n2 (Lam myself $ var myself $$ ((Lam x $ var thing) $$ var n) $$ var n2)
     in Y2 r $$ (Lam x $ var x)
 
 tonat 0 = Zero
