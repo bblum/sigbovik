@@ -176,8 +176,8 @@ randombit = truefalse $$ Zero $$ Suc Zero
 randomnat =
     let f = "randomnat_f"
         n = "randomnat_n"
-        r = Lam n $ Lam f $ truefalse $$ var n $$ (var f $$ (Suc $ var n))
-    in Y1 r $$ Zero
+        r = Lam n $ Lam f $ truefalse $$ var n $$ (y1 "randomnat" $$ (Suc $ var n) $$ var f)
+    in y1 "randomnat" $$ Zero $$ r
 
 rand =
     let x = "r_x" -- this is the one that gets "captured"
