@@ -138,6 +138,9 @@ ycomb_rntz = -- (\x.xx)(\ygab.gab(yyg)) -- doesn't quite work; a still captured
        (Lam y $ Lam g $ Lam a $ Lam b $
         var g $$ var a $$ var b $$ (var y $$ var y $$ var g))
 
+-- another attempt at the above: (\x.xx)(\yg. (\1234.1(234)) (\z.z(yyg)) (\ab.gab))
+-- still doesn't work because 'z' is captured inside yyg.
+
 true = Lam "church_t" $ Lam "church_t2" $ var "church_t"
 false = Lam "church_f" $ Lam "church_f2" $ var "church_f2"
 
@@ -148,8 +151,7 @@ truefalse3 = truefalse $$ false $$ truefalse -- true with p=0.25
 
 randombit = truefalse $$ Zero $$ Suc Zero
 
--- Y(\f. \n. (\x.(\x.x))(n)(f (succ n)))(zero)
--- Y(\f. \n. truefalse n (f 
+-- Y(\f. \n. truefalse n (f (succ n))) zero
 
 randomnat =
     let f = "randomnat_f"
@@ -173,7 +175,7 @@ tonat n = if n > 0 then Suc $ tonat $ n-1 else error "?????"
 
 terms = [
     -- randombit,
-    rand $$ tonat 6 ]
+    rand $$ tonat 9 ]
     -- randomnat]
 
 main :: IO ()
