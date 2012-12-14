@@ -228,23 +228,26 @@ times = -- \mn. case m of 0 => 0 | s(m2) => add n (times m2 n)
                        m2 (Lam myself $ add $$ (y2 "times" $$ var m2 $$ var n $$ var myself) $$ var n)
     in Lam arg1 $ Lam arg2 $ y2 "times" $$ var arg1 $$ var arg2 $$ times_inner
 
--- Broken even worse than times. Probably same problem.
 fact = -- \n. case n of 0 => 1 | s(n2) => times n (fact n2)
     let n = "fact_n"
         n2 = "fact_n2"
+        n3 = "fact_n3"
         myself = "fact_myself"
         arg = "fact_arg"
+        -- Forces the "fact(n-1)" to be evaluated eagerly before being passed in
+        -- to times. Not sure why this is needed.
+        asdf = Natrec (y1 "fact" $$ var n2 $$ var myself) (Zero) (n3) (times $$ (Suc $ var n3) $$ var n)
         fact_inner =
             Lam n $ Natrec (var n) (Lam myself $ Suc Zero)
-                           n2 (Lam myself $ times $$ (y1 "fact" $$ var n2 $$ var myself) $$ var n)
+                           n2 (Lam myself $ asdf)
     in Lam arg $ y1 "fact" $$ var arg $$ fact_inner
 
 -- Testing
 
 table = map (\x -> map (\y -> times $$ tonat x $$ tonat y) [0..x]) [0..12]
 
-terms = map (\x -> fact $$ tonat x) [2]
+terms = map (\x -> fact $$ tonat x) [0..5]
 
 main :: IO ()
-main = do terms' <- sequence $ map (mapM eval) table; mapM_ (putStrLn . show) terms'
--- main = do terms' <- mapM eval terms; mapM_ (putStrLn . show) terms'
+-- main = do terms' <- sequence $ map (mapM eval) table; mapM_ (putStrLn . show) terms'
+main = do terms' <- mapM eval terms; mapM_ (putStrLn . show) terms'
