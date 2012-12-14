@@ -17,9 +17,8 @@ data Expr = Var String [Expr]
           | Lam String Expr
           | Zero
           | Suc Expr
-          | Natrec Expr Expr String Expr
-          | Y1 Expr
-          | Y2 Expr
+          | Natrec Expr Expr String Expr -- case e1 of 0 => e2 | S(x) => e3
+          | Let String Expr Expr -- let x = e1 in e2 (eagerly evaluates e1)
 
 instance Show Expr where
     show (Var name es) = name ++ show es
@@ -36,10 +35,10 @@ instance Show Expr where
         in if isnat e then show $ tonat $ Suc e
            else "S(" ++ show e ++ ")"
     show (Natrec e e1 name e2) =
-        "(natrec " ++ show e ++ " 0 => " ++ show e1 ++
-        "| S(" ++ name ++ ") => " ++ show e2 ++ ")"
-    show (Y1 e) = "Y1 " ++ show e
-    show (Y2 e) = "Y2 " ++ show e
+        "(case (" ++ show e ++ ") of 0 => (" ++ show e1 ++
+        ") | S(" ++ name ++ ") => (" ++ show e2 ++ "))"
+    show (Let name e1 e2) =
+        "(let " ++ name ++ " = " ++ show e1 ++ " in " ++ show e2 ++ ")"
 
 ----
 
@@ -57,8 +56,8 @@ subst_shadow e0 name (Suc e) = Suc $ subst_shadow e0 name e
 subst_shadow e0 name (Natrec e e1 name2 e2) =
     -- natrec [e0/name]e: 0 => [e0/name]e1 | S(name2) => [e0/name]e2
     Natrec (subst_shadow e0 name e) (subst_shadow e0 name e1) name2 (subst_shadow e0 name e2) -- capture-seeking, again
-subst_shadow e0 name (Y1 e) = Y1 $ subst_shadow e0 name e
-subst_shadow e0 name (Y2 e) = Y2 $ subst_shadow e0 name e
+subst_shadow e0 name (Let name2 e1 e2) =
+    Let name2 (subst_shadow e0 name e1) (subst_shadow e0 name e2) -- also capture-seeking
 
 
 subst_pull :: Expr -> String -> Expr -> IO Expr
@@ -87,8 +86,13 @@ subst_pull e0 name (Natrec e e1 name2 e2) =
               else
                   subst_pull e0 name e2
        return $ Natrec e' e1' name2 e2'
-subst_pull e0 name (Y1 e) = Y1 <$> subst_pull e0 name e
-subst_pull e0 name (Y2 e) = Y2 <$> subst_pull e0 name e
+subst_pull e0 name (Let name2 e1 e2) =
+    do e1' <- subst_pull e0 name e1
+       e2' <- if name == name2 then
+                  return $ subst_shadow e0 name e2
+              else
+                  subst_pull e0 name e2
+       return $ Let name2 e1' e2'
 
 eval :: Expr -> IO Expr
 eval (Var name es) =
@@ -97,8 +101,6 @@ eval (Var name es) =
     --    -- when (length es > 1) $
     --    --     putStrLn $ "Choosing " ++ show (es!!i) ++ " for " ++ name ++ " from " ++ show es
     --    eval $ es !! i
-eval (App (Y1 e1) e2) = eval $ e1 $$ e2 $$ Y1 e1
-eval (App (App (Y2 e1) e2) e3) = eval $ e1 $$ e2 $$ e3 $$ Y2 e1
 eval (App e1 e2) =
     do e1' <- eval e1
        case e1' of
@@ -113,8 +115,10 @@ eval (Natrec e e1 name e2) =
        case e' of Zero -> eval e1
                   Suc e'' -> do e2' <- subst_pull e'' name e2; eval e2'
                   _ -> error $ "crap" ++ show e'
-eval (Y1 e) = error "eval Y1??" -- return $ Y2 e
-eval (Y2 e) = error "eval Y2??" -- return $ Y2 e
+eval (Let name e1 e2) =
+    do e1' <- eval e1
+       e2' <- subst_pull e1 name e2
+       eval e2'
 
 ----
 
@@ -242,12 +246,40 @@ fact = -- \n. case n of 0 => 1 | s(n2) => times n (fact n2)
                            n2 (Lam myself $ asdf)
     in Lam arg $ y1 "fact" $$ var arg $$ fact_inner
 
+fib = -- \n. case n of 0 => (0,1) | S(n2) => (\x. (snd x, fst x + snd x))(fib n2)
+    let pair name e1 e2 = Lam name $ var name $$ e1 $$ e2
+        first p = p $$ true
+        second p = p $$ false
+        n = "fib_n"
+        n2 = "fib_n2"
+        b = "fib_b"
+        p = "fib_p"
+        n_fst = "fib_n_fst"
+        n_snd = "fib_n_snd"
+        myself = "fib_myself"
+        arg = "fib_arg"
+        fib_inner =
+            Lam n $
+                Natrec (var n) (Lam myself $ pair b Zero (Suc Zero))
+                       n2 (Lam myself $
+                               Let p (y1 "fib" $$ var n2 $$ var myself) $
+                                   -- pair b (second $ var p)
+                                   --        (add $$ (first $ var p) $$ (second $ var p)))
+                                   Natrec (second $ var p) (var "fail")
+                                       n_snd $ -- this one gets captured?? why?
+                                           Natrec (first $ var p)
+                                               (pair b (Suc Zero) (Suc Zero))
+                                               n_fst $
+                                                   pair b (Suc $ var n_snd)
+                                                          (Suc $ Suc $ add $$ var n_fst $$ var n_snd))
+    in Lam arg $ first (y1 "fib" $$ var arg $$ fib_inner)
+
 -- Testing
 
 table = map (\x -> map (\y -> times $$ tonat x $$ tonat y) [0..x]) [0..12]
 
-terms = map (\x -> fact $$ tonat x) [0..5]
+terms = map (\x -> fib $$ tonat x) [0..5]
 
 main :: IO ()
--- main = do terms' <- sequence $ map (mapM eval) table; mapM_ (putStrLn . show) terms'
-main = do terms' <- mapM eval terms; mapM_ (putStrLn . show) terms'
+main = do terms' <- sequence $ map (mapM eval) table; mapM_ (putStrLn . show) terms'
+-- main = do terms' <- mapM eval terms; mapM_ (putStrLn . show) terms'
