@@ -117,7 +117,7 @@ eval (Natrec e e1 name e2) =
                   _ -> error $ "crap" ++ show e'
 eval (Let name e1 e2) =
     do e1' <- eval e1
-       e2' <- subst_pull e1 name e2
+       e2' <- subst_pull e1' name e2
        eval e2'
 
 ----
@@ -261,25 +261,31 @@ fib = -- \n. case n of 0 => (0,1) | S(n2) => (\x. (snd x, fst x + snd x))(fib n2
         fib_inner =
             Lam n $
                 Natrec (var n) (Lam myself $ pair b Zero (Suc Zero))
-                       n2 (Lam myself $
-                               Let p (y1 "fib" $$ var n2 $$ var myself) $
-                                   -- pair b (second $ var p)
-                                   --        (add $$ (first $ var p) $$ (second $ var p)))
-                                   Natrec (second $ var p) (var "fail")
-                                       n_snd $ -- this one gets captured?? why?
-                                           Natrec (first $ var p)
-                                               (pair b (Suc Zero) (Suc Zero))
-                                               n_fst $
-                                                   pair b (Suc $ var n_snd)
-                                                          (Suc $ Suc $ add $$ var n_fst $$ var n_snd))
+                    n2 (Lam myself $
+                            Let p (y1 "fib" $$ var n2 $$ var myself) $
+                            Let n_fst (first  $ var p) $
+                            Let n_snd (second $ var p) $
+                            pair b (var n_snd) (add $$ var n_fst $$ var n_snd))
+                            -- Doesn't work.
+                            -- pair b (second $ var p)
+                            --        (add $$ (first $ var p) $$ (second $ var p)))
+
+                            -- Does work. Same principle as the two 'let's above.
+                            -- Natrec (second $ var p) (var "fail")
+                            --     n_snd $
+                            --         Natrec (first $ var p)
+                            --             (pair b (Suc Zero) (Suc Zero))
+                            --             n_fst $
+                            --                 pair b (Suc $ var n_snd)
+                            --                        (Suc $ Suc $ add $$ var n_fst $$ var n_snd))
     in Lam arg $ first (y1 "fib" $$ var arg $$ fib_inner)
 
 -- Testing
 
 table = map (\x -> map (\y -> times $$ tonat x $$ tonat y) [0..x]) [0..12]
 
-terms = map (\x -> fib $$ tonat x) [0..5]
+terms = map (\x -> fib $$ tonat x) [0..10]
 
 main :: IO ()
-main = do terms' <- sequence $ map (mapM eval) table; mapM_ (putStrLn . show) terms'
--- main = do terms' <- mapM eval terms; mapM_ (putStrLn . show) terms'
+-- main = do terms' <- sequence $ map (mapM eval) table; mapM_ (putStrLn . show) terms'
+main = do terms' <- mapM eval terms; mapM_ (putStrLn . show) terms'
