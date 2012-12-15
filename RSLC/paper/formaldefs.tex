@@ -1,0 +1,69 @@
+% ______________________________________________________________________
+% Formatting commands for terminals, non-terminals, and so forth
+
+\newcommand{\TypeRulesSize}{\footnotesize}
+\newcommand{\TypeRules}[1]{\begin{mathpar} \TypeRulesSize #1 \end{mathpar}}
+
+\newcommand{\terminal}[1]{\ensuremath{\text{\emph{#1}}}}
+\newcommand{\nonterminal}[1]{\ensuremath{\text{\emph{#1}}}}
+\newcommand{\keyword}[1]{\ensuremath{\textsf{#1}}}
+\newcommand{\rep}[1]{\ensuremath{\overline{#1}}}
+\newcommand{\tyfunction}[1]{\ensuremath{\textsc{#1}}}
+
+\newcommand{\Env}{\ensuremath{\Gamma}}
+\newcommand{\Subtype}{\ensuremath{\mathtt{<:}}}
+\newcommand{\Lt}{\ensuremath{\mathtt{<}}}
+\newcommand{\Gt}{\ensuremath{\mathtt{>}}}
+
+\newcommand{\Lb}{\keyword{\{}}
+\newcommand{\Rb}{\keyword{\}}}
+
+\newcommand{\Pipe}{\ensuremath{\:|\:}}
+
+\newcommand{\Grammar}{
+  \begin{tabular}{llll}
+    \Sr & = & \Struct\:$\C_{\Rs}$\:\Lb\:\rep{\Fq\:\F\:\Ty}\:\Rb
+            & \emph{\textbf{s}tructu\textbf{r}es} \\
+    \Fn & = & \FnKw \: $\G_{\Rs}$(\rep{\X: \Ty}) \Lb \Bk \Rb
+            & \emph{\textbf{f}unctio\textbf{n}s} \\
+    \Bk & = & \R: \Lb \Let\:\Mut\:\rep{\X: \Ty}; \Sts \Rb
+            & \emph{\textbf{b}loc\textbf{k}s} \\
+    \St & = & \Lv\:=\:\Rv \Pipe
+              % \Lv \Swap \Lv \Pipe
+              $\G_{\Rs}$(\rep{\Cm\:\X}) \Pipe
+              \Bk
+            & \emph{\textbf{st}atements} \\
+    \Lv & = & \LvAlternatives
+            & \emph{\textbf{lv}alues} \\
+    \Rv & = & \Cm\:\X \Pipe 
+              \Lv.\F \Pipe 
+              \Star\Lv \Pipe 
+              $\C_{\Rs}$\:\Lb \rep{\F:\:\Cm\:\X} \Rb \Pipe & \\
+        &   & \Uniq \Cm\:\X \Pipe
+              $\Addr_\R$ \Mq\:\Lv \Pipe
+              \Unit
+            & \emph{\textbf{rv}alues} \\
+    \Cm & = & \Copy \Pipe \Move
+            & \emph{\textbf{c}opy/\textbf{m}ove} \\
+    \Ty & = & \TyAlternatives
+            & \emph{\textbf{ty}pes} \\
+    \Mq & = & \Mut \Pipe \Const \Pipe \Imm 
+            & \emph{\textbf{m}ut. \textbf{q}ual.} \\
+    \Fq & = & \Mut \Pipe \Default 
+            & \emph{\textbf{f}ield \textbf{q}ual.} \\
+  \end{tabular}
+}
+
+% ______________________________________________________________________
+% Type checking rules
+
+\newcommand{\TrFn}{
+	\inferrule[Fn]{
+		shit
+	}{
+		\vdash \FnKw \: \G_{\Rs}(\rep{\X: \Ty}) \Lb \Bk \Rb
+	}
+}
+\newcommand{\JudgementTyStmt}{
+	shit
+}

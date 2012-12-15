@@ -1,0 +1,146 @@
+%-----------------------------------------------------------------------------
+%
+%               Template for sigplanconf LaTeX Class
+%
+% Name:         sigplanconf-template.tex
+%
+% Purpose:      A template for sigplanconf.cls, which is a LaTeX 2e class
+%               file for SIGPLAN conference proceedings.
+%
+% Guide:        Refer to "Author's Guide to the ACM SIGPLAN Class,"
+%               sigplanconf-guide.pdf
+%
+% Author:       Paul C. Anagnostopoulos
+%               Windfall Software
+%               978 371-2316
+%               paul@windfall.com
+%
+% Created:      15 February 2005
+%
+%-----------------------------------------------------------------------------
+
+
+%\documentclass[preprint]{sigplanconf}
+\documentclass{sigplanconf}
+
+% The following \documentclass options may be useful:
+%
+% 10pt          To set in 10-point type instead of 9-point.
+% 11pt          To set in 11-point type instead of 9-point.
+% authoryear    To obtain author/year citation style instead of numeric.
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathpartir}
+\usepackage{url}
+\usepackage{graphics}
+
+% ____________________________________________________________
+% Listings Package Configuration
+% \usepackage[scaled]{beramono}
+
+\renewcommand*\ttdefault{txtt}
+\usepackage[T1]{fontenc}
+
+\RequirePackage{listings}
+% \lstdefinelanguage{Rust}{
+%   morekeywords={fn,let,enum,if,else,return,mut,const,copy,ref,move,match,struct,type,int,while,float,as,fail},
+%   sensitive=true,
+%   morecomment=[l]{//},
+%   morecomment=[s]{/*}{*/},
+%   morestring=[b]",
+% }
+% \lstset{language=Rust,
+%         frame=none,%single,
+%         basicstyle=\ttfamily\footnotesize,
+%         keywordstyle=\bfseries,
+%         commentstyle=\footnotesize,
+%         tabsize=2,
+%         showstringspaces=false,
+%         flexiblecolumns=false,
+%         mathescape=true,
+%         escapeinside={\#}{\#},
+%         % numbers=left, numberstyle=\tiny, numbersep=5pt %, stepnumber=2, 
+%         % literate={->}{{$\rightarrow$}}1 {<->}{{$\leftarrow$}}1
+% }
+
+% This Deep Tex Voodoo is from
+%   <http://www.latex-community.org/forum/viewtopic.php?f=5&t=2072>
+% It's purpose is to make \lstinline normal size, without affecting
+% \lstinputlisting.  It seems to work but I have no idea how or why,
+% and I rather hope never to learn.
+\makeatletter
+\lst@AddToHook{TextStyle}{\let\lst@basicstyle\ttfamily\normalsize}
+\makeatother
+
+\newcommand{\Figref}[1]{Figure \ref{#1}}
+\newcommand{\Secref}[1]{Section \ref{#1}}
+\newcommand{\x}[1]{\lstinline{#1}}
+
+\input{formaldefs.tex}
+\begin{document}
+
+\conferenceinfo{SIGBOVIK '13}{Pittsburgh, PA, USA}
+\copyrightyear{2013}
+\copyrightdata{[to be supplied]} 
+
+\titlebanner{banner above paper title}        % These are ignored unless
+\preprintfooter{short description of paper}   % 'preprint' option specified.
+
+\title{
+  The Randomly-Scoped Lambda Calculus
+}
+% \subtitle{Subtitle Text, if any}
+
+\authorinfo{Ben Blum}{}{bblum@cs.cmu.edu}
+
+%\authorinfo{
+%  Nicholas D. Matsakis
+%  \and Brian Anderson
+%  \and Ben Blum \\
+%  \and Tim Chevalier 
+%  \and Graydon Hoare
+%  \and Patrick Walton
+%  \and David Herman}
+%           {Mozilla Research}
+%           {\{nmatsakis, banderson\}@mozilla.com,
+%             bblum@cs.cmu.edu, \\
+%             \{tchevalier, graydon, pwalton, dherman\}@mozilla.com}
+
+\maketitle
+
+\begin{abstract}
+
+We are inspired by the following travesty, courtesy of Python:
+\begin{verbatim}
+>>> x
+NameError: name 'x' is not defined
+>>> [x for x in 1,2,3]
+[1, 2, 3]
+>>> x
+3
+>>>
+\end{verbatim}
+
+The question of {\em scope} pertains to the set of rules governing which values a program's variables refer to during evaluation.
+Prior work has proposed two main approaches: {\em static} (or {\em lexical}) {\em scope}, in which variable bindings are resolved through source code analysis, and {\em dynamic scope}, in which bindings are resolved at run-time using a stack of activation records.
+
+In this work, we present {\em random scope}, a new technique for scoping, as an alternative to the above two.
+Random scope affords programmers the flexibility to refer to multiple different binding sites simultaneously; for example, applying the term $(\lambda x. (\lambda x. x))$ to two arguments could evaluate to either the first or the second one.
+We ask what kind of evaluation semantics it would take to make this work, and then pretty much stumble onwards from there trying to make sense of the whole damn thing.
+
+We define the Randomly-Scoped Lambda Calculus, and show how it can evaluate random natural numbers as well as more popular deterministic functionalities such as factorial and fibonacci.
+
+\end{abstract}
+
+% \category{D.3.3}{Language Constructs and Features}{Data types and structures}
+
+\keywords
+static scope, dynamic scope, lower is better
+
+\section{Introduction}
+
+\bibliographystyle{alpha}
+\bibliography{paper}
+
+\end{document}
