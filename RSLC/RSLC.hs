@@ -40,7 +40,9 @@ instance Show Expr where
     show (Let name e1 e2) =
         "(let " ++ name ++ " = " ++ show e1 ++ " in " ++ show e2 ++ ")"
 
-----
+--------------------------------
+-- Ben's substitution scheme. --
+--------------------------------
 
 -- Called when capturing under another lambda.
 subst_shadow :: Expr -> String -> Expr -> Expr
@@ -94,6 +96,42 @@ subst_pull e0 name (Let name2 e1 e2) =
                   subst_pull e0 name e2
        return $ Let name2 e1' e2'
 
+----------------------------------
+-- Sully's substitution scheme. --
+----------------------------------
+
+-- (in this one we ignore the "es" and just carry around a probability.)
+
+subst_sully :: Int -> Expr -> String -> Expr -> IO Expr
+subst_sully i e0 name (Var name2 es) =
+    if name == name2 then
+        do i <- getStdRandom $ randomR (0,i)
+           return $ if i == 0 then e0 else Var name2 es
+    else return $ Var name2 es
+subst_sully i e0 name (App e1 e2) =
+    do e1' <- subst_sully i e0 name e1
+       e2' <- subst_sully i e0 name e2
+       return $ App e1' e2'
+subst_sully i e0 name (Lam name2 e) =
+    Lam name2 <$> subst_sully (if name == name2 then i+1 else i) e0 name e
+subst_sully i e0 name Zero = return Zero
+subst_sully i e0 name (Suc e) = Suc <$> subst_sully i e0 name e
+subst_sully i e0 name (Natrec e e1 name2 e2) =
+    do e'  <- subst_sully i e0 name e
+       e1' <- subst_sully i e0 name e1
+       e2' <- subst_sully (if name == name2 then i+1 else i) e0 name e2
+       return $ Natrec e' e1' name2 e2'
+subst_sully i e0 name (Let name2 e1 e2) =
+    do e1' <- subst_sully i e0 name e1
+       e2' <- subst_sully (if name == name2 then i+1 else i) e0 name e2
+       return $ Let name2 e1' e2'
+
+-- subst_sully seems to have big issues with multiplication. Stack overflows
+-- for fact(4), swapping to disk on the 3x3 multiplication table. Otherwise
+-- behaves exactly the same.
+-- subst = subst_sully 0
+subst = subst_pull
+
 eval :: Expr -> IO Expr
 eval (Var name es) =
     error "can't evaluate var"
@@ -104,7 +142,7 @@ eval (Var name es) =
 eval (App e1 e2) =
     do e1' <- eval e1
        case e1' of
-           Lam name e1'' -> do e1''' <- subst_pull e2 name e1''; eval e1'''
+           Lam name e1'' -> do e1''' <- subst e2 name e1''; eval e1'''
            _ -> error ("fuck" ++ show (App e1' e2))
 eval (Lam name e) = return $ Lam name e
 eval Zero = return Zero
@@ -113,11 +151,11 @@ eval (Natrec e e1 name e2) =
     do e' <- eval e
        -- trace ("Eval'ed 'case " ++ show e ++ "' ...to... " ++ show e') $ return ()
        case e' of Zero -> eval e1
-                  Suc e'' -> do e2' <- subst_pull e'' name e2; eval e2'
+                  Suc e'' -> do e2' <- subst e'' name e2; eval e2'
                   _ -> error $ "crap" ++ show e'
 eval (Let name e1 e2) =
     do e1' <- eval e1
-       e2' <- subst_pull e1' name e2
+       e2' <- subst e1' name e2
        eval e2'
 
 ----
@@ -284,7 +322,8 @@ fib = -- \n. case n of 0 => (0,1) | S(n2) => (\x. (snd x, fst x + snd x))(fib n2
 
 table = map (\x -> map (\y -> times $$ tonat x $$ tonat y) [0..x]) [0..12]
 
-terms = map (\x -> fib $$ tonat x) [0..10]
+terms = map (\x -> fact $$ tonat x) [0..4]
+-- terms = [rand $$ tonat 9]
 
 main :: IO ()
 -- main = do terms' <- sequence $ map (mapM eval) table; mapM_ (putStrLn . show) terms'

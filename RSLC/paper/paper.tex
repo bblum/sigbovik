@@ -160,8 +160,7 @@ However, I give the programmer the benefit of the doubt, and assume they named t
 In this paper I make the following contributions:
 \begin{enumerate}
 	\item The {\bf Randomly-Scoped Lambda Calculus (RSLC)}, a logical programming language that uses a novel syntactic technique called {\bf random scoping},
-	\item An analysis of two implementation strategies for random scoping, which I call {\bf static random scope (SRS)} and {\bf dynamic random scope (DRS)},
-	\item A new schema for general recursion using DRS (because the Y combinator doesn't work anymore),
+	\item A new schema for general recursion in RSLC (because the Y combinator doesn't work anymore),
 	\item Programming examples in RSLC that employ random scope to compute random natural numbers,
 	\item Programming examples in RSLC that avoid random scope to implement deterministic arithmetic.
 \end{enumerate}
@@ -174,11 +173,12 @@ In this paper I make the following contributions:
 	\label{fig:grammar}
 \end{figure}
 
-RSLC is an extention to the call-by-name un(i)typed lambda calculus with slightly modified substitution rules. In the grammar (Figure~\ref{fig:grammar}), a variable $x$ carries around a list of expressions $\rep{e}$ which have been ``tried to have been substituted for $x$ before''.
-When programming in RSLC, we simply write $x$ (or $y$ or \Neptune~or whatever way you swing), because no substitution has happened yet, but after $n$ ``$\lambda x$''s have been $\beta$-reduced, the $\rep{e}$ list will have $n$ expressions in it.
-It might help to think of it like quantum superposition, I guess? I dunno.
+RSLC is an extention to the lazy un(i)typed lambda calculus with slightly modified substitution rules. In the grammar (Figure~\ref{fig:grammar}), a variable $x$ carries around a list of expressions $\rep{e}$ which we have ``tried to substitute for it before''.
+When programming in RSLC, we simply write $x$ (or $y$ or \Neptune~or however you happen to swing), because no substitution has happened yet, but after $n$ ``$\lambda x$''s have been $\beta$-reduced, the $\rep{e}$ list will have $n$ expressions in it.
+It might help to think of it like quantum superposition, I guess?
 
 Anyway, Figure~\ref{fig:eval} shows the evaluation rules, which are basically what you'd expect, and Figure~\ref{fig:subst} shows the substitution rules, which are new.
+In the normal $\lambda$-calculus, in the {\sc Subst-Capture} rule, substitution stops when a new binding's name is the same as the one being substituted for, but in RSLC 
 
 
 \bibliographystyle{alpha}
