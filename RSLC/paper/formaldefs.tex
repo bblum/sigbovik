@@ -18,39 +18,20 @@
 \newcommand{\Lb}{\keyword{\{}}
 \newcommand{\Rb}{\keyword{\}}}
 
-\newcommand{\Pipe}{\ensuremath{\:|\:}}
+\newcommand{\Pipe}{\ensuremath{\quad|\quad}}
+
+\newcommand{\Zero}{\ensuremath{\textsf{Z}}}
+\newcommand{\Suc}[1]{\ensuremath{\textsf{S(}#1\textsf{)}}}
+\newcommand{\Let}[3]{\ensuremath{\textsf{let~}#1\textsf{~=~}#2\textsf{~in~}#3}}
+\newcommand{\Case}[4]{\ensuremath{\textsf{case~}#1\textsf{~of~}\Zero~\Rightarrow~#2;~\Suc{#3}~\Rightarrow~#4}}
 
 \newcommand{\Grammar}{
   \begin{tabular}{llll}
-    \Sr & = & \Struct\:$\C_{\Rs}$\:\Lb\:\rep{\Fq\:\F\:\Ty}\:\Rb
-            & \emph{\textbf{s}tructu\textbf{r}es} \\
-    \Fn & = & \FnKw \: $\G_{\Rs}$(\rep{\X: \Ty}) \Lb \Bk \Rb
-            & \emph{\textbf{f}unctio\textbf{n}s} \\
-    \Bk & = & \R: \Lb \Let\:\Mut\:\rep{\X: \Ty}; \Sts \Rb
-            & \emph{\textbf{b}loc\textbf{k}s} \\
-    \St & = & \Lv\:=\:\Rv \Pipe
-              % \Lv \Swap \Lv \Pipe
-              $\G_{\Rs}$(\rep{\Cm\:\X}) \Pipe
-              \Bk
-            & \emph{\textbf{st}atements} \\
-    \Lv & = & \LvAlternatives
-            & \emph{\textbf{lv}alues} \\
-    \Rv & = & \Cm\:\X \Pipe 
-              \Lv.\F \Pipe 
-              \Star\Lv \Pipe 
-              $\C_{\Rs}$\:\Lb \rep{\F:\:\Cm\:\X} \Rb \Pipe & \\
-        &   & \Uniq \Cm\:\X \Pipe
-              $\Addr_\R$ \Mq\:\Lv \Pipe
-              \Unit
-            & \emph{\textbf{rv}alues} \\
-    \Cm & = & \Copy \Pipe \Move
-            & \emph{\textbf{c}opy/\textbf{m}ove} \\
-    \Ty & = & \TyAlternatives
-            & \emph{\textbf{ty}pes} \\
-    \Mq & = & \Mut \Pipe \Const \Pipe \Imm 
-            & \emph{\textbf{m}ut. \textbf{q}ual.} \\
-    \Fq & = & \Mut \Pipe \Default 
-            & \emph{\textbf{f}ield \textbf{q}ual.} \\
+    $e$ & = & $\lambda x. e$ \Pipe $e_1 e_2$ & {\em functions} \\
+    & | & $x[\rep{e}]$ & {\em random variables} \\
+    & | & \Zero \Pipe \Suc{e} & {\em natural numbers} \\
+    & | & \Case{e_1}{e_2}{x}{e_3} & {\em natural induction} \\
+    & | & \Let{x}{e_1}{e_2} & {\em eager evaluation}
   \end{tabular}
 }
 
@@ -61,7 +42,7 @@
 	\inferrule[Fn]{
 		shit
 	}{
-		\vdash \FnKw \: \G_{\Rs}(\rep{\X: \Ty}) \Lb \Bk \Rb
+		shit
 	}
 }
 \newcommand{\JudgementTyStmt}{

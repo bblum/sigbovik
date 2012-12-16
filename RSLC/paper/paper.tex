@@ -21,7 +21,7 @@
 
 
 %\documentclass[preprint]{sigplanconf}
-\documentclass{sigplanconf}
+\documentclass[10pt]{sigplanconf}
 
 % The following \documentclass options may be useful:
 %
@@ -29,11 +29,13 @@
 % 11pt          To set in 11-point type instead of 9-point.
 % authoryear    To obtain author/year citation style instead of numeric.
 
+\usepackage{yfonts}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{mathpartir}
 \usepackage{url}
 \usepackage{graphics}
+\usepackage{marvosym}
 \usepackage[utopia]{mathdesign}
 
 % ____________________________________________________________
@@ -83,14 +85,16 @@
 
 \conferenceinfo{SIGBOVIK '13}{Pittsburgh, PA, USA}
 \copyrightyear{2013}
-\copyrightdata{[to be supplied]} 
+\copyrightdata{}
 
 \titlebanner{banner above paper title}        % These are ignored unless
 \preprintfooter{short description of paper}   % 'preprint' option specified.
 
 \title{
-  The Randomly-Scoped Lambda Calculus
+Random Scope for Syntactic Hope
+% Learning to Cope with Random Scope
 }
+\subtitle{\em The Randomly-Scoped Lambda Calculus}
 % \subtitle{Subtitle Text, if any}
 
 \authorinfo{Ben Blum}{}{bblum@cs.cmu.edu}
@@ -112,25 +116,25 @@
 
 \begin{abstract}
 
-We are inspired by the following travesty, courtesy of Python:
+Gaze upon the following travesty, which Python hath wrought upon the world:
 \begin{verbatim}
->>> x
-NameError: name 'x' is not defined
->>> [x for x in 1,2,3]
-[1, 2, 3]
->>> x
-3
->>>
+    >>> x
+    NameError: name 'x' is not defined
+    >>> [x for x in 1,2,3]
+    [1, 2, 3]
+    >>> x
+    3
+    >>>
 \end{verbatim}
 
 The question of {\em scope} pertains to the set of rules governing which values a program's variables refer to during evaluation.
 Prior work has proposed two main approaches: {\em static} (or {\em lexical}) {\em scope}, in which variable bindings are resolved through source code analysis, and {\em dynamic scope}, in which bindings are resolved at run-time using a stack of activation records.
 
-In this work, we present {\em random scope}, a new technique for scoping, as an alternative to the above two.
+In this work, I present {\em random scope}, a new technique for scoping, as an alternative to the above two.
 Random scope affords programmers the flexibility to refer to multiple different binding sites simultaneously; for example, applying the term $(\lambda x. (\lambda x. x))$ to two arguments could evaluate to either the first or the second one.
-We ask what kind of evaluation semantics it would take to make this work, and then pretty much stumble onwards from there trying to make sense of the whole damn thing.
+I figure out what kind of evaluation semantics would make this work, and then pretty much stumble onwards from there trying to make sense of the whole damn thing.
 
-We define the Randomly-Scoped Lambda Calculus, and show how it can be used to compute random natural numbers, while also providing more popular deterministic functionalities such as factorial and fibonacci.
+I define the Randomly-Scoped Lambda Calculus, and show how it can be used to compute random natural numbers, while also providing more popular deterministic functionalities such as factorial and fibonacci.
 
 \end{abstract}
 
@@ -141,7 +145,41 @@ static scope, dynamic scope, lower is better
 
 \section{Introduction}
 
-Many modern programming languages~\cite{python,lambda,sml,GoLang,RustLang,mla,haskell98,patenttroll,wikiplia}
+Some modern programming languages~\cite{wikiplia,python,lambda,sml,GoLang,RustLang,mla,haskell98,patenttroll} include a mechanism to refer to previously-computed values using more consise names, typically called {\em variables}. The question then arises: ``Which values should my variables refer to?''
+In a half-hearted attempt to answer, these languages implement {\em scope} (which I explained in the abstract; go read it), and hope it all works out okay.
+
+Whether resolved statically or dynamically, modern scoping approaches lack the flexibility to refer to multiple binding sites simultaneously.
+I present the Randomly-Scoped Lambda Calculus (RSLC), in which references to shadowed variables can evaluate to any of their binding sites with equal probability.
+
+Consider the following lambda calculus term:
+\[ (\lambda x. (\lambda x. x))~A~B \]
+In ordinary lambda calculus, this always evaluates to $B$ (quite unforgivingly so, in my opinion).
+However, I give the programmer the benefit of the doubt, and assume they named the first argument $x$ as well because they wanted it to have equal opportunity. Hence, in RSLC this term can evaluate to either $A$ or $B$.
+(On the other side of the coin, RSLC encourages good programming practice: a programmer who {\em doesn't} want $x$ to evaluate to $A$ should name the first argument something different, to make their intentions more clear.)
+
+In this paper I make the following contributions:
+\begin{enumerate}
+	\item The {\bf Randomly-Scoped Lambda Calculus (RSLC)}, a logical programming language that uses a novel syntactic technique called {\bf random scoping},
+	\item An analysis of two implementation strategies for random scoping, which I call {\bf static random scope (SRS)} and {\bf dynamic random scope (DRS)},
+	\item A new schema for general recursion using DRS (because the Y combinator doesn't work anymore),
+	\item Programming examples in RSLC that employ random scope to compute random natural numbers,
+	\item Programming examples in RSLC that avoid random scope to implement deterministic arithmetic.
+\end{enumerate}
+
+\section{Language Definition}
+
+\begin{figure}[t]
+	\Grammar
+	\caption{RSLC formal grammar.}
+	\label{fig:grammar}
+\end{figure}
+
+RSLC is an extention to the call-by-name un(i)typed lambda calculus with slightly modified substitution rules. In the grammar (Figure~\ref{fig:grammar}), a variable $x$ carries around a list of expressions $\rep{e}$ which have been ``tried to have been substituted for $x$ before''.
+When programming in RSLC, we simply write $x$ (or $y$ or \Neptune~or whatever way you swing), because no substitution has happened yet, but after $n$ ``$\lambda x$''s have been $\beta$-reduced, the $\rep{e}$ list will have $n$ expressions in it.
+It might help to think of it like quantum superposition, I guess? I dunno.
+
+Anyway, Figure~\ref{fig:eval} shows the evaluation rules, which are basically what you'd expect, and Figure~\ref{fig:subst} shows the substitution rules, which are new.
+
 
 \bibliographystyle{alpha}
 \bibliography{paper}
