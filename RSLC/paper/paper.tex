@@ -34,6 +34,7 @@
 \usepackage{mathpartir}
 \usepackage{url}
 \usepackage{graphics}
+\usepackage[utopia]{mathdesign}
 
 % ____________________________________________________________
 % Listings Package Configuration
@@ -129,7 +130,7 @@ In this work, we present {\em random scope}, a new technique for scoping, as an 
 Random scope affords programmers the flexibility to refer to multiple different binding sites simultaneously; for example, applying the term $(\lambda x. (\lambda x. x))$ to two arguments could evaluate to either the first or the second one.
 We ask what kind of evaluation semantics it would take to make this work, and then pretty much stumble onwards from there trying to make sense of the whole damn thing.
 
-We define the Randomly-Scoped Lambda Calculus, and show how it can evaluate random natural numbers as well as more popular deterministic functionalities such as factorial and fibonacci.
+We define the Randomly-Scoped Lambda Calculus, and show how it can be used to compute random natural numbers, while also providing more popular deterministic functionalities such as factorial and fibonacci.
 
 \end{abstract}
 
@@ -139,6 +140,8 @@ We define the Randomly-Scoped Lambda Calculus, and show how it can evaluate rand
 static scope, dynamic scope, lower is better
 
 \section{Introduction}
+
+Many modern programming languages~\cite{python,lambda,sml,GoLang,RustLang,mla,haskell98,patenttroll,wikiplia}
 
 \bibliographystyle{alpha}
 \bibliography{paper}
