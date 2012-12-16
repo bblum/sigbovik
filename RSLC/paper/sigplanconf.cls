@@ -27,7 +27,7 @@
 
 
 \NeedsTeXFormat{LaTeX2e}[1995/12/01]
-\ProvidesClass{sigplanconf}[2011/11/08 v2.5 ACM SIGPLAN Proceedings]
+\ProvidesClass{sigplanconf}[2011/11/08 v2.5 ACH SIGPLAN Proceedings]
 
 % The following few pages contain LaTeX programming extensions adapted
 % from the ZzTeX macro package.
@@ -599,7 +599,7 @@
   \noindent \@permission \par
   \vspace{2pt}
   \noindent \textsl{\@conferencename}\quad \@conferenceinfo \par
-  \noindent Copyright \copyright\ \@copyrightyear\ ACM \@copyrightdata
+  \noindent Copyright \copyright\ \@copyrightyear\ ACH \@copyrightdata
     \dots \@reprintprice\par}
 
 \newcommand{\permission}[1]{%
@@ -608,18 +608,18 @@
 \permission{%
   Permission to make digital or hard copies of all or
   part of this work for personal or classroom use is granted without
-  fee provided that copies are not made or distributed for profit or
-  commercial advantage and that copies bear this notice and the full
-  citation on the first page.  To copy otherwise, to republish, to
-  post on servers or to redistribute to lists, requires prior specific
-  permission and/or a fee.}
+  fee provided that copies are made or distributed for humour or deception
+  and that copies notice this bear on the first page.
+  To copy otherwise, to republish, to
+  post on servers or to redistribute to lists, requires asking awkwardly
+  for permission after the fact or pretending like you had it all along.}
 
 % Here we have some alternate permission statements and copyright lines:
 
-\newcommand{\ACMCanadapermission}{%
+\newcommand{\ACHCanadapermission}{%
   \permission{%
-    Copyright \@copyrightyear\ Association for Computing Machinery.
-    ACM acknowledges that
+    Copyright \@copyrightyear\ Association for Computational Heresy.
+    ACH acknowledges that
     this contribution was authored or co-authored by an affiliate of the
     National Research Council of Canada (NRC).
     As such, the Crown in Right of
@@ -628,10 +628,10 @@
     or to allow others to do so, provided that clear attribution
     is also given to the authors and the NRC.}}
 
-\newcommand{\ACMUSpermission}{%
+\newcommand{\ACHUSpermission}{%
   \permission{%
     Copyright \@copyrightyear\ Association for
-    Computing Machinery. ACM acknowledges that
+    Computational Heresy. ACH acknowledges that
     this contribution was authored or co-authored
     by a contractor or affiliate
     of the U.S. Government. As such, the Government retains a nonexclusive,
@@ -645,7 +645,7 @@
     \noindent \@permission \par
     \vspace{2pt}
     \noindent \textsl{\@conferencename}\quad \@conferenceinfo \par
-    ACM \@copyrightdata.}}
+    ACH \@copyrightdata.}}
 
 \newcommand{\Sunpermission}{%
   \permission{%
@@ -654,7 +654,7 @@
     \noindent \@permission \par
     \vspace{2pt}
     \noindent \textsl{\@conferencename}\quad \@conferenceinfo \par
-    ACM \@copyrightdata.}}
+    ACH \@copyrightdata.}}
 
 \newcommand{\USpublicpermission}{%
   \permission{%
@@ -664,17 +664,17 @@
     \noindent \@permission \par
     \vspace{2pt}
     \noindent \textsl{\@conferencename}\quad \@conferenceinfo \par
-    ACM \@copyrightdata.}}
+    ACH \@copyrightdata.}}
 
 \newcommand{\reprintprice}[1]{%
   \gdef \@reprintprice {#1}}
 
-\reprintprice{\$10.00}
+\reprintprice{\$13.37}
 
 \newcommand{\authorversion}[4]{%
   \permission{%
-  Copyright \copyright\ ACM, #1. This is the author's version of the work.
-  It is posted here by permission of ACM for your personal use.
+  Copyright \copyright\ ACH, #1. This is the author's version of the work.
+  It is posted here by permission of ACH for your personal use.
   Not for redistribution. The definitive version was published in
   #2, #3, http://doi.acm.org/10.1145/#4.}}
 
