@@ -49,8 +49,8 @@ subst_shadow :: Expr -> String -> Expr -> Expr
 subst_shadow e0 name (Var name2 es) =
     if name == name2 then
         -- trace ("Adding " ++ show e0 ++ " to " ++ name ++ show es) $
-        Var name2 (e0:es) -- XXX: need to map here, as below?
-    else Var name2 es -- $ map (subst_shadow e0 name) es
+        Var name2 (e0:map (subst_shadow e0 name) es)
+    else Var name2 $ map (subst_shadow e0 name) es
 subst_shadow e0 name (App e1 e2) = App (subst_shadow e0 name e1) (subst_shadow e0 name e2)
 subst_shadow e0 name (Lam name2 e) = Lam name2 $ subst_shadow e0 name e -- capture-seeking substitution
 subst_shadow e0 name Zero = Zero
@@ -65,10 +65,11 @@ subst_shadow e0 name (Let name2 e1 e2) =
 subst_pull :: Expr -> String -> Expr -> IO Expr
 subst_pull e0 name (Var name2 es) =
     if name == name2 then
-        let list = e0:es
-        in do i <- getStdRandom $ randomR (0, length list - 1)
-              return $ list !! i
-    else return $ Var name2 es
+        do es' <- mapM (subst_pull e0 name) es
+           let list = e0:es'
+           i <- getStdRandom $ randomR (0, length list - 1)
+           return $ list !! i
+    else Var name2 <$> mapM (subst_pull e0 name) es
 subst_pull e0 name (App e1 e2) =
     do e1' <- subst_pull e0 name e1
        e2' <- subst_pull e0 name e2
@@ -126,9 +127,7 @@ subst_sully i e0 name (Let name2 e1 e2) =
        e2' <- subst_sully (if name == name2 then i+1 else i) e0 name e2
        return $ Let name2 e1' e2'
 
--- subst_sully seems to have big issues with multiplication. Stack overflows
--- for fact(4), swapping to disk on the 3x3 multiplication table. Otherwise
--- behaves exactly the same.
+-- subst_sully and subst_pull are equivalent, I think.
 -- subst = subst_sully 0
 subst = subst_pull
 
@@ -149,7 +148,6 @@ eval Zero = return Zero
 eval (Suc e) = Suc <$> eval e
 eval (Natrec e e1 name e2) =
     do e' <- eval e
-       -- trace ("Eval'ed 'case " ++ show e ++ "' ...to... " ++ show e') $ return ()
        case e' of Zero -> eval e1
                   Suc e'' -> do e2' <- subst e'' name e2; eval e2'
                   _ -> error $ "crap" ++ show e'
@@ -162,6 +160,8 @@ eval (Let name e1 e2) =
 
 var name = Var name []
 e1 $$ e2 = App e1 e2
+
+-- Various attempts at the Y combinator.
 
 {-
 ycomb = let f = "ycomb_f"
@@ -214,9 +214,7 @@ truefalse3 = truefalse $$ false $$ truefalse -- true with p=0.25
 
 randombit = truefalse $$ Zero $$ Suc Zero
 
--- Y(\f. \n. truefalse n (f (succ n))) zero
-
-randomnat =
+randomnat = -- Y(\f. \n. truefalse n (f (succ n))) zero
     let f = "randomnat_f"
         n = "randomnat_n"
         r = Lam n $ Lam f $ truefalse $$ var n $$ (y1 "randomnat" $$ (Suc $ var n) $$ var f)
@@ -237,11 +235,8 @@ rand =
 tonat 0 = Zero
 tonat n = if n > 0 then Suc $ tonat $ n-1 else error "?????"
 
---
-
 -- Deterministic programming.
 
--- Works!
 add = -- \mn. case m of 0 => n | S(m2) => S(add m2 n)
     let n = "add_n"
         m = "add_m"
@@ -259,15 +254,20 @@ times = -- \mn. case m of 0 => 0 | s(m2) => add n (times m2 n)
     let n = "times_n"
         m = "times_m"
         m2 = "times_m2"
+        p = "times_p"
         myself = "times_myself"
         arg1 = "times_arg1"
         arg2 = "times_arg2"
+        -- Saying "add (times m2 n) n" also works, but is a lot slower when
+        -- using the more aggressive substitution schemes.
         -- Oddly, saying "S(m2) => add n (times m2 n)" ...
         -- instead of... "S(m2) => add (times m2 n) n" doesn't work.
         times_inner =
             Lam m $ Lam n $
                 Natrec (var m) (Lam myself $ Zero)
-                       m2 (Lam myself $ add $$ (y2 "times" $$ var m2 $$ var n $$ var myself) $$ var n)
+                       m2 (Lam myself $
+                               Let p (y2 "times" $$ var m2 $$ var n $$ var myself) $
+                               add $$ var p $$ var n)
     in Lam arg1 $ Lam arg2 $ y2 "times" $$ var arg1 $$ var arg2 $$ times_inner
 
 fact = -- \n. case n of 0 => 1 | s(n2) => times n (fact n2)
@@ -276,12 +276,12 @@ fact = -- \n. case n of 0 => 1 | s(n2) => times n (fact n2)
         n3 = "fact_n3"
         myself = "fact_myself"
         arg = "fact_arg"
-        -- Forces the "fact(n-1)" to be evaluated eagerly before being passed in
-        -- to times. Not sure why this is needed.
-        asdf = Natrec (y1 "fact" $$ var n2 $$ var myself) (Zero) (n3) (times $$ (Suc $ var n3) $$ var n)
+        p = "fact_p"
         fact_inner =
             Lam n $ Natrec (var n) (Lam myself $ Suc Zero)
-                           n2 (Lam myself $ asdf)
+                           n2 (Lam myself $
+                                   Let p (y1 "fact" $$ var n2 $$ var myself) $
+                                   times $$ var p $$ var n)
     in Lam arg $ y1 "fact" $$ var arg $$ fact_inner
 
 fib = -- \n. case n of 0 => (0,1) | S(n2) => (\x. (snd x, fst x + snd x))(fib n2)
@@ -304,25 +304,13 @@ fib = -- \n. case n of 0 => (0,1) | S(n2) => (\x. (snd x, fst x + snd x))(fib n2
                             Let n_fst (first  $ var p) $
                             Let n_snd (second $ var p) $
                             pair b (var n_snd) (add $$ var n_fst $$ var n_snd))
-                            -- Doesn't work.
-                            -- pair b (second $ var p)
-                            --        (add $$ (first $ var p) $$ (second $ var p)))
-
-                            -- Does work. Same principle as the two 'let's above.
-                            -- Natrec (second $ var p) (var "fail")
-                            --     n_snd $
-                            --         Natrec (first $ var p)
-                            --             (pair b (Suc Zero) (Suc Zero))
-                            --             n_fst $
-                            --                 pair b (Suc $ var n_snd)
-                            --                        (Suc $ Suc $ add $$ var n_fst $$ var n_snd))
     in Lam arg $ first (y1 "fib" $$ var arg $$ fib_inner)
 
 -- Testing
 
 table = map (\x -> map (\y -> times $$ tonat x $$ tonat y) [0..x]) [0..12]
 
-terms = map (\x -> fact $$ tonat x) [0..4]
+terms = map (\x -> fact $$ tonat x) [0..6]
 -- terms = [rand $$ tonat 9]
 
 main :: IO ()
