@@ -1,7 +1,7 @@
 % ______________________________________________________________________
 % Formatting commands for terminals, non-terminals, and so forth
 
-\newcommand{\TypeRulesSize}{\footnotesize}
+\newcommand{\TypeRulesSize}{\normalsize}
 \newcommand{\TypeRules}[1]{\begin{mathpar} \TypeRulesSize #1 \end{mathpar}}
 
 \newcommand{\terminal}[1]{\ensuremath{\text{\emph{#1}}}}
@@ -22,7 +22,7 @@
 
 \newcommand{\Zero}{\ensuremath{\textsf{Z}}}
 \newcommand{\Suc}[1]{\ensuremath{\textsf{S(}#1\textsf{)}}}
-\newcommand{\Let}[3]{\ensuremath{\textsf{let~}#1\textsf{~=~}#2\textsf{~in~}#3}}
+\newcommand{\Let}[3]{\ensuremath{\textcolor{Black}{\textsf{let~}}#1\textcolor{Black}{\textsf{~=~}}#2\textcolor{Black}{\textsf{~in~}}#3}}
 \newcommand{\Case}[4]{\ensuremath{\textsf{case~}#1\textsf{~of~}\Zero~\Rightarrow~#2;~\Suc{#3}~\Rightarrow~#4}}
 
 \newcommand{\Grammar}{
@@ -35,16 +35,196 @@
   \end{tabular}
 }
 
-% ______________________________________________________________________
-% Type checking rules
+\newcommand{\Val}{\textcolor{Cerulean}{\textsf{val}}}
+\newcommand{\subst}[2]{\textcolor{OliveGreen}{\llparenthesis #1} \textcolor{OliveGreen}{/ #2} \textcolor{OliveGreen}{\rrparenthesis}}
+\newcommand{\capture}[2]{\textcolor{RedOrange}{\leftwave #1 / #2 \rightevaw}}
+\newcommand{\eval}{\textcolor{WildStrawberry}{~\ensuremath{\mapsto}~}}
 
-\newcommand{\TrFn}{
-	\inferrule[Fn]{
-		shit
+% Evaluation
+
+\newcommand{\EvalVar}{
+	\inferrule[Eval-Var]{
 	}{
-		shit
+		x[\rep{e}]~\Val
 	}
 }
-\newcommand{\JudgementTyStmt}{
-	shit
+\newcommand{\EvalLam}{
+	\inferrule[Eval-Lam]{
+	}{
+		\lambda x.e~\Val
+	}
+}
+\newcommand{\EvalApp}{
+	\inferrule[Eval-App]{
+		e_1 \eval \lambda x. e_1'
+	}{
+		e_1 e_2 \eval \subst{e_2}{x}e_1'
+	}
+}
+\newcommand{\EvalZero}{
+	\inferrule[Eval-Zero]{
+	}{
+		\Zero~\Val
+	}
+}
+\newcommand{\EvalSucA}{
+	\inferrule[Eval-Suc-1]{
+		e~\Val
+	}{
+		\Suc{e}~\Val
+	}
+}
+\newcommand{\EvalSucB}{
+	\inferrule[Eval-Suc-2]{
+		e \eval e'
+	}{
+		\Suc{e}\eval\Suc{e'}
+	}
+}
+\newcommand{\EvalCaseA}{
+	\inferrule[Eval-Case-1]{
+		e_1 \eval \Zero
+	}{
+		\Case{e_1}{e_2}{x}{e_3} \eval e_2
+	}
+}
+\newcommand{\EvalCaseB}{
+	\inferrule[Eval-Case-2]{
+		e_1 \eval^* \Suc{n} \quad \Suc{n}~\Val
+	}{
+		\Case{e_1}{e_2}{x}{e_3} \eval \subst{n}{x}e_3
+	}
+}
+\newcommand{\EvalLet}{
+	\inferrule[Eval-Let]{
+		e_1 \eval^* e_1' \quad e_1'~\Val
+	}{
+		\Let{x}{e_1}{e_2} \eval \subst{e_1'}{x}e_2
+	}
+}
+
+% Substitution
+
+\newcommand{\SubstLam}{
+	\inferrule[Subst-Lam]{
+		y \ne x
+	}{
+		\subst{e_0}{x} \lambda y.e = \lambda y.\subst{e_0}{x}e'
+	}
+}
+\newcommand{\SubstLamCapture}{
+	\inferrule[Subst-Lam-Capture]{
+	}{
+		\subst{e_0}{x} \lambda x.e = \lambda x.\capture{e_0}{x}e
+	}
+}
+\newcommand{\SubstApp}{
+	\inferrule[Subst-App]{
+	}{
+		\subst{e_0}{x} e_1 e_2 = \subst{e_0}{x}e_1 \subst{e_0}{x} e_2'
+	}
+}
+\newcommand{\SubstVarY}{
+	\inferrule[Subst-Var-Y]{
+		y \ne x \quad
+	}{
+		\subst{e_0}{x} y[\rep{e}] = y[\subst{e_0}{x}\rep{e}]
+	}
+}
+\newcommand{\SubstVarX}{
+	\inferrule[Subst-Var-X]{
+		e_1 \in \left ( e_0,\subst{e_0}{x}\rep{e} \right )
+	}{
+		\subst{e_0}{x} x[\rep{e}] = e_1
+	}
+}
+\newcommand{\SubstZero}{
+	\inferrule[Subst-Zero]{
+	}{
+		\subst{e_0}{x} \Zero = \Zero
+	}
+}
+\newcommand{\SubstSuc}{
+	\inferrule[Subst-Suc]{
+	}{
+		\subst{e_0}{x} \Suc{e} = \Suc{\subst{e_0}{x}e}
+	}
+}
+\newcommand{\SubstCaseCapture}{
+	\inferrule[Subst-Case-Capture]{
+	}{
+		\subst{e_0}{x} \Case{e_1}{e_2}{x}{e_3} = \Case{\subst{e_0}{x}e_1}{\subst{e_0}{x}e_2}{x}{\capture{e_0}{x}e_3}
+	}
+}
+\newcommand{\SubstCase}{
+	\inferrule[Subst-Case]{
+		y \ne x
+	}{
+		\subst{e_0}{x} \Case{e_1}{e_2}{y}{e_3} = \Case{\subst{e_0}{x}e_1}{\subst{e_0}{x}e_2}{y}{\subst{e_0}{x}e_3}
+	}
+}
+\newcommand{\SubstLetCapture}{
+	\inferrule[Subst-Let-Capture]{
+	}{
+		\subst{e_0}{x} \Let{x}{e_1}{e_2} = \Let{x}{\subst{e_0}{x}e_1}{\capture{e_0}{x}e_2}
+	}
+}
+\newcommand{\SubstLet}{
+	\inferrule[Subst-Let]{
+		y \ne x
+	}{
+		\subst{e_0}{x} \Let{y}{e_1}{e_2} = \Let{y}{\subst{e_0}{x}e_1}{\subst{e_0}{x}e_2}
+	}
+}
+
+% Capture
+
+\newcommand{\CaptureLam}{
+	\inferrule[Capture-Lam]{
+	}{
+		\capture{e_0}{x} \lambda y.e = \lambda y.\capture{e_0}{x}e'
+	}
+}
+\newcommand{\CaptureApp}{
+	\inferrule[Capture-App]{
+	}{
+		\capture{e_0}{x} e_1 e_2 = \capture{e_0}{x}e_1 \capture{e_0}{x} e_2'
+	}
+}
+\newcommand{\CaptureVarY}{
+	\inferrule[Capture-Var-Y]{
+		y \ne x \quad
+	}{
+		\capture{e_0}{x} y[\rep{e}] = y[\capture{e_0}{x}\rep{e}]
+	}
+}
+\newcommand{\CaptureVarX}{
+	\inferrule[Capture-Var-X]{
+	}{
+		\capture{e_0}{x} x[\rep{e}] = x[e_0,\capture{e_0}{x}\rep{e}]
+	}
+}
+\newcommand{\CaptureZero}{
+	\inferrule[Capture-Zero]{
+	}{
+		\capture{e_0}{x} \Zero = \Zero
+	}
+}
+\newcommand{\CaptureSuc}{
+	\inferrule[Capture-Suc]{
+	}{
+		\capture{e_0}{x} \Suc{e} = \Suc{\capture{e_0}{x}e}
+	}
+}
+\newcommand{\CaptureCase}{
+	\inferrule[Capture-Case]{
+	}{
+		\capture{e_0}{x} \Case{e_1}{e_2}{y}{e_3} = \Case{\capture{e_0}{x}e_1}{\capture{e_0}{x}e_2}{y}{\capture{e_0}{x}e_3}
+	}
+}
+\newcommand{\CaptureLet}{
+	\inferrule[Capture-Let]{
+	}{
+		\capture{e_0}{x} \Let{y}{e_1}{e_2} = \Let{y}{\capture{e_0}{x}e_1}{\capture{e_0}{x}e_2}
+	}
 }

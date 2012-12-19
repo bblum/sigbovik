@@ -36,6 +36,8 @@
 \usepackage{url}
 \usepackage{graphics}
 \usepackage{marvosym}
+\usepackage{stmaryrd}
+\usepackage[usenames,dvipsnames]{xcolor}
 \usepackage[utopia]{mathdesign}
 
 % ____________________________________________________________
@@ -91,10 +93,11 @@
 \preprintfooter{short description of paper}   % 'preprint' option specified.
 
 \title{
-Random Scope for Syntactic Hope
+% Random Scope for Syntactic Hope
 % Learning to Cope with Random Scope
+Randomly-Scoped Lambda Calculus
 }
-\subtitle{\em The Randomly-Scoped Lambda Calculus}
+% \subtitle{\em The Randomly-Scoped Lambda Calculus}
 % \subtitle{Subtitle Text, if any}
 
 \authorinfo{Ben Blum}{}{bblum@cs.cmu.edu}
@@ -160,6 +163,7 @@ However, I give the programmer the benefit of the doubt, and assume they named t
 In this paper I make the following contributions:
 \begin{enumerate}
 	\item The {\bf Randomly-Scoped Lambda Calculus (RSLC)}, a logical programming language that uses a novel syntactic technique called {\bf random scoping},
+	%\item An analysis of two implementation strategies for random scoping, which I call {\bf static random scope (SRS)} and {\bf dynamic random scope (DRS)},
 	\item A new schema for general recursion in RSLC (because the Y combinator doesn't work anymore),
 	\item Programming examples in RSLC that employ random scope to compute random natural numbers,
 	\item Programming examples in RSLC that avoid random scope to implement deterministic arithmetic.
@@ -178,8 +182,56 @@ When programming in RSLC, we simply write $x$ (or $y$ or \Neptune~or however you
 It might help to think of it like quantum superposition, I guess?
 
 Anyway, Figure~\ref{fig:eval} shows the evaluation rules, which are basically what you'd expect, and Figure~\ref{fig:subst} shows the substitution rules, which are new.
-In the normal $\lambda$-calculus, in the {\sc Subst-Capture} rule, substitution stops when a new binding's name is the same as the one being substituted for, but in RSLC 
+In the normal $\lambda$-calculus, in the {\sc Subst-Capture} rule, substitution stops when a new binding's name is the same as the one being substituted for, but in RSLC we switch to a second substitution mode, {\sc Capture}, in which substituted expressions are appended to a variable's $\rep{e}$ list (in the {\sc Capture-Var} rule).
+Similarly, when substituting for a variable before switching to {\sc Capture} mode (in the {\sc Subst-Var} rule), we ... hmm, why is two-moded substitution needed with DRS anyway?
 
+\begin{figure}[t]
+	\fbox{\begin{tabular}{ll}$e \eval e'$ \\ $e~\Val$\end{tabular}}
+	\TypeRules{
+		\EvalLam \qquad \EvalApp \qquad \EvalVar \\
+		\EvalZero \qquad \EvalSucA \qquad \EvalSucB \\
+		\EvalCaseA \\ \EvalCaseB \\ \EvalLet
+	}
+	\caption{RSLC small-step evaluation rules. They're exactly the same as for any other call-by-name $\lambda$-calculus, so don't bother reading them. Why am I even including them?}
+	\label{fig:eval}
+\end{figure}
+
+\begin{figure}[t]
+	\fbox{$\subst{e_0}{x}{e}$}
+	\TypeRules{
+		\SubstLamCapture \qquad \SubstLam \\
+		\SubstVarX \qquad \SubstVarY \\
+	}
+	\fbox{$\capture{e_0}{x}{e}$}
+	\TypeRules{
+		\CaptureVarX \qquad \CaptureVarY \\
+	}
+	\caption{RSLC substitution rules. The ``$e_1 \in ...$'' premise in {\sc Subst-Var-X} represents nondeterministic choice. (The complete set of rules is shown in Figure~\ref{fig:subst-complete}.)}
+	\label{fig:subst}
+\end{figure}
+
+\appendix
+
+\begin{figure*}[t]
+	\fbox{$\subst{e_0}{x}{e}$}
+	\TypeRules{
+		\SubstLamCapture \qquad \SubstLam \qquad
+		\SubstApp \\
+		\SubstVarX \qquad \SubstVarY \\
+		\SubstCaseCapture \\ \SubstCase \\
+		\SubstZero \qquad \SubstSuc \\
+		\SubstLetCapture \qquad \SubstLet
+	}
+	\fbox{$\capture{e_0}{x}{e}$}
+	\TypeRules{
+		\CaptureLam \qquad \CaptureApp \qquad
+		\CaptureVarX \qquad \CaptureVarY \\
+		\CaptureCase \\
+		\CaptureZero \qquad \CaptureSuc \qquad \CaptureLet
+	}
+	\caption{Complete RSLC substitution and capture rules.}
+	\label{fig:subst-complete}
+\end{figure*}
 
 \bibliographystyle{alpha}
 \bibliography{paper}
