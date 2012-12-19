@@ -140,6 +140,7 @@ eval (Var name es) =
     --    eval $ es !! i
 eval (App e1 e2) =
     do e1' <- eval e1
+       -- e2' <- eval e2 -- CBV works about the same as CBN + eager let.
        case e1' of
            Lam name e1'' -> do e1''' <- subst e2 name e1''; eval e1'''
            _ -> error ("fuck" ++ show (App e1' e2))
@@ -267,7 +268,7 @@ times = -- \mn. case m of 0 => 0 | s(m2) => add n (times m2 n)
                 Natrec (var m) (Lam myself $ Zero)
                        m2 (Lam myself $
                                Let p (y2 "times" $$ var m2 $$ var n $$ var myself) $
-                               add $$ var p $$ var n)
+                               add $$ var n $$ var p)
     in Lam arg1 $ Lam arg2 $ y2 "times" $$ var arg1 $$ var arg2 $$ times_inner
 
 fact = -- \n. case n of 0 => 1 | s(n2) => times n (fact n2)
@@ -281,7 +282,7 @@ fact = -- \n. case n of 0 => 1 | s(n2) => times n (fact n2)
             Lam n $ Natrec (var n) (Lam myself $ Suc Zero)
                            n2 (Lam myself $
                                    Let p (y1 "fact" $$ var n2 $$ var myself) $
-                                   times $$ var p $$ var n)
+                                   times $$ var n $$ var p)
     in Lam arg $ y1 "fact" $$ var arg $$ fact_inner
 
 fib = -- \n. case n of 0 => (0,1) | S(n2) => (\x. (snd x, fst x + snd x))(fib n2)
@@ -306,12 +307,24 @@ fib = -- \n. case n of 0 => (0,1) | S(n2) => (\x. (snd x, fst x + snd x))(fib n2
                             pair b (var n_snd) (add $$ var n_fst $$ var n_snd))
     in Lam arg $ first (y1 "fib" $$ var arg $$ fib_inner)
 
+-- Dice!
+
+coin = rand $$ tonat 1
+d6   = add $$ tonat 1 $$ (rand $$ tonat 5)
+d6d6 = let x = "d6_1"
+           y = "d6_2"
+       in Let x (add $$ (tonat 1) $$ (rand $$ tonat 5)) $
+          Let y (add $$ (tonat 1) $$ (rand $$ tonat 5)) $
+          add $$ var x $$ var y
+d20  = add $$ tonat 1 $$ (rand $$ tonat 19)
+
 -- Testing
 
 table = map (\x -> map (\y -> times $$ tonat x $$ tonat y) [0..x]) [0..12]
 
-terms = map (\x -> fact $$ tonat x) [0..6]
+-- terms = map (\x -> fib $$ tonat x) [0..10]
 -- terms = [rand $$ tonat 9]
+terms = [d6d6]
 
 main :: IO ()
 -- main = do terms' <- sequence $ map (mapM eval) table; mapM_ (putStrLn . show) terms'
