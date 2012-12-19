@@ -35,8 +35,10 @@
 \usepackage{mathpartir}
 \usepackage{url}
 \usepackage{graphics}
+\usepackage{graphicx}
 \usepackage{marvosym}
 \usepackage{stmaryrd}
+\usepackage{epsdice}
 \usepackage[usenames,dvipsnames]{xcolor}
 \usepackage[utopia]{mathdesign}
 
@@ -182,8 +184,10 @@ When programming in RSLC, we simply write $x$ (or $y$ or \Neptune~or however you
 It might help to think of it like quantum superposition, I guess?
 
 Anyway, Figure~\ref{fig:eval} shows the evaluation rules, which are basically what you'd expect, and Figure~\ref{fig:subst} shows the substitution rules, which are new.
-In the normal $\lambda$-calculus, in the {\sc Subst-Capture} rule, substitution stops when a new binding's name is the same as the one being substituted for, but in RSLC we switch to a second substitution mode, {\sc Capture}, in which substituted expressions are appended to a variable's $\rep{e}$ list (in the {\sc Capture-Var} rule).
-Similarly, when substituting for a variable before switching to {\sc Capture} mode (in the {\sc Subst-Var} rule), we ... hmm, why is two-moded substitution needed with DRS anyway?
+In the normal $\lambda$-calculus, substitution would stop when a new binding's name is the same as the one being substituted for.
+
+However, in RSLC, as shown in {\sc Subst-Lam-Capture}, we switch to a second substitution mode, {\sc Capture}, in which substituted expressions are appended to a variable's $\rep{e}$ list (in the {\sc Capture-Var-X} rule).
+Similarly, when substituting for $x$ before switching to {\sc Capture} mode (in the {\sc Subst-Var-X} rule), we nondeterministically select an expression from $x$'s $\rep{e}$ list to replace $x$ with (with uniform randomness).
 
 \begin{figure}[t]
 	\fbox{\begin{tabular}{ll}$e \eval e'$ \\ $e~\Val$\end{tabular}}
@@ -206,12 +210,71 @@ Similarly, when substituting for a variable before switching to {\sc Capture} mo
 	\TypeRules{
 		\CaptureVarX \qquad \CaptureVarY \\
 	}
-	\caption{RSLC substitution rules. The ``$e_1 \in ...$'' premise in {\sc Subst-Var-X} represents nondeterministic choice. (The complete set of rules is shown in Figure~\ref{fig:subst-complete}.)}
+	\caption{RSLC substitution rules. The ``$e_1 \in ...$'' premise in {\sc Subst-Var-X} represents nondeterministic choice. (Only important rules are shown here; Figure~\ref{fig:subst-complete} shows the complete set.)}
 	\label{fig:subst}
 \end{figure}
 
+\subsection{Evaluation Example} 
+
+As an example, I present the steps for evaluating the $(\lambda x. (\lambda x. x))~A~B$ from the introduction:
+
+\begin{eqnarray*}
+	& & (\lambda x. (\lambda x. x[]))~A~B \\
+	& \mapsto & (\subst{A}{x} (\lambda x. x[])) B \\
+	& = & (\lambda x. \capture{A}{x} x[]) B \\
+	& = & (\lambda x. x[A]) B \\
+	& \mapsto & \subst{B}{x} x[A] \\
+	& = & \text{\em (any element of the list $[B,A]$)}
+\end{eqnarray*}
+
+\section{Random Programming with RSLC}
+
+Already we have a system with which we can implement simple random number generators, such as a simple 6-sided die:
+\[
+(\lambda x.
+(\lambda x.
+(\lambda x.
+(\lambda x.
+(\lambda x.
+(\lambda x. x))))))
+~\epsdice{1}
+~\epsdice{2}
+~\epsdice{3}
+~\epsdice{4}
+~\epsdice{5}
+~\epsdice{6}
+\]
+
+However, 
+
+\newpage
+
+\section{Evaluation}
+
+We computed some random numbers woo
+
+\begin{figure}[t]
+	\begin{center}
+	\includegraphics[width=0.48\textwidth]{rslc-rdr.pdf}
+	\end{center}
+	\caption{We show that RSLC is a generalization of the Random Distance Run~\cite{rdr}.}
+	\label{fig:rdr}
+\end{figure}
+
+\begin{figure}[t]
+	\begin{center}
+	\includegraphics[width=0.40\textwidth]{rslc-d20.pdf}
+	\end{center}
+	\caption{RSLC can also be used to implement popular role-playing games.}
+	\label{fig:rdr}
+\end{figure}
+
+\bibliographystyle{alpha}
+\bibliography{paper}
+
 \appendix
 
+\section{Discussion of Substitution Rules}
 \begin{figure*}[t]
 	\fbox{$\subst{e_0}{x}{e}$}
 	\TypeRules{
@@ -232,8 +295,5 @@ Similarly, when substituting for a variable before switching to {\sc Capture} mo
 	\caption{Complete RSLC substitution and capture rules.}
 	\label{fig:subst-complete}
 \end{figure*}
-
-\bibliographystyle{alpha}
-\bibliography{paper}
 
 \end{document}
