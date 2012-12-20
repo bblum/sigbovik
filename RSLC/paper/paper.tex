@@ -282,9 +282,9 @@ In order to properly recurse in RSLC, we need a new convention in which recursiv
 
 Unfortunately, I wasn't even able to find an RSLC term that satisfied that identity. I had to also alter the way recursive functions call themselves -- by referring to the combinator itself, passing it the recursive arguments, and {\em then} the substituted version of themselves. Since that makes no sense in words, just have a look:
 \begin{eqnarray*}
-\Ya &=& \lambda ag. gag \\
-\Yab &=& \lambda abg. gabg \\
-\Yabc &=& \lambda abcg. gabcg \\
+\Ya &=& \lambda ag.~gag \\
+\Yab &=& \lambda abg.~gabg \\
+\Yabc &=& \lambda abcg.~gabcg \\
 &\dots&
 \end{eqnarray*}
 Here's a sort of handwavy syntactic transformation example for $\mathsf{fix}$ constructs that supports one, two, etc arguments:
@@ -383,7 +383,7 @@ $\addition$ & = &
 \multicolumn{5}{l}{$\lambda m. \lambda n.$} \\
 & \multicolumn{4}{l}{$\mathsf{case}~m~\mathsf{of}$} \\
 && $\Zero$ & $\Rightarrow$ & $\lambda f.~n$ \\
-&& $\Suc{m_2}$ &$\Rightarrow$& $\lambda f.~\Suc{\Yab~m_2~n~f}$
+&& $\Suc{m'}$ &$\Rightarrow$& $\lambda f.~\Suc{\Yab~m'~n~f}$
 \end{tabular}
 }
 \\
@@ -398,20 +398,25 @@ $\mathsf{add}~M~N$ &=& $\Yab~M~N~\addition$
 But it turns out that multiplication, which uses addition, winds up needing the eager \textsf{let} construct. Among the several ways to implement it fully lazily, some introduce accidental randomness by letting some of \textsf{times}'s variables get captured, and others simply cause my implementation to run out of stack space or start swapping to disk when evaluating. Uh, anyway, here it is.
 
 \newcommand{\multiplication}{\bigstar}
+\newcommand{\multx}{\hat{x}}
+\newcommand{\multm}{\hat{m}}
+\newcommand{\multn}{\hat{n}}
+\newcommand{\multf}{\hat{f}}
+\newcommand{\multmm}{\hat{m}'}
 \begin{center}
 \begin{tabular}{rcl}
 $\multiplication$ & = &
 \hspace{-1em}\multirow{6}{*}{
 \begin{tabular}{lllll}
-\multicolumn{5}{l}{$\lambda m. \lambda n.$} \\
-& \multicolumn{4}{l}{$\mathsf{case}~m~\mathsf{of}$} \\
-&& $\Zero$ & $\Rightarrow$ & $\lambda f.~\Zero$ \\
-&& $\Suc{m_2}$ &$\Rightarrow$& $\lambda f.$ \\
+\multicolumn{5}{l}{$\lambda \multm. \lambda \multn.$} \\
+& \multicolumn{4}{l}{$\mathsf{case}~\multm~\mathsf{of}$} \\
+&& $\Zero$ & $\Rightarrow$ & $\lambda \multf.~\Zero$ \\
+&& $\Suc{\multmm}$ &$\Rightarrow$& $\lambda \multf.$ \\
 &&
 \multicolumn{3}{l}{
 \begin{tabular}{lll}
-& \textsf{let} & $x~=~\Yab~m_2~n~f$ \\
-& \textsf{in} & $\mathsf{add}~x~n$
+& \textsf{let} & $\multx~=~\Yab~\multmm~\multn~\multf$ \\
+& \textsf{in} & $\mathsf{add}~\multx~\multn$
 \end{tabular}
 }
 \end{tabular}
@@ -426,16 +431,102 @@ $\multiplication$ & = &
 $\mathsf{times}~M~N$ &=& $\Yab~M~N~\multiplication$
 \end{tabular}
 \end{center}
+Note that since $\mathsf{times}$ refers to $\mathsf{add}$, $\mathsf{times}$'s variable names must have different names. I put hats on them.
 
-\section{Evaluation}
+Here's the factorial function:
+\newcommand{\factorial}{\textbf{!}}
+\newcommand{\factx}{\mathring{x}}
+\newcommand{\factn}{\mathring{n}}
+\newcommand{\factf}{\mathring{f}}
+\newcommand{\factnn}{\mathring{n}'}
+\begin{center}
+\begin{tabular}{rcl}
+$\factorial$ & = &
+\hspace{-1em}\multirow{6}{*}{
+\begin{tabular}{lllll}
+\multicolumn{5}{l}{$\lambda \factn.$} \\
+& \multicolumn{4}{l}{$\mathsf{case}~\factn~\mathsf{of}$} \\
+&& $\Zero$ & $\Rightarrow$ & $\lambda \factf.~\Suc{\Zero}$ \\
+&& $\Suc{\factnn}$ &$\Rightarrow$& $\lambda \factf.$ \\
+&&
+\multicolumn{3}{l}{
+\begin{tabular}{lll}
+& \textsf{let} & $\factx~=~\Ya~\factnn~\factf$ \\
+& \textsf{in} & $\mathsf{times}~\factn~\factx$
+\end{tabular}
+}
+\end{tabular}
+}
+\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+$\mathsf{fact}~N$ &=& $\Ya~N~\factorial$
+\end{tabular}
+\end{center}
 
-We computed some random numbers woo
+\newcommand{\fst}{\mathsf{fst}}
+\newcommand{\snd}{\mathsf{snd}}
+To compute fibonacci numbers, I encoded pairs:
+\begin{eqnarray*}
+(e_1, e_2) &=& \lambda b.~b~e_1~e_2 \\
+\fst~e &=& e (\lambda x.\lambda y. x) \\
+\snd~e &=& e (\lambda x.\lambda y. y) \\
+\end{eqnarray*}
+Hence:
+\newcommand{\fib}{\Phi}
+\newcommand{\fibxa}{\tilde{x}_1}
+\newcommand{\fibxb}{\tilde{x}_2}
+\newcommand{\fibn}{\tilde{n}}
+\newcommand{\fibf}{\tilde{f}}
+\newcommand{\fibp}{\tilde{p}}
+\newcommand{\fibnn}{\tilde{n}'}
+\begin{center}
+\begin{tabular}{rcl}
+$\fib$ & = &
+\hspace{-1em}\multirow{6}{*}{
+\begin{tabular}{lllll}
+\multicolumn{5}{l}{$\lambda \fibn.$} \\
+& \multicolumn{4}{l}{$\mathsf{case}~\fibn~\mathsf{of}$} \\
+&& $\Zero$ & $\Rightarrow$ & $\lambda \fibf.~(\Zero,~\Suc{\Zero})$ \\
+&& $\Suc{\fibnn}$ &$\Rightarrow$& $\lambda \fibf.$ \\
+&&
+\multicolumn{3}{l}{
+\begin{tabular}{lll}
+& \textsf{let} & $\fibp~=~\Ya~\fibnn~\fibf$ \\
+& & $\fibxa~=~\fst~\fibp$ \\
+& & $\fibxb~=~\snd~\fibp$ \\
+& \textsf{in} & $(\fibxb,~\mathsf{add}~\fibxa~\fibxb)$
+\end{tabular}
+}
+\end{tabular}
+}
+\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+$\mathsf{fib}~N$ &=& $\Ya~N~\fib$
+\end{tabular}
+\end{center}
+
+
+\section{Applications}
+
+I computed some random numbers woo
 
 \begin{figure}[t]
 	\begin{center}
 	\includegraphics[width=0.48\textwidth]{rslc-rdr.pdf}
 	\end{center}
-	\caption{We show that RSLC is a generalization of the Random Distance Run~\cite{rdr}.}
+	\caption{RSLC is a generalization of the Random Distance Run~\cite{rdr}.}
 	\label{fig:rdr}
 \end{figure}
 
@@ -444,7 +535,7 @@ We computed some random numbers woo
 	\includegraphics[width=0.40\textwidth]{rslc-d20.pdf}
 	\end{center}
 	\caption{RSLC can also be used to implement popular role-playing games.}
-	\label{fig:rdr}
+	\label{fig:d20}
 \end{figure}
 
 \bibliographystyle{alpha}
