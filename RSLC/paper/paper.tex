@@ -39,6 +39,7 @@
 \usepackage{marvosym}
 \usepackage{stmaryrd}
 \usepackage{epsdice}
+\usepackage{multirow}
 \usepackage[usenames,dvipsnames]{xcolor}
 \usepackage[utopia]{mathdesign}
 
@@ -186,7 +187,7 @@ It might help to think of it like quantum superposition, I guess?
 Anyway, Figure~\ref{fig:eval} shows the evaluation rules, which are basically what you'd expect, and Figure~\ref{fig:subst} shows the substitution rules, which are new.
 In the normal $\lambda$-calculus, substitution would stop when a new binding's name is the same as the one being substituted for.
 
-However, in RSLC, as shown in {\sc Subst-Lam-Capture}, we switch to a second substitution mode, {\sc Capture}, in which substituted expressions are appended to a variable's $\rep{e}$ list (in the {\sc Capture-Var-X} rule).
+However, in RSLC, as shown in {\sc Subst-Capture}, we switch to a second substitution mode, {\sc Capture}, in which substituted expressions are appended to a variable's $\rep{e}$ list (in the {\sc Capture-Var-X} rule).
 Similarly, when substituting for $x$ before switching to {\sc Capture} mode (in the {\sc Subst-Var-X} rule), we nondeterministically select an expression from $x$'s $\rep{e}$ list to replace $x$ with (with uniform randomness).
 
 \begin{figure}[t]
@@ -203,33 +204,41 @@ Similarly, when substituting for $x$ before switching to {\sc Capture} mode (in 
 \begin{figure}[t]
 	\fbox{$\subst{e_0}{x}{e}$}
 	\TypeRules{
-		\SubstLamCapture \qquad \SubstLam \\
+		\SubstCapture \qquad \SubstLam \\
 		\SubstVarX \qquad \SubstVarY \\
 	}
 	\fbox{$\capture{e_0}{x}{e}$}
 	\TypeRules{
 		\CaptureVarX \qquad \CaptureVarY \\
 	}
-	\caption{RSLC substitution rules. The ``$e_1 \in ...$'' premise in {\sc Subst-Var-X} represents nondeterministic choice. (Only important rules are shown here; Figure~\ref{fig:subst-complete} shows the complete set.)}
+	\caption{Selected RSLC substitution rules. The ``$e_1 \in ...$'' premise in {\sc Subst-Var-X} represents nondeterministic choice.}
 	\label{fig:subst}
 \end{figure}
 
 \subsection{Evaluation Example} 
 
-As an example, I present the steps for evaluating the $(\lambda x. (\lambda x. x))~A~B$ from the introduction:
+To demonstrate, here's the evaluation of $(\lambda x. (\lambda x. x))~A~B$ from the introduction:
 
-\begin{eqnarray*}
-	& & (\lambda x. (\lambda x. x[]))~A~B \\
-	& \mapsto & (\subst{A}{x} (\lambda x. x[])) B \\
-	& = & (\lambda x. \capture{A}{x} x[]) B \\
-	& = & (\lambda x. x[A]) B \\
-	& \mapsto & \subst{B}{x} x[A] \\
-	& = & \text{\em (any element of the list $[B,A]$)}
-\end{eqnarray*}
+\begin{center}
+\begin{tabular}{cll}
+	& $(\lambda x. (\lambda x. x[]))~A~B$ & \\
+	$\mapsto$ & $(\subst{A}{x} (\lambda x. x[]))~B$ & {\sc \small Eval-App} \\
+	\substeq & $(\lambda x. \capture{A}{x} x[])~B$ & {\sc \small Subst-Capture} \\
+	\captureeq & $(\lambda x. x[A])~B$ & {\sc \small Capture-Var-X} \\
+	$\mapsto$ & $\subst{B}{x} x[A]$ & {\sc \small Eval-App} \\
+	\substeq & {\em (any element of the list $[B,A]$)} & {\sc \small Subst-Var-X}
+\end{tabular}
+\end{center}
+Now the fairness to $A$ we wanted in the intro is restored.
 
 \section{Random Programming with RSLC}
 
-Already we have a system with which we can implement simple random number generators, such as a simple 6-sided die:
+\newcommand{\Y}{\textsf{Y}}
+\newcommand{\Ya}{\ensuremath{\mathsf{Y_1}}}
+\newcommand{\Yab}{\ensuremath{\mathsf{Y_2}}}
+\newcommand{\Yabc}{\ensuremath{\mathsf{Y_3}}}
+
+Already we have a system with which we can implement simple random number generators, such as a simple 6-sided die:\footnote{Really I just wanted an excuse to typeset \LaTeX~dice.}
 \[
 (\lambda x.
 (\lambda x.
@@ -245,9 +254,122 @@ Already we have a system with which we can implement simple random number genera
 ~\epsdice{6}
 \]
 
-However, 
+However, this isn't really ``programming'', and Sully thought for sure I wouldn't be able to do anything useful with this language, which of course I wasn't going to stand by. The first thing I wanted to do was to recursively generate a random natural number, something like this:
+\begin{equation}
+\label{eq:randomnat}
+\Y~(\lambda f. \lambda n. (\lambda x. \lambda x. x)~n~(f~\Suc{n}))~\Zero
+\end{equation}
+This term would randomly choose whether to output $n$, its argument, or to call itself with $\Suc{n}$. However, the conventional Y-combinator doesn't work as intended in RSLC, because once a function is substituted into itself for its first argument, subsequent arguments will be captured in the substituted version.
+Even ignoring the internal workings of the combinator, and supposing $\Y$ satisfies $\Y~g \mapsto^* g~(\Y~g)$, here's what happens:
 
-\newpage
+\begin{center}
+\begin{tabular}{ll}
+\hspace{-1em}
+& $\Y~(\lambda f. \lambda n. (\lambda x. \lambda x. x)~n~(f~\Suc{n}))~\Zero$ \\
+\hspace{-1em}
+$\mapsto^*$ & $(\lambda n. (\lambda x. \lambda x. x)~n~(\Y~(\lambda f.\lambda n. \dots n \dots)~\Suc{n}))~\Zero$ \\
+\hspace{-1em}
+$\mapsto$ & $\subst{\Zero}{n}((\lambda x. \lambda x. x)~n~(\Y~(\lambda f.\lambda n. \dots n \dots)~\Suc{n}))$ \\
+\hspace{-1em}
+= & $((\lambda x. \lambda x. x)~\subst{\Zero}{n}n~(\Y~(\lambda f.\lambda n. \dots \capture{\Zero}{n}n \dots)~\Suc{\subst{\Zero}{n}n}))$ \\
+\end{tabular}
+\end{center}
+
+But wait -- I only wanted random-capture on $x$, not on $n$! As a result, though we intended $0$ to be output with half probability, and $1$ with quarter probability, and so on, actually $0$ gets output substantially more often (5/8, I think).
+
+\subsection{The new Y combinator(s)}
+In order to properly recurse in RSLC, we need a new convention in which recursive functions get themselves substituted into them {\em last}, after all other arguments have been applied. The desired identity is $\Ya~g~a \mapsto^* g~a~(\Ya g)$ for one-argument functions (and $\Yab~g~a~b \mapsto^* g~a~b~(\Yab~g)$ for two-argument functions, and so on).
+
+Unfortunately, I wasn't even able to find an RSLC term that satisfied that identity. I had to also alter the way recursive functions call themselves -- by referring to the combinator itself, passing it the recursive arguments, and {\em then} the substituted version of themselves. Since that makes no sense in words, just have a look:
+\begin{eqnarray*}
+\Ya &=& \lambda ag. gag \\
+\Yab &=& \lambda abg. gabg \\
+\Yabc &=& \lambda abcg. gabcg \\
+&\dots&
+\end{eqnarray*}
+Here's a sort of handwavy syntactic transformation example for $\mathsf{fix}$ constructs that supports one, two, etc arguments:
+\begin{eqnarray*}
+\mathsf{fix}_1(f,a.e) &=& \lambda a. \Ya~a~(\lambda af. [^{(\Ya~x~f)}/_{f(x)}]e) \\
+\mathsf{fix}_2(f,a,b.e) &=& \lambda ab. \Ya~a~b~(\lambda abf. [^{(\Ya~x~y~f)}/_{f(x)(y)}]e) \\
+&\dots&
+\end{eqnarray*}
+
+Note that this transformation doesn't just substitute for the variable $f$ in $e$ but also reorders the arguments it's applied to. So now the term from Equation~\ref{eq:randomnat} becomes:
+\begin{equation}
+\label{eq:randomnat-fixed}
+\Ya~\Zero~(\lambda n. \lambda f. (\lambda x. \lambda x. x)~n~(\Ya~\Suc{n}~f))
+\end{equation}
+
+And evaluates as intended:
+
+\begin{center}
+\begin{tabular}{ll}
+$\mapsto^*$ & $(\lambda n. \lambda f. (\lambda x. \lambda x. x)~n~(\Ya~\Suc{n}~f))~\Zero~(\lambda n. \lambda f. \dots)$ \\
+$\mapsto$ & $(\subst{\Zero}{n}\lambda f. (\lambda x. \lambda x. x)~n~(\Ya~\Suc{n}~f))~(\lambda n. \lambda f. \dots)$ \\
+= & $(\lambda f. (\lambda x. \lambda x. x)~\Zero~(\Ya~\Suc{\Zero}~f))~(\lambda n. \lambda f. \dots)$ \\
+$\mapsto$ & $(\lambda x. \lambda x. x)~\Zero~(\Ya~\Suc{\Zero}~(\lambda n. \lambda f. \dots))$
+\end{tabular}
+\end{center}
+
+Figure~\ref{fig:nats} shows the experimental results of evaluating this term 10,000 times.
+
+\begin{figure}[h!]
+	\begin{center}
+	\includegraphics[width=0.48\textwidth]{rslc-naturals.pdf}
+	\end{center}
+	\caption{Computing random numbers with the term in Equation~\ref{eq:randomnat-fixed}. Log scale, lower is better. (I couldn't show $13$ because it showed up 0 times, and $\mathsf{log}~0 = -\infty$.)}
+	\label{fig:nats}
+\end{figure}
+
+\subsection{Uniform random number generation}
+
+\newcommand{\thing}[1]{\textcolor{Fuchsia}{#1}}
+
+The next thing I wanted to do was compute random numbers with a uniform distribution. Previously we were just selecting between two possible bindings for $x$, statically defined in the program text. I wondered, ``can I dynamically generate a term with $n$ shadow-bindings\footnote{Shadow binding: Sor/Wiz 3, Complete Arcane. Will save negates.} that causes a variable to have $n$ expressions in its $\rep{e}$ list?'' Something like:
+\[
+\thing{(\lambda x. (\lambda x. \dots (\lambda x.x)))}~0~1~2~\dots~n
+\]
+Of course this was where I had to iron out all the crazy parts in the previous sections, but since I already presented it in a manner consistent with it ain't being no thang, I'm going to make this part look easy:
+% Y2 (\x.x) N (\tn. case n of 0 => (\f. t 0) | S(n2) => (\f. Y2 ((\x.t)n) n2 f))
+
+\begin{center}
+\begin{tabular}{rcl}
+\hspace{-1em}
+$\rho$ & = &
+\hspace{-1em}\multirow{4}{*}{
+\begin{tabular}{lllll}
+\multicolumn{5}{l}{$\lambda \thing{\bf t}. \lambda n.$} \\
+& \multicolumn{4}{l}{$\mathsf{case}~n~\mathsf{of}$} \\
+&& $\Zero$ & $\Rightarrow$ & $\lambda f.~\thing{\bf t}~\Zero$ \\
+&& $\Suc{n_2}$ &$\Rightarrow$& $\lambda f.~\Yab~\thing{((\lambda x.{\bf t})~n)}~n_2~f$
+\end{tabular}
+}
+\\
+&&\\
+&&\\
+&&\\
+&&\\
+\hspace{-1em}
+$\mathsf{rand}[0-N]$ &=& $\Yab~\thing{(\lambda x.x)}~N~\rho$
+\end{tabular}
+\end{center}
+
+The variable $\thing{\bf t}$ accumulates ``$\lambda x$''s as $\rho$ recurses (in the $\Suc{n_2}$ case). You might ask: why does the $\lambda f$ need to be inside the $\mathsf{case}$ statement? Because otherwise $n_2$ would get shadowed in the thing substituted for $f$.
+
+A brief, very condensed, evaluation example:
+
+\begin{center}
+\begin{tabular}{ll}
+& $\mathsf{rand}[0-2]$ \\
+= & $\Yab~\thing{(\lambda x.x)}~2~\rho$ \\
+$\mapsto^*$ & $\Yab~\thing{((\lambda x.(\lambda x.x))~2)}~1~\rho$ \\
+$\mapsto^*$ & $\Yab~\thing{((\lambda x.(\lambda x.(\lambda x.x))~2)~1)}~0~\rho$ \\
+$\mapsto^*$ & $((\lambda x.(\lambda x.(\lambda x.x))~2)~1)~0$ \\
+$\mapsto^*$ & $\subst{2}{x}x[1,0]$
+\end{tabular}
+\end{center}
+
+\section{Deterministic Programming with RSLC}
 
 \section{Evaluation}
 
