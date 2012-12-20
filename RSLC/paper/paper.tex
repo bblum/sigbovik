@@ -313,7 +313,7 @@ $\mapsto$ & $(\lambda x. \lambda x. x)~\Zero~(\Ya~\Suc{\Zero}~(\lambda n. \lambd
 
 Figure~\ref{fig:nats} shows the experimental results of evaluating this term 10,000 times.
 
-\begin{figure}[h!]
+\begin{figure}[h]
 	\begin{center}
 	\includegraphics[width=0.48\textwidth]{rslc-naturals.pdf}
 	\end{center}
@@ -334,7 +334,6 @@ Of course this was where I had to iron out all the crazy parts in the previous s
 
 \begin{center}
 \begin{tabular}{rcl}
-\hspace{-1em}
 $\rho$ & = &
 \hspace{-1em}\multirow{4}{*}{
 \begin{tabular}{lllll}
@@ -349,27 +348,84 @@ $\rho$ & = &
 &&\\
 &&\\
 &&\\
-\hspace{-1em}
-$\mathsf{rand}[0-N]$ &=& $\Yab~\thing{(\lambda x.x)}~N~\rho$
+$\mathsf{rand}[0,N]$ &=& $\Yab~\thing{(\lambda x.x)}~N~\rho$
 \end{tabular}
 \end{center}
 
-The variable $\thing{\bf t}$ accumulates ``$\lambda x$''s as $\rho$ recurses (in the $\Suc{n_2}$ case). You might ask: why does the $\lambda f$ need to be inside the $\mathsf{case}$ statement? Because otherwise $n_2$ would get shadowed in the thing substituted for $f$.
+The variable $\thing{\bf t}$ accumulates ``$\lambda x$''s as $\rho$ recurses (in the $\Suc{n_2}$ case). You might ask: why does the $\lambda f$ need to be inside the $\mathsf{case}$ statement?
+Because otherwise in {\sc Eval-Case-2}$n_2$ would get captured in the thing substituted for $f$.
 
-A brief, very condensed, evaluation example:
+A brief, very condensed, evaluation run-through:
 
 \begin{center}
-\begin{tabular}{ll}
-& $\mathsf{rand}[0-2]$ \\
+\begin{tabular}{lll}
+$\mathsf{rand}[0,2]$ &
 = & $\Yab~\thing{(\lambda x.x)}~2~\rho$ \\
-$\mapsto^*$ & $\Yab~\thing{((\lambda x.(\lambda x.x))~2)}~1~\rho$ \\
-$\mapsto^*$ & $\Yab~\thing{((\lambda x.(\lambda x.(\lambda x.x))~2)~1)}~0~\rho$ \\
-$\mapsto^*$ & $((\lambda x.(\lambda x.(\lambda x.x))~2)~1)~0$ \\
-$\mapsto^*$ & $\subst{2}{x}x[1,0]$
+& $\mapsto^*$ & $\Yab~\thing{((\lambda x.(\lambda x.x))~2)}~1~\rho$ \\
+& $\mapsto^*$ & $\Yab~\thing{((\lambda x.(\lambda x.(\lambda x.x))~2)~1)}~0~\rho$ \\
+& $\mapsto^*$ & $((\lambda x.(\lambda x.(\lambda x.x))~2)~1)~0$ \\
+& $\mapsto^*$ & $\subst{0}{x}x[1,2]$
 \end{tabular}
 \end{center}
 
 \section{Deterministic Programming with RSLC}
+
+OK, great; got here. Up until now I showed how random scope adds inherent nondeterminism that can be harnessed to simulate dice anda make silly graphs. The other thing Sully didn't believe would be possible was writing deterministic RSLC programs that {\em avoid} using ``the feature''.
+
+In the last section I already introduced the capture-free Y combinator(s). Implementing addition using that is no trouble:
+
+\newcommand{\addition}{\maltese}
+\begin{center}
+\begin{tabular}{rcl}
+$\addition$ & = &
+\hspace{-1em}\multirow{4}{*}{
+\begin{tabular}{lllll}
+\multicolumn{5}{l}{$\lambda m. \lambda n.$} \\
+& \multicolumn{4}{l}{$\mathsf{case}~m~\mathsf{of}$} \\
+&& $\Zero$ & $\Rightarrow$ & $\lambda f.~n$ \\
+&& $\Suc{m_2}$ &$\Rightarrow$& $\lambda f.~\Suc{\Yab~m_2~n~f}$
+\end{tabular}
+}
+\\
+&&\\
+&&\\
+&&\\
+&&\\
+$\mathsf{add}~M~N$ &=& $\Yab~M~N~\addition$
+\end{tabular}
+\end{center}
+
+But it turns out that multiplication, which uses addition, winds up needing the eager \textsf{let} construct. Among the several ways to implement it fully lazily, some introduce accidental randomness by letting some of \textsf{times}'s variables get captured, and others simply cause my implementation to run out of stack space or start swapping to disk when evaluating. Uh, anyway, here it is.
+
+\newcommand{\multiplication}{\bigstar}
+\begin{center}
+\begin{tabular}{rcl}
+$\multiplication$ & = &
+\hspace{-1em}\multirow{6}{*}{
+\begin{tabular}{lllll}
+\multicolumn{5}{l}{$\lambda m. \lambda n.$} \\
+& \multicolumn{4}{l}{$\mathsf{case}~m~\mathsf{of}$} \\
+&& $\Zero$ & $\Rightarrow$ & $\lambda f.~\Zero$ \\
+&& $\Suc{m_2}$ &$\Rightarrow$& $\lambda f.$ \\
+&&
+\multicolumn{3}{l}{
+\begin{tabular}{lll}
+& \textsf{let} & $x~=~\Yab~m_2~n~f$ \\
+& \textsf{in} & $\mathsf{add}~x~n$
+\end{tabular}
+}
+\end{tabular}
+}
+\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+$\mathsf{times}~M~N$ &=& $\Yab~M~N~\multiplication$
+\end{tabular}
+\end{center}
 
 \section{Evaluation}
 
