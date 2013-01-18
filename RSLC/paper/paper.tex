@@ -322,6 +322,7 @@ Figure~\ref{fig:nats} shows the experimental results of evaluating this term 10,
 \end{figure}
 
 \subsection{Uniform random number generation}
+\label{sec:uniform}
 
 \newcommand{\thing}[1]{\textcolor{Fuchsia}{#1}}
 
@@ -370,7 +371,7 @@ $\mathsf{rand}[0,2]$ &
 
 \section{Deterministic Programming with RSLC}
 
-OK, great; got here. Up until now I showed how random scope adds inherent nondeterminism that can be harnessed to simulate dice anda make silly graphs. The other thing Sully didn't believe would be possible was writing deterministic RSLC programs that {\em avoid} using ``the feature''.
+Got here. Up until now I showed how random scope adds inherent nondeterminism that can be harnessed to simulate dice anda make silly graphs. The other thing Sully didn't believe would be possible was writing deterministic RSLC programs that {\em avoid} using ``the feature''.
 
 In the last section I already introduced the capture-free Y combinator(s). Implementing addition using that is no trouble:
 
@@ -470,7 +471,7 @@ $\mathsf{fact}~N$ &=& $\Ya~N~\factorial$
 
 \newcommand{\fst}{\mathsf{fst}}
 \newcommand{\snd}{\mathsf{snd}}
-To compute fibonacci numbers, I encoded pairs:
+To compute fibonacci numbers, I used the standard Church encoding for pairs:
 \begin{eqnarray*}
 (e_1, e_2) &=& \lambda b.~b~e_1~e_2 \\
 \fst~e &=& e (\lambda x.\lambda y. x) \\
@@ -517,10 +518,10 @@ $\mathsf{fib}~N$ &=& $\Ya~N~\fib$
 \end{tabular}
 \end{center}
 
+At this point I could include some addition and multiplication tables like the kind you saw in 3rd grade, but it would be no surprise.
+Suffice to say that it works.
 
 \section{Applications}
-
-I computed some random numbers woo
 
 \begin{figure}[t]
 	\begin{center}
@@ -538,8 +539,40 @@ I computed some random numbers woo
 	\label{fig:d20}
 \end{figure}
 
+Now that I have shown in an abstract sense how RSLC can be used to express the same deterministic computations from conventional lambda calculus as well as some novel random programming techniques, let's do a real-world application.
+Using the uniform randomness combinator from Section~\ref{sec:uniform}, we can implement any number of standard dice for any nonzero number of sides:
+
+\begin{eqnarray*}
+	\mathsf{d}(\Suc{N}) &=& \mathsf{add}~1~\mathsf{rand}[0,N] \\
+       2\mathsf{d}(\Suc{N}) &=& \mathsf{let}~x=\mathsf{add}~\mathsf{rand}[0,N]~\mathsf{rand}[0,N] \\
+	&& \mathsf{in}~\mathsf{add}~2~x \\
+       3\mathsf{d}(\Suc{N}) &=& \mathsf{let}~x=\mathsf{add}~\mathsf{rand}[0,N]~\mathsf{rand}[0,N] \\
+	&& \mathsf{in}~\mathsf{let}~y=\mathsf{add}~x~\mathsf{rand}[0,N] \\
+	&& \mathsf{in}~\mathsf{add}~3~y
+\end{eqnarray*}
+and so on.
+
+For $N = 5$, using the $2\mathsf{d}(\Suc{N})$ combinator (more commonly known as $2\mathsf{d}6$), we obtain a random distribution equivalent to the one employed in the Random Distance Run~\cite{rdr}, as shown in Figure~\ref{fig:rdr}.
+
+The value $N = 19$ yields the $\mathsf{d}20$ combinator, which generates the random distribution shown in Figure~\ref{fig:d20}. Prior work has shown this combinator to be quite useful in tabletop roleplaying games~\cite{dnd-mm,dnd-phb,dnd-dmg}.
+
+\section{Theoretical Concerns}
+
+Some programming language theoreticians will speak of the so-called ``Frame Rule'', which expresses abstraction: if a property $P$ holds for a certain function $f$, then in another function $g$ which invokes $x$, if $P(x)$ implies $P(g)$, then $P([f/x]g)$.
+
+In the context of RSLC, we scoff at this rule.
+
+\section{Concluding Remarks}
+
+RSLC is an extension to standard un(i)typed lambda calculus in which substitution is essentially completely broken. However, since substitution is broken in a particularly careful way, it is possible to write interesting programs that make use of the language's built-in nondeterminism.
+Furthermore, I showed that it is still possible to write a bunch of deterministic programs that are commonly used as examples/proofs-of-concept, as long as you put silly hats on some of your variables.
+
+I believe you could extend RSLC's substitution schema to a typed lambda calculus, and furthermore if it only substitutes for variables of the same type, it would even be type-safe.
+
 \bibliographystyle{alpha}
 \bibliography{paper}
+
+\newpage
 
 \appendix
 
