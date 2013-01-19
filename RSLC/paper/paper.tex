@@ -161,7 +161,7 @@ Consider the following lambda calculus term:
 \[ (\lambda x. (\lambda x. x))~A~B \]
 In ordinary lambda calculus, this always evaluates to $B$ (quite unforgivingly so, in my opinion).
 However, I give the programmer the benefit of the doubt, and assume they named the first argument $x$ as well because they wanted it to have equal opportunity. Hence, in RSLC this term can evaluate to either $A$ or $B$.
-(On the other side of the coin, RSLC encourages good programming practice: a programmer who {\em doesn't} want $x$ to evaluate to $A$ should name the first argument something different, to make their intentions more clear.)
+(On the other side of the coin~\cite{twoface}, RSLC encourages good programming practice: a programmer who {\em doesn't} want $x$ to evaluate to $A$ should name the first argument something different, to make their intentions more clear.)
 
 In this paper I make the following contributions:
 \begin{enumerate}
@@ -539,8 +539,8 @@ Suffice to say that it works.
 	\label{fig:d20}
 \end{figure}
 
-Now that I have shown in an abstract sense how RSLC can be used to express the same deterministic computations from conventional lambda calculus as well as some novel random programming techniques, let's do a real-world application.
-Using the uniform randomness combinator from Section~\ref{sec:uniform}, we can implement any number of standard dice for any nonzero number of sides:
+Now that I showed in an abstract sense how RSLC can be used to express popular computations from conventional lambda calculus as well as some novel random programming techniques, let's do a real-world application.
+Using the uniform combinator from Section~\ref{sec:uniform}, we can make standard dice for any nonzero number of sides:
 
 \begin{eqnarray*}
 	\mathsf{d}(\Suc{N}) &=& \mathsf{add}~1~\mathsf{rand}[0,N] \\
@@ -550,7 +550,6 @@ Using the uniform randomness combinator from Section~\ref{sec:uniform}, we can i
 	&& \mathsf{in}~\mathsf{let}~y=\mathsf{add}~x~\mathsf{rand}[0,N] \\
 	&& \mathsf{in}~\mathsf{add}~3~y
 \end{eqnarray*}
-and so on.
 
 For $N = 5$, using the $2\mathsf{d}(\Suc{N})$ combinator (more commonly known as $2\mathsf{d}6$), we obtain a random distribution equivalent to the one employed in the Random Distance Run~\cite{rdr}, as shown in Figure~\ref{fig:rdr}.
 
@@ -568,6 +567,8 @@ RSLC is an extension to standard un(i)typed lambda calculus in which substitutio
 Furthermore, I showed that it is still possible to write a bunch of deterministic programs that are commonly used as examples/proofs-of-concept, as long as you put silly hats on some of your variables.
 
 I believe you could extend RSLC's substitution schema to a typed lambda calculus, and furthermore if it only substitutes for variables of the same type, it would even be type-safe.
+
+My implementation of RSLC in Haskell is available at \url{https://github.com/bblum/sigbovik/blob/master/RSLC/RSLC.hs}.
 
 \bibliographystyle{alpha}
 \bibliography{paper}
