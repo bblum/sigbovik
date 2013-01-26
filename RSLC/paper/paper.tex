@@ -173,6 +173,7 @@ In this paper I make the following contributions:
 \end{enumerate}
 
 \section{Language Definition}
+\label{sec:definition}
 
 \begin{figure}[t]
 	\Grammar
@@ -553,7 +554,7 @@ Using the uniform combinator from Section~\ref{sec:uniform}, we can make standar
 
 For $N = 5$, using the $2\mathsf{d}(\Suc{N})$ combinator (more commonly known as $2\mathsf{d}6$), we obtain a random distribution equivalent to the one employed in the Random Distance Run~\cite{rdr}, as shown in Figure~\ref{fig:rdr}.
 
-The value $N = 19$ yields the $\mathsf{d}20$ combinator, which generates the random distribution shown in Figure~\ref{fig:d20}. Prior work has shown this combinator to be quite useful in tabletop roleplaying games~\cite{dnd-mm,dnd-phb,dnd-dmg}.
+The value $N = 19$ yields the $\mathsf{d}20$ combinator, which generates the random distribution shown in Figure~\ref{fig:d20} above. Prior work has shown this combinator to be quite useful in tabletop roleplaying games~\cite{dnd-mm,dnd-phb,dnd-dmg}.
 
 \section{Theoretical Concerns}
 
@@ -570,15 +571,30 @@ I believe you could extend RSLC's substitution schema to a typed lambda calculus
 
 My implementation of RSLC in Haskell is available at \url{https://github.com/bblum/sigbovik/blob/master/RSLC/RSLC.hs}.
 
+\section*{Acknowledgement}
+
+Michael Sullivan is, of course, the ``Sully'' that I mentioned (and will in the appendix continue to mention).
+
 \bibliographystyle{alpha}
 \bibliography{paper}
 
-\newpage
+\onecolumn
 
 \appendix
 
 \section{Discussion of Substitution Rules}
-\begin{figure*}[t]
+
+Section~\ref{sec:definition} shows some ``most important'' example substitution rules, saving the complete set of rules for the appendix, which is where we are now, hence Figure~\ref{fig:subst-complete} below.
+
+Now, Sully thought my two-judgement scheme was gross, and proposed his own, which I think is operationally equivalent.
+Instead of switching to a different judgement the first time you traverse a matching binder (and annotating variables with expression-lists), in you always carry around a counter, which you increment when crossing matching binders and which represents a ``substitution probability'' (really the inverse thereof).
+
+Figure~\ref{fig:sully} shows rules for this alternate substitution scheme.
+In these rules, the notation $\sully{e_0}{x}{p}{e}$ represents substituting with probability $\sullycolor{1/p}$, and the default substitution used by the evaluation rules, $\subst{e_0}{x}{e}$, is equivalent to substituting with probability $1$, i.e., $\sully{e_0}{x}{1}{e}$.
+Also, of course, variables don't have lists attached; they are $x$ rather than $x_{\rep{e}}$.
+While this alternate system eliminates the clunkiness of annotating variables, it has its own clunkiness because the rules \textsc{Subst2-Var-X-Yes} and \textsc{Subst2-Var-X-No} must have explicit probabilities for which of the two of them will apply.
+
+\begin{figure*}[h!]
 	\fbox{$\subst{e_0}{x}{e}$}
 	\TypeRules{
 		\SubstLamCapture \qquad \SubstLam \qquad
@@ -597,6 +613,19 @@ My implementation of RSLC in Haskell is available at \url{https://github.com/bbl
 	}
 	\caption{Complete RSLC substitution and capture rules.}
 	\label{fig:subst-complete}
+\end{figure*}
+
+\begin{figure*}[t]
+	\fbox{$\sully{e_0}{x}{p}{e}$}
+	\TypeRules{
+		\SullyLamCapture \qquad \SullyLam \qquad \SullyApp \\
+		\SullyVarXA \qquad \SullyVarXB \qquad \SullyVarY \\
+		\SullyCaseCapture \\ \SullyCase \\
+		\SullyZero \qquad \SullySuc \\
+		\SullyLetCapture \qquad \SullyLet
+	}
+	\caption{Alternate substitution rules for RSLC. These maintain a counter for the number of binders traversed and uses explicit probabilities for randomness rather than selecting uniformly from a list.}
+	\label{fig:sully}
 \end{figure*}
 
 \end{document}

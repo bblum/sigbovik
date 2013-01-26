@@ -40,6 +40,10 @@
 \newcommand{\substeq}{=}
 \newcommand{\capture}[2]{\textcolor{RedOrange}{\leftwave #1 / #2 \rightevaw}}
 \newcommand{\captureeq}{=}
+\newcommand{\sullycolor}[1]{\textcolor{MidnightBlue}{#1}}
+\newcommand{\sully}[3]{\sullycolor{\llparenthesis #1} \sullycolor{/ #2} \sullycolor{\rrparenthesis^{#3}}}
+\newcommand{\sullyeq}{=}
+\newcommand{\probability}[1]{\sullycolor{\mathsf{probability}(#1)}}
 \newcommand{\eval}{\textcolor{WildStrawberry}{~\ensuremath{\mapsto}~}}
 \newcommand{\evalstar}{\textcolor{WildStrawberry}{~\ensuremath{\mapsto^*}~}}
 
@@ -235,5 +239,86 @@
 	\inferrule[Capture-Let]{
 	}{
 		\capture{e_0}{x} \Let{y}{e_1}{e_2} \captureeq \Let{y}{\capture{e_0}{x}e_1}{\capture{e_0}{x}e_2}
+	}
+}
+
+% Sully's scheme
+
+\newcommand{\SullyLam}{
+	\inferrule[Subst2-Lam]{
+		y \ne x
+	}{
+		\sully{e_0}{x}{p} \lambda y.e \sullyeq \lambda y.\sully{e_0}{x}{p}e'
+	}
+}
+\newcommand{\SullyLamCapture}{
+	\inferrule[Subst2-Lam-Capture]{
+	}{
+		\sully{e_0}{x}{p} \lambda x.e \sullyeq \lambda x.\sully{e_0}{x}{p+1}e'
+	}
+}
+\newcommand{\SullyApp}{
+	\inferrule[Subst2-App]{
+	}{
+		\sully{e_0}{x}{p} e_1 e_2 \sullyeq \sully{e_0}{x}{p}e_1 \sully{e_0}{x}{p} e_2'
+	}
+}
+\newcommand{\SullyVarY}{
+	\inferrule[Subst2-Var-Y]{
+		y \ne x \quad
+	}{
+		\sully{e_0}{x}{p} y \sullyeq y
+	}
+}
+\newcommand{\SullyVarXA}{
+	\inferrule[Subst2-Var-X-Yes]{
+		\probability{1/p}
+	}{
+		\sully{e_0}{x}{p} x \sullyeq e_0
+	}
+}
+\newcommand{\SullyVarXB}{
+	\inferrule[Subst2-Var-X-No]{
+		\probability{1-1/p}
+	}{
+		\sully{e_0}{x}{p} x \sullyeq x
+	}
+}
+\newcommand{\SullyZero}{
+	\inferrule[Subst2-Zero]{
+	}{
+		\sully{e_0}{x}{p} \Zero \sullyeq \Zero
+	}
+}
+\newcommand{\SullySuc}{
+	\inferrule[Subst2-Suc]{
+	}{
+		\sully{e_0}{x}{p} \Suc{e} \sullyeq \Suc{\sully{e_0}{x}{p}e}
+	}
+}
+\newcommand{\SullyCase}{
+	\inferrule[Subst2-Case]{
+		y \ne x
+	}{
+		\sully{e_0}{x}{p} \Case{e_1}{e_2}{y}{e_3} \sullyeq \Case{\sully{e_0}{x}{p}e_1}{\sully{e_0}{x}{p}e_2}{y}{\sully{e_0}{x}{p}e_3}
+	}
+}
+\newcommand{\SullyCaseCapture}{
+	\inferrule[Subst2-Case-Capture]{
+	}{
+		\sully{e_0}{x}{p} \Case{e_1}{e_2}{x}{e_3} \sullyeq \Case{\sully{e_0}{x}{p}e_1}{\sully{e_0}{x}{p}e_2}{x}{\sully{e_0}{x}{p+1}e_3}
+	}
+}
+\newcommand{\SullyLet}{
+	\inferrule[Subst2-Let]{
+		y \ne x
+	}{
+		\sully{e_0}{x}{p} \Let{y}{e_1}{e_2} \sullyeq \Let{y}{\sully{e_0}{x}{p}e_1}{\sully{e_0}{x}{p}e_2}
+	}
+}
+\newcommand{\SullyLetCapture}{
+	\inferrule[Subst2-Let-Capture]{
+	}{
+		\sully{e_0}{x}{p} \Let{x}{e_1}{e_2} \sullyeq \Let{x}{\sully{e_0}{x}{p}e_1}{\sully{e_0}{x}{p+1}e_2}
 	}
 }
