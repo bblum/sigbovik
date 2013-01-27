@@ -261,7 +261,7 @@ However, this isn't really ``programming'', and Sully thought for sure I wouldn'
 \Y~(\lambda f. \lambda n. (\lambda x. \lambda x. x)~n~(f~\Suc{n}))~\Zero
 \end{equation}
 This term would randomly choose whether to output $n$, its argument, or to call itself with $\Suc{n}$. However, the conventional Y-combinator doesn't work as intended in RSLC, because once a function is substituted into itself for its first argument, subsequent arguments will be captured in the substituted version.
-Even ignoring the internal workings of the combinator, and supposing $\Y$ satisfies $\Y~g \mapsto^* g~(\Y~g)$, here's what happens:
+Even ignoring the internal workings of the combinator, and supposing some $\Y$ that satisfies $\Y~g \mapsto^* g~(\Y~g)$, here's what happens:
 
 \begin{center}
 \begin{tabular}{ll}
@@ -355,7 +355,7 @@ $\mathsf{rand}[0,N]$ &=& $\Yab~\thing{(\lambda x.x)}~N~\rho$
 \end{center}
 
 The variable $\thing{\bf t}$ accumulates ``$\lambda x$''s as $\rho$ recurses (in the $\Suc{n_2}$ case). You might ask: why does the $\lambda f$ need to be inside the $\mathsf{case}$ statement?
-Because otherwise in {\sc Eval-Case-2}$n_2$ would get captured in the thing substituted for $f$.
+Because otherwise, in {\sc Eval-Case-2}, $n_2$ would get captured in the thing substituted for $f$.
 
 A brief, very condensed, evaluation run-through:
 
@@ -372,7 +372,7 @@ $\mathsf{rand}[0,2]$ &
 
 \section{Deterministic Programming with RSLC}
 
-Got here. Up until now I showed how random scope adds inherent nondeterminism that can be harnessed to simulate dice anda make silly graphs. The other thing Sully didn't believe would be possible was writing deterministic RSLC programs that {\em avoid} using ``the feature''.
+Got here. Up until now I showed how random scope adds inherent nondeterminism that can be harnessed to simulate dice and make silly graphs. The other thing Sully didn't believe would be possible was writing deterministic RSLC programs that {\em avoid} using ``the feature''.
 
 In the last section I already introduced the capture-free Y combinator(s). Implementing addition using that is no trouble:
 
