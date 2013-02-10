@@ -1,13 +1,49 @@
-\documentclass{article}
-\usepackage{fullpage}
-\begin{document}
+% v2-acmlarge-sample.tex, dated March 6 2012
+% This is a sample file for ACM large trim journals
+%
+% Compilation using 'acmlarge.cls' - version 1.3, Aptara Inc.
+% (c) 2011 Association for Computing Machinery (ACM)
+%
+% Questions/Suggestions/Feedback should be addressed to => "acmtexsupport@aptaracorp.com".
+% Users can also go through the FAQs available on the journal's submission webpage.
+%
+% Steps to compile: latex, bibtex, latex latex
+%
+\documentclass[prodmode,acmtap]{acmlarge}
 
+% Metadata Information
+\acmVolume{4}
+\acmNumber{3}
+\acmArticle{} % value doesn't matter
+\articleSeq{34} % minimum value to make the right margin black box disappear
+\acmYear{1982}
+\acmMonth{7}
+
+% Package to generate and customize Algorithm as per ACM style
+\usepackage[ruled]{algorithm2e}
+\SetAlFnt{\algofont}
+\SetAlCapFnt{\algofont}
+\SetAlCapNameFnt{\algofont}
+\SetAlCapHSkip{0pt}
+\IncMargin{-\parindent}
+\renewcommand{\algorithmcfname}{ALGORITHM}
+
+% Page heads
+\markboth{L. Lamport, R. Shostak, and M. Pease}{The Problem of Heads of a Fighting Force from Long Ago}
+
+% Title portion
 \title{The Problem of Heads of a Fighting Force from Long Ago}
-\author{Leslie Lamport \and Robert Shostak \and Marshall Pease}
-\date{1982}
-\maketitle
+\author{LESLIE LAMPORT, ROBERT SHOSTAK, and MARSHALL PEASE \\
+SRI In Many Lands
+}
+% NOTE! Affiliations placed here should be for the institution where the
+%       BULK of the research was done. If the author has gone to a new
+%       institution, before publication, the (above) affiliation should NOT be changed.
+%       The authors 'current' address may be given in the "Author's addresses:" block (below).
+%       So for example, Mr. Fogarty, the bulk of the research was done at UIUC, and he is
+%       currently affiliated with NASA.
 
-\abstract{
+\begin{abstract}
 Groups of computers that you can trust must handle broken parts that give facts
 that don't agree to different parts of the group. This situation can be talked
 about by pretending about the heads of a fighting force from long ago, who are
@@ -21,22 +57,44 @@ possible if and only if more than two thirds of the heads are good guys; so a
 single bad guy can confuse two good guys.  With written letters which can't be
 pretended, the problem is possible for any number of heads and possible bad
 guys. Ways to use the plans that are answers are then talked about.
-}
+\end{abstract}
 
-Words about what this paper is about: C.2.4. [Computer-Talking Groups]: Groups of many computers--groups of brains of computers; D.4.4 [Computer Brains]: Managing Talking--talking in groups; D.4.5 [Computer Brains]: Being Trusted--accepting faults
+% Words about what this paper is about:
+\category{C.2.4.}{Computer-Talking Groups}{Groups of many computers}[groups of brains of computers]
+\category{D.4.4}{Computer Brains}{Managing Talking}[talking in groups]
+\category{D.4.5}{Computer Brains}{Being Trusted}[accepting faults]
 
-Big Picture Words: Plans, Being Trusted
+%Big Picture Words
+\terms{Plans, Being Trusted}
 
-More Key Words and Groups of Words: Agreeing with yourself
+%More Key Words and Groups of Words
+\keywords{Friends agreeing with themselves}
 
-% This work was helped in part by the People Who Go To Space under plan NAS1-15428 Change 3, the Group for Being Safe Against Flying Fire Guns under plan DASG60-78-C-0046, and the Fighting Force Work Office under plan DAAG29-79-C-0102.
-% 
-% Where the people who wrote this live: Computer Study Work Place, SRI In Many Parts of the World, 333 Flying Animal's Wood Street, Park with a Person's Name, CA 94025.
-% 
-% Being allowed to take without paying all or part of this paper is given as long as the papers are not made or given for making money, the notice that ACM owns this and the name of the paper and its date appear, and notice is given that taking it is by being allowed by the Agreeing-group for Computer Making. To take in another way, or to put out again, needs paying and/or being more allowed.
-% 
-% © 1982 ACM 0164-0925/82/0700-0382 $00.75 ACM Talking about Ways to Speak to Computers and Groups, Part 4, No. 3, Month Seven 1982, Pieces of paper 382-401.
+%\acmformat{Daniel Pineo, Colin Ware, and Sean Fogarty. 2009. Neural Modeling of Flow Rendering Effectiveness.}
+% At a minimum you need to supply the author names, year and a title.
+% IMPORTANT:
+% Full first names whenever they are known, surname last, followed by a period.
+% In the case of two authors, 'and' is placed between them.
+% In the case of three or more authors, the serial comma is used, that is, all author names
+% except the last one but including the penultimate author's name are followed by a comma,
+% and then 'and' is placed before the final author's name.
+% If only first and middle initials are known, then each initial
+% is followed by a period and they are separated by a space.
+% The remaining information (journal title, volume, article number, date, etc.) is 'auto-generated'.
 
+\begin{document}
+\setcounter{page}{382}
+
+\begin{bottomstuff}
+This work was helped in part by the People Who Go To Space under plan NAS1-15428 Change 3, the Group for Being Safe Against Flying Fire Guns under plan DASG60-78-C-0046, and the Fighting Force Work Office under plan DAAG29-79-C-0102.
+
+Where the people who wrote this live: Computer Study Work Place, SRI In Many Parts of the World, 333 Flying Animal's Wood Street, Park with a Person's Name, CA 94025.
+\end{bottomstuff}
+
+
+\maketitle
+
+% Head 1
 \section{Opening Words}
 
 A group of computers that can be trusted must be able to live with the breaking of one or more of its parts.
@@ -46,28 +104,58 @@ The problem of living with this type of breaking is talked about with make-belie
 We imagine that several parts of the fighting force from long ago are waiting outside a bad guy city, each group controlled by its own head.
 The heads can talk with one another only by a person who carries a letter.
 After watching the bad guys, they must decide upon a shared plan of attack.
-However, some of the heads may be bad guys, trying to stop the good guys heads from agreeing. The heads must have an plan to make sure that
+However, some of the heads may be bad guys, trying to stop the good guys heads from agreeing. The heads must have an plan to make sure that \\
+\\
+A. All good guys decide upon the same plan of how to act. \\
 
-1. All good guys decide upon the same plan of how to act.
+The good guy heads will all do what the plan says they should, but the bad guy heads may do anything they wish. The plan must make sure of situation A no matter what the bad guys do.
 
-The good guy heads will all do what the plan says they should, but the bad guy heads may do anything they wish. The plan must make sure of fact 1 no matter what the bad guys do.
+\newcommand\fact{\ensuremath{\mathsf{fact}}}
 
-The good guys should not only agree, but should agree upon a plan that makes sense. So, we also want to make sure that
+The good guys should not only agree, but should agree upon a plan that makes sense. So, we also want to make sure that \\
+\\
+B. A small number of bad guy heads can't cause the good guy heads to take a bad plan. \\
 
-2. A small number of bad guy heads can't cause the good guy heads to take a bad plan.
+Situation B is hard to make clear, since it needs you to say exactly what a bad plan is, and we do not attempt to do so. Instead, we consider how the heads reach a way to agree. Each head watches the bad guy city and tells what he or she sees to the others. Let $\fact(i)$ be the facts told by the head with number $i$. Each head uses some way to put together the facts $\fact(1) \dots \fact(n)$ into a single plan of what to do, where $n$ is the number of heads. We can make Situation A happen by having all heads use the same way for putting together the facts, and make Situation B happen by using a way that can be trusted. Think about this case: if the only thing to agree on is whether to attack or run away, then $\fact(i)$ can be Head $i$'s thought of which way is best, and the real plan can come from which way has more heads that want to do it. A small number of bad guys can change the way only if there were almost the same number of good guys who wanted to do each way, in which case not either way could be called bad.
 
-Fact 2 is hard to make clear, since it needs you to say exactly what a bad plan is, and we do not attempt to do so. Instead, we consider how the heads reach a way to agree. Each head watches the bad guy city and tells what he or she sees to the others. Let $a(i)$ be the facts told by the head with number $i$. Each head uses some way to put together the facts $a(1) \dots a(number)$ into a single plan of what to do, where $number$ is the number of heads. We can make Fact 1 happen by having all heads use the same way for putting together the facts, and make Fact 2 happen by using a way that can be trusted. Think about this case: if the only thing to agree on is whether to attack or run away, then $a(i)$ can be Head $i$'s thought of which way is best, and the real plan can come from which way has more heads that want to do it. A small number of bad guys can change the way only if there were almost the same number of good guys who wanted to do each way, in which case not either way could be called bad.
+While this approach may not be the only way to make situations A and B happen, it is the only one we know of.
+It needs a way for the heads to tell their facts $\fact(i)$ to one another. The most clear way is for the head number $i$ to send $\fact(i)$ by a person who carries a letter to each other head. However, this does not work, because making situation A happen needs every good guy head to read the same facts $\fact(1) \dots \fact(n)$, and a bad guy head may send different facts to different heads. For situation A to happen, the following must be true: \\
+\\
+1. Every good guy head must read the same facts $\fact(1) \dots \fact(n)$. \\
 
-While this approach may not be the only way to make Facts 1 and 2 happen, it is the only one we know of.
-It needs a way for the heads to tell their facts $a(i)$ to one another. The most clear way is for the head number $i$ to send $a(i)$ by a person who carries a letter to each other head. However, this does not work, because making Fact 1 happen needs every good guy head to read the same facts $a(1) \dots a(number)$, and a bad guy head may send different facts to different heads. For Fact 1 to happen, the following must be true:
+Situation 1 means that a head can't in all cases use a fact of $\fact(i)$ read straight from the head number $i$, since a bad guy head number $i$ may send different facts to different heads.
+This means that without care, in meeting situation 1 we might make it possible for the heads to use a fact for $\fact(i)$ different from the one sent by head number $i$--even though that head is good.
+We must not allow this to happen if situation B is to be met. Think about this case: we can't allow a few bad guys to cause the good guys to act as if the facts were ``run away'' , \dots, ``run away'' if every good guy said ``attack''.
+So, we need the following thing for each $i$: \\
+\\
+2. If head number $i$ is good, then the fact that he or she sends must be used by every good guy head as the fact for $\fact(i)$. \\
 
-3. Every good guy head must read the same facts $a(1) \dots a(number)$.
+We can say situation 1 another way by saying that for every $i$ (whether or not the head number $i$ is a good guy), \\
+\\
+1'. Any two good guy heads use the same meaning of $\fact(i)$. \\
 
-Fact 3 means that a head can't in all cases use a fact of $a(i)$ read straight from the head number $i$, since a bad guy head number $i$ may send different facts to different heads.
-This means that without care, in meeting Fact 3 we might make it possible for the heads to use a fact for $a(i)$ different from the one sent by head number $i$--even though that head is good.
-We must not allow this to happen if Fact 2 is to be met. Think about this case: we can't allow a few bad guys to cause the good guys to act as if the facts were "run away" , . . . , "run away" if every good guy said "attack".
-So, we need the following new fact for each $i$:
+Situations 1' and 2 both use just the single fact that was sent by head number $i$.
+Because of this, we can think about the smaller problem of how a single head sends their fact to the others. We'll talk about this by talking about a controlling head sending a letter to her friends, causing the following problem. \\
 
-4. If head number $i$ is good, then the fact that he or she sends must be used by every good guy head as the fact for $a(i)$.
+{\em The Problem of Heads of a Fighting Force from Long Ago.} A controlling head must send an order to her n-1 friends such that \\
+FA1. All good-guy friends listen to the same order. \\
+FA2. If the controlling head is a good guy, then every good guy friend listens to the order she sends. \\
+
+These situations, FA1 and FA2, are called the {\em friends agreeing} situations. Note that if the controlling head is a good guy, then FA1 follows from FA2. However, the controlling head need not be good.
+
+To fix our first problem, head number i sends their fact of $\fact(i)$ by using an answer to the Fighting Force Heads Problem to send the order ``use $\fact(i)$ as my fact'', with the other heads acting as the helping friends.
+
+\section{Showing What Isn't Possible}
+
+% Bibliography
+\bibliographystyle{ACM-Reference-Format-Journals}
+\bibliography{citations}
+
+% History dates
+\received{Month Four 1980}{Month Ten-and-One 1981}{Month Four 2013}
+
+
+% \elecappendix
+% \section{Analysis of Invalid Trials}
 
 \end{document}
