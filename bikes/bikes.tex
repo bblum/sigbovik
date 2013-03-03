@@ -1,0 +1,163 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Large Colored Title Article
+% LaTeX Template
+% Version 1.1 (25/11/12)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Original author:
+% Frits Wenneker (http://www.howtotex.com)
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[DIV=calc, paper=a4, fontsize=11pt, twocolumn]{scrartcl}	 % A4 paper and 11pt font size
+
+\usepackage{graphicx}
+\usepackage[english]{babel} % English language/hyphenation
+\usepackage[protrusion=true,expansion=true]{microtype} % Better typography
+\usepackage{amsmath,amsfonts,amsthm} % Math packages
+\usepackage[svgnames]{xcolor} % Enabling colors by their 'svgnames'
+\usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption} % Custom captions under/above floats in tables or figures
+\usepackage{booktabs} % Horizontal rules in tables
+\usepackage{fix-cm}	 % Custom font sizes - used for the initial letter in the document
+
+\usepackage{sectsty} % Enables custom section titles
+\allsectionsfont{\usefont{OT1}{phv}{b}{n}} % Change the font of all section commands
+
+\usepackage{fancyhdr} % Needed to define custom headers/footers
+\pagestyle{fancy} % Enables the custom headers/footers
+\usepackage{lastpage} % Used to determine the number of pages in the document (for "Page X of Total")
+
+% Headers - all currently empty
+\lhead{}
+\chead{}
+\rhead{}
+
+% Footers
+\lfoot{}
+\cfoot{}
+\rfoot{\footnotesize Page \thepage\ of \pageref{LastPage}} % "Page 1 of 2"
+
+\renewcommand{\headrulewidth}{0.0pt} % No header rule
+\renewcommand{\footrulewidth}{0.4pt} % Thin footer rule
+
+\usepackage{lettrine} % Package to accentuate the first letter of the text
+\newcommand{\initial}[1]{ % Defines the command and style for the first letter
+\lettrine[lines=3,lhang=0.3,nindent=0em]{
+\color{DarkGoldenrod}
+{\textsf{#1}}}{}}
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\usepackage{titling} % Allows custom title configuration
+
+
+\newcommand\prob{$n$-People $k$-Bikes Problem}
+\newcommand\Prob{\prob}
+
+\newcommand{\HorRule}{\color{DarkGoldenrod} \rule{\linewidth}{1pt}} % Defines the gold horizontal rule around the title
+
+\pretitle{\vspace{-30pt} \begin{flushleft} \HorRule \fontsize{32}{32} \usefont{OT1}{phv}{b}{n} \color{DarkRed} \selectfont} % Horizontal rule before the title
+
+\title{The \Prob} % Your article title
+
+\posttitle{\par\end{flushleft}\vskip 0.5em} % Whitespace under the title
+
+\preauthor{\begin{flushleft}\large \lineskip 0.5em \usefont{OT1}{phv}{b}{sl} \color{DarkRed}} % Author font configuration
+
+\author{Lancer \r{A}ngstr\"{o}m, } % Your name
+
+\postauthor{\footnotesize \usefont{OT1}{phv}{m}{sl} \color{Black} % Configuration for the institution name
+Dept. for Biologically-Impelled Konveyance and Excursion Research Studies% Your institution
+
+\par\end{flushleft}\HorRule} % Horizontal rule after the title
+
+\date{} % Add a date here if you would like one to appear underneath the title block
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+
+\maketitle % Print the title
+
+\thispagestyle{fancy} % Enabling the custom headers/footers for the first page 
+
+%----------------------------------------------------------------------------------------
+%	ABSTRACT
+%----------------------------------------------------------------------------------------
+
+% The first character should be within \initial{}
+%\initial{H}\textbf{ere is some sample text to show the initial in the introductory paragraph of this template article. The color and lineheight of the initial can be modified in the preamble of this document.}
+
+\initial{W}e present and solve the {\em \prob}. This problem concerns a group of $n$ people who possess among them $k$ bikes, with $k<n$, and wish to travel to a destination $d$ in a way that minimizes the time it takes the last member among them to arrive. We show that $n$ people can, indeed, use $k$ bikes to accelerate their travel beyond walking speed, and give an algorithm for planning bicycle allocation for general $n$ and $k$.
+
+The \prob~has far-reaching implications in many fields, including comestibility theory, deep-space navigation, maximum-jerk motion planning, and pop-math brainteasers.
+
+
+%----------------------------------------------------------------------------------------
+%	ARTICLE CONTENTS
+%----------------------------------------------------------------------------------------
+\section{Introduction}
+
+\initial{Y}ou're hungry. Your $n-1$ friends, some of whom are cyclists, are also hungry. Collectively, you decide to venture out from the comfort of your respective offices on campus, through the perilously cold (and often wet) outdoors of the Pittsburgh winter, to your favorite dining establishment $d$.\footnote{
+We have only experimentally verified our research in the specific case of $d =$ {\sf Chipotle}, though we expect the results to generalize to all $d$.}
+During the journey, however, the advancing hunger and tormenting weather overcome your group's desire to amble idly at the leisurely walking speed of $w$.
+You glance over at your cyclist friends, who are pushing along their $k$ bikes beside themselves, and wonder: ``Might there be a way to exploit the bikes, so that all $n$ of us can get to $d$ sooner?''
+
+Such is the {\em \prob}.
+
+\section{Problem Statement}
+
+% assumptions: free dismount/mount
+
+% restrictions: no handlebar riding
+
+\begin{figure}[h]
+	\begin{center}
+	\includegraphics[width=0.48\textwidth]{conference.jpg}
+	\end{center}
+	\label{fig:conference}
+	\caption{Not like this.}
+\end{figure}
+\begin{figure}[h]
+	\includegraphics[width=0.48\textwidth]{suicideandmurder.jpg}
+	\label{fig:conference}
+	\caption{Stripey kid demonstrates correct bicycle allocation protocol.}
+\end{figure}
+
+\section{Solution}
+
+\initial{T}o appreciate the method by which $n$ people can ride $k$ bikes to arrive with average speed greater than walking speed $w$, it is best to first consider the minimum nontrivial instantiation of the problem.
+
+\subsection{Specific Case: $n,k = 2,1$}
+
+\subsection{Generalized It}
+
+
+%----------------------------------------------------------------------------------------
+%	REFERENCE LIST
+%----------------------------------------------------------------------------------------
+
+\begin{thebibliography}{99} % Bibliography - this is intentionally simple in this template
+
+\bibitem[Figueredo and Wolf, 2009]{Figueredo:2009dg}
+Figueredo, A.~J. and Wolf, P. S.~A. (2009).
+\newblock Assortative pairing and life history strategy - a cross-cultural
+  study.
+\newblock {\em Human Nature}, 20:317--330.
+ 
+\end{thebibliography}
+
+%----------------------------------------------------------------------------------------
+
+\end{document}
