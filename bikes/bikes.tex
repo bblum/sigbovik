@@ -157,7 +157,7 @@ To appreciate the method by which $n$ people can ride $k$ bikes to arrive with a
 
 \subsection{Specific Case: $n,k = 2,1$}
 
-\begin{figure}[h]
+\begin{figure}[t]
 	\bf d=0\space d=0.5\space d=1\space d=1.5\space d=2
 	\includegraphics[width=0.5\textwidth]{x0.png}\\
 	\includegraphics[width=0.5\textwidth]{x1.png}\\
@@ -172,9 +172,25 @@ Figure~\ref{fig:sol} shows the solution for 2 people sharing 1 bike.
 The frames show progress after $0$, $1$, $1.5$, $2$, and $3$ units of time have elapsed, assuming $w=0.5$ and $b=1$ (i.e., biking is twice as fast as walking).
 Note that the bike is idle between times $1$ and $2$ -- for a full third of the transit time! -- yet the stick figures arrive in $3$ time units, a $25\%$ improvement over walking speed, and only $50\%$ slower than both participants having a bike of their own.
 
+Formally we say that the {\em bicycle allocation} for this case is that person $0$ (the blue one, if you're reading this electronically or printed in color) rides bike $0$ for distances between $0$ and $1$, and person $1$ (the red one, if same) rides it for distances between $1$ and $2$. For short, we write:
+\begin{eqnarray*}
+	p_0 &=& b_0[0,1] \\
+	p_1 &=& b_0[1,2]
+\end{eqnarray*}
+
 \subsection{Generalized It}
 
-Without loss of generality we say that $d$ is $n$ units of distance away.
+Without loss of generality, let us say that $d$ is $n$ units of distance away (i.e., the same as the number of people).
+Before presenting a general allocation policy, some observations about the problem:
+\begin{enumerate}
+	\setlength{\itemsep}{-0.5em}
+	\item A total of $n^2$ distances will be traveled. A total of $nk$ distances will be biked. It is pointless for bikes to go backwards.
+	\item By symmetry, in an optimal solution, each person will bike $k$ distance and walk $n-k$ distance. This also means that fractional distances (less than $1/n$ of the total distance) need not be considered as places to mount/dismount.
+	\item No more than $k$ people can ride for any given distance unit $[i,i+1]$. If any fewer than $k$ people rode this way, the bikes would be under-utilised. This allows us to check both validity and optimality.
+	\item The optimal (minimum) total travel time is $k/b + (n-k)/w$. The optimal (maximum) average speed is $nbw/(kw+bn-bk)$.
+	% TODO: Discuss epsilon.
+\end{enumerate}
+
 
 
 %----------------------------------------------------------------------------------------
