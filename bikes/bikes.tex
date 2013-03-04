@@ -32,22 +32,22 @@
 \usepackage{sectsty} % Enables custom section titles
 \allsectionsfont{\usefont{OT1}{phv}{b}{n}} % Change the font of all section commands
 
-\usepackage{fancyhdr} % Needed to define custom headers/footers
-\pagestyle{fancy} % Enables the custom headers/footers
-\usepackage{lastpage} % Used to determine the number of pages in the document (for "Page X of Total")
+%\usepackage{fancyhdr} % Needed to define custom headers/footers
+%\pagestyle{fancy} % Enables the custom headers/footers
+%\usepackage{lastpage} % Used to determine the number of pages in the document (for "Page X of Total")
 
 % Headers - all currently empty
-\lhead{}
-\chead{}
-\rhead{}
+%\lhead{}
+%\chead{}
+%\rhead{}
 
 % Footers
-\lfoot{}
-\cfoot{}
-\rfoot{\footnotesize Page \thepage\ of \pageref{LastPage}} % "Page 1 of 2"
+%\lfoot{}
+%\cfoot{}
+%\rfoot{\footnotesize Page \thepage\ of \pageref{LastPage}} % "Page 1 of 2"
 
-\renewcommand{\headrulewidth}{0.0pt} % No header rule
-\renewcommand{\footrulewidth}{0.4pt} % Thin footer rule
+%\renewcommand{\headrulewidth}{0.0pt} % No header rule
+%\renewcommand{\footrulewidth}{0.4pt} % Thin footer rule
 
 \usepackage{lettrine} % Package to accentuate the first letter of the text
 \newcommand{\initial}[1]{ % Defines the command and style for the first letter
@@ -90,7 +90,7 @@ Dept. for Biologically-Impelled Konveyance and Excursion Research Studies% Your 
 
 \maketitle % Print the title
 
-\thispagestyle{fancy} % Enabling the custom headers/footers for the first page 
+%\thispagestyle{fancy} % Enabling the custom headers/footers for the first page 
 
 %----------------------------------------------------------------------------------------
 %	ABSTRACT
@@ -112,36 +112,69 @@ The \prob~has far-reaching implications in many fields, including comestibility 
 \initial{Y}ou're hungry. Your $n-1$ friends, some of whom are cyclists, are also hungry. Collectively, you decide to venture out from the comfort of your respective offices on campus, through the perilously cold (and often wet) outdoors of the Pittsburgh winter, to your favorite dining establishment $d$.\footnote{
 We have only experimentally verified our research in the specific case of $d =$ {\sf Chipotle}, though we expect the results to generalize to all $d$.}
 During the journey, however, the advancing hunger and tormenting weather overcome your group's desire to amble idly at the leisurely walking speed of $w$.
-You glance over at your cyclist friends, who are pushing along their $k$ bikes beside themselves, and wonder: ``Might there be a way to exploit the bikes, so that all $n$ of us can get to $d$ sooner?''
+You glance over at your cyclist friends, who are pushing along their $k$ bikes beside themselves, and wonder: ``Might there be a way to exploit the bikes so that all $n$ of us can get to $d$ sooner?''
 
 Such is the {\em \prob}.
 
 \section{Problem Statement}
 
-% assumptions: free dismount/mount
-
-% restrictions: no handlebar riding
-
 \begin{figure}[h]
 	\begin{center}
-	\includegraphics[width=0.48\textwidth]{conference.jpg}
+	\includegraphics[width=0.5\textwidth]{conference.jpg}
 	\end{center}
-	\label{fig:conference}
 	\caption{Not like this.}
+	\label{fig:conference}
 \end{figure}
 \begin{figure}[h]
-	\includegraphics[width=0.48\textwidth]{suicideandmurder.jpg}
-	\label{fig:conference}
-	\caption{Stripey kid demonstrates correct bicycle allocation protocol.}
+	\begin{center}
+	\includegraphics[width=0.4\textwidth]{suicideandmurder.jpg}
+	\end{center}
+	\caption{Stripe-Boy demonstrates correct bicycle allocation protocol. (Helmets are apparently beyond the scope of his work.)}
+	\label{fig:stripey}
 \end{figure}
+
+{T}he precise formulation and constraints of the problem are as follows.
+\initial{G}iven $n$ people and $k$ bikes, $n<k$, all colocated, where:
+\begin{enumerate}
+	\setlength{\itemsep}{-0.5em}
+	\item each person can travel on foot, at walking speed $w$, or bike at speed $b$, with $w<b$,
+	\item mounting and dismounting a bike takes a negligible amount of time $\epsilon$,
+	\item at most one person can ride a given bike at a time (see Figures~\ref{fig:conference} and \ref{fig:stripey}), and
+	\item bikes are stationary when not ridden,
+\end{enumerate}
+
+show how all $n$ people can arrive at a destination $d$ in some time $t$ {\em less} than that afforded by walking speed $w$.\footnote{So ``$k$ people bike the entire distance, and wait while $n-k$ people walk'' is not a solution. That would be a different kind of ``maximum-jerk'' motion planning, which has already been thoroughly investigated in prior work~\cite{jerk}.}
+
+{W}e now insert a page break so you can figure it out on your own if you want before moving on.
+
+\newpage
 
 \section{Solution}
 
-\initial{T}o appreciate the method by which $n$ people can ride $k$ bikes to arrive with average speed greater than walking speed $w$, it is best to first consider the minimum nontrivial instantiation of the problem.
+\initial{T}he key insight to solving the problem is that bikes can be left unattended for a time, until a walker catches up to its location. In fact in any optimal solution every bike must idle at some point.
+
+To appreciate the method by which $n$ people can ride $k$ bikes to arrive with average speed greater than walking speed $w$, it is best to first consider the minimum nontrivial instantiation of the problem.
 
 \subsection{Specific Case: $n,k = 2,1$}
 
+\begin{figure}[h]
+	\bf d=0\space d=0.5\space d=1\space d=1.5\space d=2
+	\includegraphics[width=0.5\textwidth]{x0.png}\\
+	\includegraphics[width=0.5\textwidth]{x1.png}\\
+	\includegraphics[width=0.5\textwidth]{x2.png}\\
+	\includegraphics[width=0.5\textwidth]{x3.png}\\
+	\includegraphics[width=0.5\textwidth]{x4.png}\\
+	\caption{The solution for $n,k=2,1$.}
+	\label{fig:sol}
+\end{figure}
+
+Figure~\ref{fig:sol} shows the solution for 2 people sharing 1 bike.
+The frames show progress after $0$, $1$, $1.5$, $2$, and $3$ units of time have elapsed, assuming $w=0.5$ and $b=1$ (i.e., biking is twice as fast as walking).
+Note that the bike is idle between times $1$ and $2$ -- for a full third of the transit time! -- yet the stick figures arrive in $3$ time units, a $25\%$ improvement over walking speed, and only $50\%$ slower than both participants having a bike of their own.
+
 \subsection{Generalized It}
+
+Without loss of generality we say that $d$ is $n$ units of distance away.
 
 
 %----------------------------------------------------------------------------------------
