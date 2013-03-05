@@ -28,11 +28,12 @@
 \IncMargin{-\parindent}
 \renewcommand{\algorithmcfname}{ALGORITHM}
 
+\newcommand\prob{Problem of Heads of a Fighting Force from Long Ago}
 % Page heads
-\markboth{L. Lamport, R. Shostak, and M. Pease}{The Problem of Heads of a Fighting Force from Long Ago}
+\markboth{L. Lamport, R. Shostak, and M. Pease}{The \prob}
 
 % Title portion
-\title{The Problem of Heads of a Fighting Force from Long Ago}
+\title{The \prob}
 \author{LESLIE LAMPORT, ROBERT SHOSTAK, and MARSHALL PEASE \\
 SRI In Many Lands
 }
@@ -104,7 +105,7 @@ Where the people who wrote this live: Computer Study Work Place, SRI In Many Par
 
 A group of computers that can be trusted must be able to live with the breaking of one or more of its parts.
 A broken part may act in a way that people often don't think about -- that is, sending facts that don't agree to different parts of the group.
-The problem of living with this type of breaking is talked about with make-believe as the Problem of Heads of a Fighting Force from Long Ago. We spend the biggest part of the paper to talking about this make-believe problem and finish by showing how our answers can be used in building a group of computers that can be trusted.
+The problem of living with this type of breaking is talked about with make-believe as the \prob. We spend the biggest part of the paper to talking about this make-believe problem and finish by showing how our answers can be used in building a group of computers that can be trusted.
 
 We imagine that several parts of the fighting force from long ago are waiting outside a bad guy city, each group controlled by its own head.
 The heads can talk with one another only by a person who carries a letter.
@@ -142,7 +143,7 @@ We can say situation 1 another way by saying that for every $i$ (whether or not 
 Situations 1' and 2 both use just the single fact that was sent by head number $i$.
 Because of this, we can think about the smaller problem of how a single head sends their fact to the others. We'll talk about this by talking about a controlling head sending a letter to her friends, causing the following problem. \\
 
-{\em The Problem of Heads of a Fighting Force from Long Ago.} A controlling head must send an order to her n-1 friends such that \\
+{\em The \prob.} A controlling head must send an order to her n-1 friends such that \\
 FA1. All good-guy friends listen to the same order. \\
 FA2. If the controlling head is a good guy, then every good guy friend listens to the order she sends. \\
 
@@ -151,6 +152,31 @@ These situations, FA1 and FA2, are called the {\em friends agreeing} situations.
 To fix our first problem, head number i sends their fact of $\fact(i)$ by using an answer to the Fighting Force Heads Problem to send the order ``use $\fact(i)$ as my fact'', with the other heads acting as the helping friends.
 
 \section{Showing What Isn't Possible}
+
+The Problem of Heads of a Fighting Force from Long Ago seems simple, but it is actually not. It is hard because of the surprising fact that if the heads can send only talk to each other out loud, then any plan can only work if more than two-thirds of the heads are good guys. Now, when we say ``talking out loud'', we mean that the words are completely under the control of the person saying them, so a bad guy could say anything he or she wanted to, even ``Your good guy friend said to do such-and-such!''
+This sort of speaking is the same as how computers usually speak to one another. In Part 4, we consider signed, written letters, for which this is not true.
+
+We now show that with spoken words, no plan for three people can handle a single bad guy.
+To keep things simple, we consider the case in which the only things to do are ``attack'' or ``run away''.
+Let us first think about the situation pictured in Figure 1 in which the first head is a good guy, and sends an "attack" order, but Friend 2 is a bad guy and tells Friend 1 that he heard a ``run away'' order. For FA2 to happen, Friend 1 must listen to the order to attack.
+
+Now consider another situation, shown in Figure 2, in which the first head is actually a bad guy, and sends an ``attack'' order to Friend 1 and a ``run away'' order to Friend 2. Friend 1 does not know who the bad guy is, and she can't tell what the first head actually said to Friend 2. So, the situations in these two pictures appear exactly the same to Friend 1. If the bad guy lies all the time, then there is no way for Friend 1 to know which situation is happening, so she must listen to the ``attack'' order in both of them. So, any time Friend 1 hears an ``attack'' order from the first head, she must listen to it.
+
+However, in the same way we could show that if Friend 2 hears a ``run away'' order from the first head then he must listen to it even if Friend 1 tells him that the head said "attack". Because of this, in Figure 2, Friend 2 must listen to the ``run away'' order while Friend 1 listens to the ``attack'' order, which means situation FA1 doesn't happen. So, there is no way for three heads to agree if one of them is a bad guy.
+
+This way of thinking about it may appear right, but you should think hard before believing such hand-waving reasoning. Although what we said is right after all, we have seen other ``ways of thinking about it'' that are totally wrong.
+We know of no area in the study of computers or the study of numbers in which hand-waving reasoning could more easily lead to wrong answers than in the study of this type of problem. For a stronger way of thinking about why this isn't possible, you should read [3]. % TODO cite
+Using this answer, we can show that no plan can work for a given number of heads if one third of them are bad guys.
+% Omitted: Albanian generals contradiction proof.
+
+You might think that it's so hard to fix the \prob because the heads need to agree with each other completely. Actually, this is not the case, and only-sort-of agreeing with each other is just as hard. Suppose that instead of trying to agree on a complete plan to attack, the heads must agree only upon a set of times, during which the attack should happen. We will say the first head needs to order the time of the attack, and the following two situations need to happen: \\
+\\
+FA1'. All good guys attack within 10 minutes of one another. \\
+FA2'. If the first head is a good guy, then every other good guy attacks within 10 minutes of the time given in the first head's order. \\
+\\
+(We are supposing that the orders are given and thought about the day before the attack and that the time at which an order is heard doesn't matter--only the attack time given in the order matters.)
+
+
 
 % Bibliography
 \bibliographystyle{ACM-Reference-Format-Journals}
