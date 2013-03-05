@@ -170,7 +170,7 @@ To appreciate the method by which $n$ people can ride $k$ bikes to arrive with a
 	\label{fig:sol}
 \end{figure}
 
-Figure~\ref{fig:sol} shows the solution for 2 people sharing 1 bike.
+\initial{F}igure~\ref{fig:sol} shows the solution for 2 people sharing 1 bike.
 The frames show progress after $0$, $1$, $1.5$, $2$, and $3$ units of time have elapsed, assuming $w=0.5$ and $b=1$ (i.e., biking is twice as fast as walking).
 Note that the bike is idle between times $1$ and $2$ -- for a full third of the transit time! -- yet the stick figures arrive in $3$ time units, a $25\%$ improvement over walking speed, and only $50\%$ slower than both participants having a bike of their own.
 
@@ -181,14 +181,14 @@ Note that the bike is idle between times $1$ and $2$ -- for a full third of the 
 \newcommand\PE{\ensuremath{\mathsf{v}}}
 Formally we say that the {\em bicycle allocation} for this case is that person \PA~(the blue one, if you're reading this electronically or printed in color) rides bike $0$ for distances between $0$ and $1$, and person \PB~(the red one, if same) rides it for distances between $1$ and $2$. For short, we write:
 \begin{eqnarray*}
-	p_\PA &=& b_0[0,1] \\
-	p_\PB &=& b_0[1,2]
+	p_\PA &=& b_0@0 \\
+	p_\PB &=& b_0@1
 \end{eqnarray*}
 
 \subsection{Generalized It}
 
-Without loss of generality, let us say that $d$ is $n$ units of distance away (i.e., the same as the number of people).
-Before presenting a general allocation policy, some observations about the problem:
+\initial{W}ithout loss of generality, let us say that $d$ is $n$ units of distance away (i.e., the same as the number of people).
+First, some observations about the problem:
 \begin{enumerate}
 	\setlength{\itemsep}{-0.5em}
 	\item A total of $n^2$ distances will be traveled. A total of $nk$ distances will be biked. It is pointless for bikes to go backwards.
@@ -224,9 +224,9 @@ While Figure~\ref{fig:sol} plots the participants' positions at (time,distance) 
 		& \multicolumn{3}{c}{distance} \\
 		person & \multicolumn{1}{|c|}{0} & \multicolumn{1}{c|}{1} & \multicolumn{1}{c|}{2} \\
 		\hline
-		\multicolumn{1}{r|}{\PA} & \BA & \BA & \\
+		\multicolumn{1}{r|}{\PA} & \BA & \BB & \\
 		\cline{2-4}
-		\multicolumn{1}{r|}{\PB} & & \BB & \BB \\
+		\multicolumn{1}{r|}{\PB} & & \BA & \BB \\
 		\cline{2-4}
 		\multicolumn{1}{r|}{\PC} & \BB & & \BA \\
 		\cline{2-4}
@@ -236,6 +236,52 @@ While Figure~\ref{fig:sol} plots the participants' positions at (time,distance) 
 		\caption{$3$ people, $2$ bikes.}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.38\textwidth}
+		\begin{tabular}{rp{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|}
+		& \multicolumn{5}{c}{distance} \\
+		person & \multicolumn{1}{|c|}{0} & \multicolumn{1}{c|}{1} & \multicolumn{1}{c|}{2} & \multicolumn{1}{c|}{3} & \multicolumn{1}{c|}{4} \\
+		\hline
+		\multicolumn{1}{r|}{\PA} &\BA&\BB&\BC&   & \\
+		\cline{2-6}
+		\multicolumn{1}{r|}{\PB} &   &\BA&\BB&\BC& \\
+		\cline{2-6}
+		\multicolumn{1}{r|}{\PC} &   &   &\BA&\BB&\BC\\
+		\cline{2-6}
+		\multicolumn{1}{r|}{\PD} &\BC&   &   &\BA&\BB\\
+		\cline{2-6}
+		\multicolumn{1}{r|}{\PE} &\BB&\BC&   &   &\BA\\
+		\cline{2-6}
+		\end{tabular}
+		\caption{$5$ people, $3$ bikes.}
+	\end{subfigure}
+	\caption{Bicycle allocation policies for selected instances of the \prob. White cells represent walking; cells of different colours represent different bikes.
+		Can you spot the French flag?}
+	\label{fig:grids}
+\end{figure*}
+
+The pattern is now evident: Person $i$ rides a bike between distance $i$ and distance $i+k~\mathsf{mod}~n$.
+To express this in the notation from the previous section, we can say: $\forall i,j$ with $0\le i < n$ and $0 \le j < k$:
+\begin{eqnarray*}
+	p_i  &=& b_j @ (i+j~\mathsf{mod}~n)
+\end{eqnarray*}
+
+We now show that this strategy is both possible and optimal.
+
+\newtheorem{theorem}{Theorem}
+
+\begin{theorem}[Optimality]
+The \prob~is solved optimally when $p_i$ rides between distance $i$ and distance $i+k~\mathsf{mod}~n$.
+\end{theorem}
+\begin{proof}
+By condition (3) above, it suffices to show that, at each distance unit, exactly $k$ people ride.
+% TODO
+\end{proof}
+
+\subsection{Minimizing Mounts/Dismounts}
+
+\initial{T}he astute reader will note that, while the allocations in the above tables successfully minimize total travel time, they {\em maximize} the number of times each rider must mount and dismount a bicycle. If we let $\epsilon$ (the time to mount or dismount) be non-negligible, we see that the travel time achieved above is actually: $k/b+(n-k)/w + 2k\epsilon$.
+
+We might instead attempt to allocate bicycles contiguously, like so:
+		\begin{center}
 		\begin{tabular}{rp{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|}
 		& \multicolumn{5}{c}{distance} \\
 		person & \multicolumn{1}{|c|}{0} & \multicolumn{1}{c|}{1} & \multicolumn{1}{c|}{2} & \multicolumn{1}{c|}{3} & \multicolumn{1}{c|}{4} \\
@@ -251,32 +297,33 @@ While Figure~\ref{fig:sol} plots the participants' positions at (time,distance) 
 		\multicolumn{1}{r|}{\PE} &\BC&\BC&   &   &\BB\\
 		\cline{2-6}
 		\end{tabular}
-		\caption{$5$ people, $3$ bikes.}
-	\end{subfigure}
-	\caption{Bicycle allocation policies for selected instances of the \prob. White cells represent walking; cells of different colours represent different bikes.}
-	\label{fig:grids}
-\end{figure*}
+		\end{center}
 
-The pattern is now evident: Person $i$ picks up a bike at distance $i$ and drops it off at distance $i+k~\mathsf{mod}~n$.
-%TODO
-%In the notation from the previous section:
-%\begin{eqnarray*}
-%	p_i  &=&
-%\end{eqnarray*}
+Here, $n-k+1$ riders can ride ``monogamously'', though $k-1$ people will have two riding  sessions with a walking intermission. This gives us a better travel time of $k/b+(n-k)/w + 4\epsilon$, which is a strict improvement whenever $k>2$.
 
-We now show that this strategy is both possible and optimal.
-
-\newtheorem{theorem}{Theorem}
-
-\begin{theorem}[Bicycle Allocation]
-The \prob~is solved optimally when $p_i$ rides a bike between distance $i$ and distance $i+k~\mathsf{mod}~n$.
+\begin{theorem}[Contiguous Allocation]
+woo
 \end{theorem}
 \begin{proof}
-By condition (3) above, it suffices to show that, at each distance unit, exactly $k$ people ride.
-% TODO
+woo
 \end{proof}
 
+\section{Evaluation}
 
+\initial{I}n Figure~\ref{fig:graph} we visualize our findings.
+The horizontal line on top represents the state of the art, in which some participants walk the entire distance.
+The bottom line represents the ideal case, in which there are enough bikes for everyone to ride together.
+
+Here we have plotted the travel time for various values of $n,k$ against different configurations of the $b/w$ ratio; i.e., how much faster it is to bike than to walk.
+We hope this presentation will be useful in many different terrains; for example, if the destination is downhill, $b/w$ may be very high indeed.
+
+
+
+\begin{figure}[h]
+	\includegraphics[width=0.5\textwidth]{graph.pdf}
+	\caption{Speedup achieved in the \prob. As always, lower is better.}
+	\label{fig:graph}
+\end{figure}
 %----------------------------------------------------------------------------------------
 %	REFERENCE LIST
 %----------------------------------------------------------------------------------------
