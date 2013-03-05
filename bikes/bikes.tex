@@ -203,6 +203,7 @@ While Figure~\ref{fig:sol} plots the participants' positions at (time,distance) 
 \newcommand\BA{\cellcolor{WildStrawberry}~\textcolor{White}{$b_0$}}
 \newcommand\BB{\cellcolor{NavyBlue}      ~\textcolor{White}{$b_1$}}
 \newcommand\BC{\cellcolor{OliveGreen}   ~\textcolor{White}{$b_2$}}
+\newcommand\BD{\cellcolor{Dandelion}    ~\textcolor{White}{$b_3$}}
 \begin{figure*}[t]
 	\begin{subfigure}[b]{0.28\textwidth}
 		\begin{tabular}{rp{1.5em}|p{1.5em}|}
@@ -272,15 +273,14 @@ We now show that this strategy is both possible and optimal.
 The \prob~is solved optimally when $p_i$ rides between distance $i$ and distance $i+k~\mathsf{mod}~n$.
 \end{theorem}
 \begin{proof}
-By condition (3) above, it suffices to show that, at each distance unit, exactly $k$ people ride.
-% TODO
+By condition (3) above, it suffices to show that, at each distance unit, exactly $k$ people ride. A simple induction on $k$ will do nicely.
 \end{proof}
 
 \subsection{Minimizing Mounts/Dismounts}
 
 \initial{T}he astute reader will note that, while the allocations in the above tables successfully minimize total travel time, they {\em maximize} the number of times each rider must mount and dismount a bicycle. If we let $\epsilon$ (the time to mount or dismount) be non-negligible, we see that the travel time achieved above is actually: $k/b+(n-k)/w + 2k\epsilon$.
 
-We might instead attempt to allocate bicycles contiguously, like so:
+\begin{figure}[b]
 		\begin{center}
 		\begin{tabular}{rp{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|}
 		& \multicolumn{5}{c}{distance} \\
@@ -298,7 +298,11 @@ We might instead attempt to allocate bicycles contiguously, like so:
 		\cline{2-6}
 		\end{tabular}
 		\end{center}
+		\caption{Each person mounts/dismounts 2 or 4 times.}
+		\label{fig:continuous}
+\end{figure}
 
+We might instead attempt to allocate bicycles contiguously, like in Figure~\ref{fig:continuous} below.
 Here, $n-k+1$ riders can ride ``monogamously'', though $k-1$ people will have two riding  sessions with a walking intermission. This gives us a better travel time of $k/b+(n-k)/w + 4\epsilon$, which is a strict improvement whenever $k>2$.
 
 \begin{theorem}[Contiguous Allocation]
@@ -309,10 +313,33 @@ woo
 woo
 %TODO
 \end{proof}
+%\begin{figure}[b]
+%		\begin{center}
+%			\begin{tabular}{rp{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|}
+%		& \multicolumn{6}{c}{distance} \\
+%		person & \multicolumn{1}{|c|}{0} & \multicolumn{1}{c|}{1} & \multicolumn{1}{c|}{2} & \multicolumn{1}{c|}{3} & \multicolumn{1}{c|}{4} & \multicolumn{1}{c|}{5} \\
+%		\hline
+%		\multicolumn{1}{r|}{\PA} &\BA&\BA&\BA&\BA&   &   \\
+%		\cline{2-7}
+%		\multicolumn{1}{r|}{\PB} &   &\BB&\BB&\BB&\BB&   \\
+%		\cline{2-7}
+%		\multicolumn{1}{r|}{\PC} &   &   &\BC&\BC&\BC&\BC\\
+%		\cline{2-7}
+%		\multicolumn{1}{r|}{\PD} &\BB&   &   &\BD&\BD&\BD\\
+%		\cline{2-7}
+%		\multicolumn{1}{r|}{\PE} &\BC&\BC&   &   &\BA&\BA\\
+%		\cline{2-7}
+%		\multicolumn{1}{r|}{fff} &\BD&\BD&\BD&   &   &\BB\\
+%		\cline{2-7}
+%		\end{tabular}
+%		\end{center}
+%		\caption{Scratch work}
+%\end{figure}
+
 
 \section{Evaluation}
 
-\initial{I}n Figure~\ref{fig:graph} we visualize our findings.
+\initial{I}n Figure~\ref{fig:graph} we find our visualizings.
 The horizontal line on top represents the state of the art, in which some participants walk the entire distance.
 The bottom line represents the ideal case, in which there are enough bikes for everyone to ride together.
 
