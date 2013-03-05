@@ -204,8 +204,7 @@ While Figure~\ref{fig:sol} plots the participants' positions at (time,distance) 
 \newcommand\BB{\cellcolor{NavyBlue}      ~\textcolor{White}{$b_1$}}
 \newcommand\BC{\cellcolor{OliveGreen}   ~\textcolor{White}{$b_2$}}
 \begin{figure*}[t]
-	\begin{center}
-	\begin{subfigure}[b]{0.25\textwidth}
+	\begin{subfigure}[b]{0.28\textwidth}
 		\begin{tabular}{rp{1.5em}|p{1.5em}|}
 		& \multicolumn{2}{c}{distance} \\
 		person & \multicolumn{1}{|c|}{0} & \multicolumn{1}{c|}{1} \\
@@ -220,7 +219,7 @@ While Figure~\ref{fig:sol} plots the participants' positions at (time,distance) 
 		\end{tabular}
 		\caption{$2$ people, $1$ bike.}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.3\textwidth}
+	\begin{subfigure}[b]{0.33\textwidth}
 		\begin{tabular}{rp{1.5em}|p{1.5em}|p{1.5em}|}
 		& \multicolumn{3}{c}{distance} \\
 		person & \multicolumn{1}{|c|}{0} & \multicolumn{1}{c|}{1} & \multicolumn{1}{c|}{2} \\
@@ -236,7 +235,7 @@ While Figure~\ref{fig:sol} plots the participants' positions at (time,distance) 
 		\end{tabular}
 		\caption{$3$ people, $2$ bikes.}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.35\textwidth}
+	\begin{subfigure}[b]{0.38\textwidth}
 		\begin{tabular}{rp{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|}
 		& \multicolumn{5}{c}{distance} \\
 		person & \multicolumn{1}{|c|}{0} & \multicolumn{1}{c|}{1} & \multicolumn{1}{c|}{2} & \multicolumn{1}{c|}{3} & \multicolumn{1}{c|}{4} \\
@@ -254,10 +253,28 @@ While Figure~\ref{fig:sol} plots the participants' positions at (time,distance) 
 		\end{tabular}
 		\caption{$5$ people, $3$ bikes.}
 	\end{subfigure}
-	\end{center}
 	\caption{Bicycle allocation policies for selected instances of the \prob. White cells represent walking; cells of different colours represent different bikes.}
 	\label{fig:grids}
 \end{figure*}
+
+The pattern is now evident: Person $i$ picks up a bike at distance $i$ and drops it off at distance $i+k~\mathsf{mod}~n$.
+%TODO
+%In the notation from the previous section:
+%\begin{eqnarray*}
+%	p_i  &=&
+%\end{eqnarray*}
+
+We now show that this strategy is both possible and optimal.
+
+\newtheorem{theorem}{Theorem}
+
+\begin{theorem}[Bicycle Allocation]
+The \prob~is solved optimally when $p_i$ rides a bike between distance $i$ and distance $i+k~\mathsf{mod}~n$.
+\end{theorem}
+\begin{proof}
+By condition (3) above, it suffices to show that, at each distance unit, exactly $k$ people ride.
+% TODO
+\end{proof}
 
 
 %----------------------------------------------------------------------------------------
