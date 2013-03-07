@@ -174,11 +174,12 @@ To appreciate the method by which $n$ people can ride $k$ bikes to arrive with a
 The frames show progress after $0$, $1$, $1.5$, $2$, and $3$ units of time have elapsed, assuming $w=0.5$ and $b=1$ (i.e., biking is twice as fast as walking).
 Note that the bike is idle between times $1$ and $2$ -- for a full third of the transit time! -- yet the stick figures arrive in $3$ time units, a $25\%$ improvement over walking speed, and only $50\%$ slower than both participants having a bike of their own.
 
-\newcommand\PA{\ensuremath{\mathsf{i}}}
-\newcommand\PB{\ensuremath{\mathsf{ii}}}
-\newcommand\PC{\ensuremath{\mathsf{iii}}}
-\newcommand\PD{\ensuremath{\mathsf{iv}}}
-\newcommand\PE{\ensuremath{\mathsf{v}}}
+\newcommand\PA{\ensuremath{\mathtt{0}}}
+\newcommand\PB{\ensuremath{\mathtt{1}}}
+\newcommand\PC{\ensuremath{\mathtt{2}}}
+\newcommand\PD{\ensuremath{\mathtt{3}}}
+\newcommand\PE{\ensuremath{\mathtt{4}}}
+\newcommand\distance[1]{\ensuremath{\mathsf{#1}}}
 Formally we say that the {\em bicycle allocation} for this case is that person \PA~(the blue one, if you're reading this electronically or printed in color) rides bike $0$ for distances between $0$ and $1$, and person \PB~(the red one, if same) rides it for distances between $1$ and $2$. For short, we write:
 \begin{eqnarray*}
 	p_\PA &=& b_0@0 \\
@@ -204,11 +205,12 @@ While Figure~\ref{fig:sol} plots the participants' positions at (time,distance) 
 \newcommand\BB{\cellcolor{NavyBlue}      ~\textcolor{White}{$b_1$}}
 \newcommand\BC{\cellcolor{OliveGreen}   ~\textcolor{White}{$b_2$}}
 \newcommand\BD{\cellcolor{Dandelion}    ~\textcolor{White}{$b_3$}}
+\newcommand\BE{\cellcolor{ProcessBlue}       ~\textcolor{White}{$b_3$}}
 \begin{figure*}[t]
 	\begin{subfigure}[b]{0.28\textwidth}
 		\begin{tabular}{rp{1.5em}|p{1.5em}|}
 		& \multicolumn{2}{c}{distance} \\
-		person & \multicolumn{1}{|c|}{0} & \multicolumn{1}{c|}{1} \\
+		person & \multicolumn{1}{|c|}{\distance{0}} & \multicolumn{1}{c|}{\distance{1}} \\
 		\hline
 		\multicolumn{1}{r|}{\PA} & \BA & \\
 		\cline{2-3}
@@ -223,7 +225,7 @@ While Figure~\ref{fig:sol} plots the participants' positions at (time,distance) 
 	\begin{subfigure}[b]{0.33\textwidth}
 		\begin{tabular}{rp{1.5em}|p{1.5em}|p{1.5em}|}
 		& \multicolumn{3}{c}{distance} \\
-		person & \multicolumn{1}{|c|}{0} & \multicolumn{1}{c|}{1} & \multicolumn{1}{c|}{2} \\
+		person & \multicolumn{1}{|c|}{\distance{0}} & \multicolumn{1}{c|}{\distance{1}} & \multicolumn{1}{c|}{\distance{2}} \\
 		\hline
 		\multicolumn{1}{r|}{\PA} & \BA & \BB & \\
 		\cline{2-4}
@@ -239,7 +241,7 @@ While Figure~\ref{fig:sol} plots the participants' positions at (time,distance) 
 	\begin{subfigure}[b]{0.38\textwidth}
 		\begin{tabular}{rp{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|}
 		& \multicolumn{5}{c}{distance} \\
-		person & \multicolumn{1}{|c|}{0} & \multicolumn{1}{c|}{1} & \multicolumn{1}{c|}{2} & \multicolumn{1}{c|}{3} & \multicolumn{1}{c|}{4} \\
+		person & \multicolumn{1}{|c|}{\distance{0}} & \multicolumn{1}{c|}{\distance{1}} & \multicolumn{1}{c|}{\distance{2}} & \multicolumn{1}{c|}{\distance{3}} & \multicolumn{1}{c|}{\distance{4}} \\
 		\hline
 		\multicolumn{1}{r|}{\PA} &\BA&\BB&\BC&   & \\
 		\cline{2-6}
@@ -284,7 +286,7 @@ By condition (3) above, it suffices to show that, at each distance unit, exactly
 		\begin{center}
 		\begin{tabular}{rp{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|}
 		& \multicolumn{5}{c}{distance} \\
-		person & \multicolumn{1}{|c|}{0} & \multicolumn{1}{c|}{1} & \multicolumn{1}{c|}{2} & \multicolumn{1}{c|}{3} & \multicolumn{1}{c|}{4} \\
+		person & \multicolumn{1}{|c|}{\distance{0}} & \multicolumn{1}{c|}{\distance{1}} & \multicolumn{1}{c|}{\distance{2}} & \multicolumn{1}{c|}{\distance{3}} & \multicolumn{1}{c|}{\distance{4}} \\
 		\hline
 		\multicolumn{1}{r|}{\PA} &\BA&\BA&\BA&   & \\
 		\cline{2-6}
@@ -306,18 +308,30 @@ We might instead attempt to allocate bicycles contiguously, like in Figure~\ref{
 Here, $n-k+1$ riders can ride ``monogamously'', though $k-1$ people will have two riding  sessions with a walking intermission. This gives us a better travel time of $k/b+(n-k)/w + 4\epsilon$, which is a strict improvement whenever $k>2$.
 
 \begin{theorem}[Contiguous Allocation]
-woo
-% TODO
+For all $n$ and $k$, an optimal bicycle allocation exists in which no rider mounts and dismounts more than four times, and is given as follows:
+\newcommand\open{\{}
+\newcommand\close{\}}
+\begin{center}
+\begin{tabular}{rclll}
+	$p_i$ & $=$ & $b_{(i~\mathsf{mod}~k)}@ \open i \rightsquigarrow i+k \close$ && $i \le n-k$ \\
+	\\
+	\multirow{2}{*}{$p_i$} & \multirow{2}{*}{$=$} & $b_{(i~\mathsf{mod}~k)}@ \open i\rightsquigarrow n \close,$ && \multirow{2}{*}{$i > n-k$} \\
+	& & $b_{(i+k-n)}\hspace{0.5em}@ \open 0 \rightsquigarrow i+k-n \close$ \\
+	\\
+\end{tabular}
+\end{center}
+where $b_x@\open y\rightsquigarrow z\close$ expands to $b_x@(y)$, $b_x@(y+1)$, \dots $b_x@(z-1)$.
+
 \end{theorem}
 \begin{proof}
-woo
-%TODO
+By induction on $k$.
 \end{proof}
+
 %\begin{figure}[b]
 %		\begin{center}
 %			\begin{tabular}{rp{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|}
 %		& \multicolumn{6}{c}{distance} \\
-%		person & \multicolumn{1}{|c|}{0} & \multicolumn{1}{c|}{1} & \multicolumn{1}{c|}{2} & \multicolumn{1}{c|}{3} & \multicolumn{1}{c|}{4} & \multicolumn{1}{c|}{5} \\
+%		person & \multicolumn{1}{|c|}{\distance{0}} & \multicolumn{1}{c|}{\distance{1}} & \multicolumn{1}{c|}{\distance{2}} & \multicolumn{1}{c|}{\distance{3}} & \multicolumn{1}{c|}{\distance{4}} & \multicolumn{1}{c|}{\distance{5}} \\
 %		\hline
 %		\multicolumn{1}{r|}{\PA} &\BA&\BA&\BA&\BA&   &   \\
 %		\cline{2-7}
@@ -331,6 +345,44 @@ woo
 %		\cline{2-7}
 %		\multicolumn{1}{r|}{fff} &\BD&\BD&\BD&   &   &\BB\\
 %		\cline{2-7}
+%		\end{tabular}
+%		% 6/4
+%			\begin{tabular}{rp{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|}
+%		& \multicolumn{6}{c}{distance} \\
+%		person & \multicolumn{1}{|c|}{\distance{0}} & \multicolumn{1}{c|}{\distance{1}} & \multicolumn{1}{c|}{\distance{2}} & \multicolumn{1}{c|}{\distance{3}} & \multicolumn{1}{c|}{\distance{4}} & \multicolumn{1}{c|}{\distance{5}} \\
+%		\hline
+%		\multicolumn{1}{r|}{\PA} &\BA&\BA&\BA&\BA&\BA&   \\
+%		\cline{2-7}
+%		\multicolumn{1}{r|}{\PB} &   &\BB&\BB&\BB&\BB&\BB\\
+%		\cline{2-7}
+%		\multicolumn{1}{r|}{\PC} &\BB&   &\BC&\BC&\BC&\BC\\
+%		\cline{2-7}
+%		\multicolumn{1}{r|}{\PD} &\BC&\BC&   &\BD&\BD&\BD\\
+%		\cline{2-7}
+%		\multicolumn{1}{r|}{\PE} &\BD&\BD&\BD&   &\BE&\BE\\
+%		\cline{2-7}
+%		\multicolumn{1}{r|}{fff} &\BE&\BE&\BE&\BE&   &\BA\\
+%		\cline{2-7}
+%		\end{tabular}
+%		% 7/3
+%		\begin{tabular}{rp{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|}
+%		& \multicolumn{7}{c}{distance} \\
+%		person & \multicolumn{1}{|c|}{\distance{0}} & \multicolumn{1}{c|}{\distance{1}} & \multicolumn{1}{c|}{\distance{2}} & \multicolumn{1}{c|}{\distance{3}} & \multicolumn{1}{c|}{\distance{4}} & \multicolumn{1}{c|}{\distance{5}} & \multicolumn{1}{c|}{\distance{6}}\\
+%		\hline
+%		\multicolumn{1}{r|}{\PA} &\BA&\BA&\BA&   &   &   &   \\
+%		\cline{2-8}
+%		\multicolumn{1}{r|}{\PB} &   &\BB&\BB&\BB&   &   &   \\
+%		\cline{2-8}
+%		\multicolumn{1}{r|}{\PC} &   &   &\BC&\BC&\BC&   &   \\
+%		\cline{2-8}
+%		\multicolumn{1}{r|}{\PD} &   &   &   &\BA&\BA&\BA&   \\
+%		\cline{2-8}
+%		\multicolumn{1}{r|}{\PE} &   &   &   &   &\BB&\BB&\BB\\
+%		\cline{2-8}
+%		\multicolumn{1}{r|}{fff} &\BB&   &   &   &   &\BC&\BC\\
+%		\cline{2-8}
+%		\multicolumn{1}{r|}{ggg} &\BC&\BC&   &   &   &   &\BA\\
+%		\cline{2-8}
 %		\end{tabular}
 %		\end{center}
 %		\caption{Scratch work}
@@ -346,11 +398,14 @@ The bottom line represents the ideal case, in which there are enough bikes for e
 Here we have plotted the travel time for various values of $n,k$ against different configurations of the $b/w$ ratio; i.e., how much faster it is to bike than to walk.
 We hope this presentation will be useful in many different terrains; for example, if the destination is downhill, $b/w$ may be very high indeed.
 
+\section{Conclusion}
+
+\initial{Y}ou and your friends have arrived at $d$ at the unprecedentedly fast speed of $nbw/(kw+bn-bk)$, and are warming up indoors and enjoying dinner. ``Wow,'' you say, ``I sure am glad everyone thought to make $n$ copies of their bike-lock keys!''
 
 
 \begin{figure*}[t]
 	\centering
-	\includegraphics[width=0.75\textwidth]{graph.pdf}
+	\includegraphics[width=0.85\textwidth]{graph.pdf}
 	\caption{Speedup achieved in the \prob. As always, lower is better.}
 	\label{fig:graph}
 \end{figure*}
