@@ -103,7 +103,7 @@ Dept. for Biologically-Impelled Konveyance and Excursion Research Studies% Your 
 
 \initial{W}e present and solve the {\em \prob}. This problem concerns a group of $n$ people who possess among them $k$ bikes, with $k<n$, and wish to travel to a destination $d$ in a way that minimizes the time it takes the last member among them to arrive. We show that $n$ people can, indeed, use $k$ bikes to accelerate their travel beyond walking speed, and give an algorithm for planning bicycle allocation for general $n$ and $k$.
 
-The \prob~has far-reaching implications in many fields, including comestibility theory, deep-space navigation, maximum-jerk motion planning, and pop-math brainteasers.
+The \prob~has far-reaching implications in many fields, including comestibility theory~\cite{comestibility}, deep-space navigation~\cite{arkanoid}, maximum-jerk motion planning~\cite{jerk,jerk2}, and pop-math brainteasers.
 
 
 %----------------------------------------------------------------------------------------
@@ -179,6 +179,8 @@ Note that the bike is idle between times $1$ and $2$ -- for a full third of the 
 \newcommand\PC{\ensuremath{\mathtt{2}}}
 \newcommand\PD{\ensuremath{\mathtt{3}}}
 \newcommand\PE{\ensuremath{\mathtt{4}}}
+\newcommand\PF{\ensuremath{\mathtt{5}}}
+\newcommand\PG{\ensuremath{\mathtt{6}}}
 \newcommand\distance[1]{\ensuremath{\mathsf{#1}}}
 Formally we say that the {\em bicycle allocation} for this case is that person \PA~(the blue one, if you're reading this electronically or printed in color) rides bike $0$ for distances between $0$ and $1$, and person \PB~(the red one, if same) rides it for distances between $1$ and $2$. For short, we write:
 \begin{eqnarray*}
@@ -205,7 +207,7 @@ While Figure~\ref{fig:sol} plots the participants' positions at (time,distance) 
 \newcommand\BB{\cellcolor{NavyBlue}      ~\textcolor{White}{$b_1$}}
 \newcommand\BC{\cellcolor{OliveGreen}   ~\textcolor{White}{$b_2$}}
 \newcommand\BD{\cellcolor{Dandelion}    ~\textcolor{White}{$b_3$}}
-\newcommand\BE{\cellcolor{ProcessBlue}       ~\textcolor{White}{$b_3$}}
+\newcommand\BE{\cellcolor{ProcessBlue}       ~\textcolor{White}{$b_4$}}
 \begin{figure*}[t]
 	\begin{subfigure}[b]{0.28\textwidth}
 		\begin{tabular}{rp{1.5em}|p{1.5em}|}
@@ -308,6 +310,7 @@ We might instead attempt to allocate bicycles contiguously, like in Figure~\ref{
 Here, $n-k+1$ riders can ride ``monogamously'', though $k-1$ people will have two riding  sessions with a walking intermission. This gives us a better travel time of $k/b+(n-k)/w + 4\epsilon$, which is a strict improvement whenever $k>2$.
 
 \begin{theorem}[Contiguous Allocation]
+\label{thm:cont}
 For all $n$ and $k$, an optimal bicycle allocation exists in which no rider mounts and dismounts more than four times, and is given as follows:
 \newcommand\open{\{}
 \newcommand\close{\}}
@@ -327,72 +330,11 @@ where $b_x@\open y\rightsquigarrow z\close$ expands to $b_x@(y)$, $b_x@(y+1)$, \
 By induction on $k$.
 \end{proof}
 
-%\begin{figure}[b]
-%		\begin{center}
-%			\begin{tabular}{rp{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|}
-%		& \multicolumn{6}{c}{distance} \\
-%		person & \multicolumn{1}{|c|}{\distance{0}} & \multicolumn{1}{c|}{\distance{1}} & \multicolumn{1}{c|}{\distance{2}} & \multicolumn{1}{c|}{\distance{3}} & \multicolumn{1}{c|}{\distance{4}} & \multicolumn{1}{c|}{\distance{5}} \\
-%		\hline
-%		\multicolumn{1}{r|}{\PA} &\BA&\BA&\BA&\BA&   &   \\
-%		\cline{2-7}
-%		\multicolumn{1}{r|}{\PB} &   &\BB&\BB&\BB&\BB&   \\
-%		\cline{2-7}
-%		\multicolumn{1}{r|}{\PC} &   &   &\BC&\BC&\BC&\BC\\
-%		\cline{2-7}
-%		\multicolumn{1}{r|}{\PD} &\BB&   &   &\BD&\BD&\BD\\
-%		\cline{2-7}
-%		\multicolumn{1}{r|}{\PE} &\BC&\BC&   &   &\BA&\BA\\
-%		\cline{2-7}
-%		\multicolumn{1}{r|}{fff} &\BD&\BD&\BD&   &   &\BB\\
-%		\cline{2-7}
-%		\end{tabular}
-%		% 6/4
-%			\begin{tabular}{rp{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|}
-%		& \multicolumn{6}{c}{distance} \\
-%		person & \multicolumn{1}{|c|}{\distance{0}} & \multicolumn{1}{c|}{\distance{1}} & \multicolumn{1}{c|}{\distance{2}} & \multicolumn{1}{c|}{\distance{3}} & \multicolumn{1}{c|}{\distance{4}} & \multicolumn{1}{c|}{\distance{5}} \\
-%		\hline
-%		\multicolumn{1}{r|}{\PA} &\BA&\BA&\BA&\BA&\BA&   \\
-%		\cline{2-7}
-%		\multicolumn{1}{r|}{\PB} &   &\BB&\BB&\BB&\BB&\BB\\
-%		\cline{2-7}
-%		\multicolumn{1}{r|}{\PC} &\BB&   &\BC&\BC&\BC&\BC\\
-%		\cline{2-7}
-%		\multicolumn{1}{r|}{\PD} &\BC&\BC&   &\BD&\BD&\BD\\
-%		\cline{2-7}
-%		\multicolumn{1}{r|}{\PE} &\BD&\BD&\BD&   &\BE&\BE\\
-%		\cline{2-7}
-%		\multicolumn{1}{r|}{fff} &\BE&\BE&\BE&\BE&   &\BA\\
-%		\cline{2-7}
-%		\end{tabular}
-%		% 7/3
-%		\begin{tabular}{rp{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|}
-%		& \multicolumn{7}{c}{distance} \\
-%		person & \multicolumn{1}{|c|}{\distance{0}} & \multicolumn{1}{c|}{\distance{1}} & \multicolumn{1}{c|}{\distance{2}} & \multicolumn{1}{c|}{\distance{3}} & \multicolumn{1}{c|}{\distance{4}} & \multicolumn{1}{c|}{\distance{5}} & \multicolumn{1}{c|}{\distance{6}}\\
-%		\hline
-%		\multicolumn{1}{r|}{\PA} &\BA&\BA&\BA&   &   &   &   \\
-%		\cline{2-8}
-%		\multicolumn{1}{r|}{\PB} &   &\BB&\BB&\BB&   &   &   \\
-%		\cline{2-8}
-%		\multicolumn{1}{r|}{\PC} &   &   &\BC&\BC&\BC&   &   \\
-%		\cline{2-8}
-%		\multicolumn{1}{r|}{\PD} &   &   &   &\BA&\BA&\BA&   \\
-%		\cline{2-8}
-%		\multicolumn{1}{r|}{\PE} &   &   &   &   &\BB&\BB&\BB\\
-%		\cline{2-8}
-%		\multicolumn{1}{r|}{fff} &\BB&   &   &   &   &\BC&\BC\\
-%		\cline{2-8}
-%		\multicolumn{1}{r|}{ggg} &\BC&\BC&   &   &   &   &\BA\\
-%		\cline{2-8}
-%		\end{tabular}
-%		\end{center}
-%		\caption{Scratch work}
-%\end{figure}
-
 
 \section{Evaluation}
 
 \initial{I}n Figure~\ref{fig:graph} we find our visualizings.
-The horizontal line on top represents the state of the art, in which some participants walk the entire distance.
+The horizontal line on top represents the previous state of the art, in which some participants walk the entire distance.
 The bottom line represents the ideal case, in which there are enough bikes for everyone to ride together.
 
 Here we have plotted the travel time for various values of $n,k$ against different configurations of the $b/w$ ratio; i.e., how much faster it is to bike than to walk.
@@ -413,16 +355,98 @@ We hope this presentation will be useful in many different terrains; for example
 %	REFERENCE LIST
 %----------------------------------------------------------------------------------------
 
-\begin{thebibliography}{99} % Bibliography - this is intentionally simple in this template
-
-\bibitem[Figueredo and Wolf, 2009]{Figueredo:2009dg}
-Figueredo, A.~J. and Wolf, P. S.~A. (2009).
-\newblock Assortative pairing and life history strategy - a cross-cultural
-  study.
-\newblock {\em Human Nature}, 20:317--330.
- 
-\end{thebibliography}
+\bibliographystyle{abbrv}
+\bibliography{bikes}
 
 %----------------------------------------------------------------------------------------
+
+\newpage
+\appendix
+\section{Scratch Work}
+
+These are some more tables we drew when deciding whether Theorem~\ref{thm:cont} was really true, and they were too colorful not to include.
+
+\begin{figure}[h]
+		\begin{center}
+		%	\begin{tabular}{rp{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|}
+		%& \multicolumn{6}{c}{distance} \\
+		%person & \multicolumn{1}{|c|}{\distance{0}} & \multicolumn{1}{c|}{\distance{1}} & \multicolumn{1}{c|}{\distance{2}} & \multicolumn{1}{c|}{\distance{3}} & \multicolumn{1}{c|}{\distance{4}} & \multicolumn{1}{c|}{\distance{5}} \\
+		%\hline
+		%\multicolumn{1}{r|}{\PA} &\BA&\BA&\BA&\BA&   &   \\
+		%\cline{2-7}
+		%\multicolumn{1}{r|}{\PB} &   &\BB&\BB&\BB&\BB&   \\
+		%\cline{2-7}
+		%\multicolumn{1}{r|}{\PC} &   &   &\BC&\BC&\BC&\BC\\
+		%\cline{2-7}
+		%\multicolumn{1}{r|}{\PD} &\BB&   &   &\BD&\BD&\BD\\
+		%\cline{2-7}
+		%\multicolumn{1}{r|}{\PE} &\BC&\BC&   &   &\BA&\BA\\
+		%\cline{2-7}
+		%\multicolumn{1}{r|}{fff} &\BD&\BD&\BD&   &   &\BB\\
+		%\cline{2-7}
+		%\end{tabular}
+		%% 6/4
+		%	\begin{tabular}{rp{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|}
+		%& \multicolumn{6}{c}{distance} \\
+		%person & \multicolumn{1}{|c|}{\distance{0}} & \multicolumn{1}{c|}{\distance{1}} & \multicolumn{1}{c|}{\distance{2}} & \multicolumn{1}{c|}{\distance{3}} & \multicolumn{1}{c|}{\distance{4}} & \multicolumn{1}{c|}{\distance{5}} \\
+		%\hline
+		%\multicolumn{1}{r|}{\PA} &\BA&\BA&\BA&\BA&\BA&   \\
+		%\cline{2-7}
+		%\multicolumn{1}{r|}{\PB} &   &\BB&\BB&\BB&\BB&\BB\\
+		%\cline{2-7}
+		%\multicolumn{1}{r|}{\PC} &\BB&   &\BC&\BC&\BC&\BC\\
+		%\cline{2-7}
+		%\multicolumn{1}{r|}{\PD} &\BC&\BC&   &\BD&\BD&\BD\\
+		%\cline{2-7}
+		%\multicolumn{1}{r|}{\PE} &\BD&\BD&\BD&   &\BE&\BE\\
+		%\cline{2-7}
+		%\multicolumn{1}{r|}{fff} &\BE&\BE&\BE&\BE&   &\BA\\
+		%\cline{2-7}
+		%\end{tabular}
+		% 7/3
+		\begin{tabular}{rp{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|}
+			& \multicolumn{7}{c}{distance} \\
+			person & \multicolumn{1}{|c|}{\distance{0}} & \multicolumn{1}{c|}{\distance{1}} & \multicolumn{1}{c|}{\distance{2}} & \multicolumn{1}{c|}{\distance{3}} & \multicolumn{1}{c|}{\distance{4}} & \multicolumn{1}{c|}{\distance{5}} & \multicolumn{1}{c|}{\distance{6}}\\
+			\hline
+			\multicolumn{1}{r|}{\PA} &\BA&\BA&\BA&   &   &   &   \\
+			\cline{2-8}
+			\multicolumn{1}{r|}{\PB} &   &\BB&\BB&\BB&   &   &   \\
+			\cline{2-8}
+			\multicolumn{1}{r|}{\PC} &   &   &\BC&\BC&\BC&   &   \\
+			\cline{2-8}
+			\multicolumn{1}{r|}{\PD} &   &   &   &\BA&\BA&\BA&   \\
+			\cline{2-8}
+			\multicolumn{1}{r|}{\PE} &   &   &   &   &\BB&\BB&\BB\\
+			\cline{2-8}
+			\multicolumn{1}{r|}{\PF} &\BB&   &   &   &   &\BC&\BC\\
+			\cline{2-8}
+			\multicolumn{1}{r|}{\PG} &\BC&\BC&   &   &   &   &\BA\\
+			\cline{2-8}
+		\end{tabular}
+		\vspace{1em}
+
+		\begin{tabular}{rp{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|}
+			& \multicolumn{7}{c}{distance} \\
+			person & \multicolumn{1}{|c|}{\distance{0}} & \multicolumn{1}{c|}{\distance{1}} & \multicolumn{1}{c|}{\distance{2}} & \multicolumn{1}{c|}{\distance{3}} & \multicolumn{1}{c|}{\distance{4}} & \multicolumn{1}{c|}{\distance{5}} & \multicolumn{1}{c|}{\distance{6}}\\
+			\hline
+			\multicolumn{1}{r|}{\PA} &\BA&\BA&\BA&\BA&\BA&   &   \\
+			\cline{2-8}
+			\multicolumn{1}{r|}{\PB} &   &\BB&\BB&\BB&\BB&\BB&   \\
+			\cline{2-8}
+			\multicolumn{1}{r|}{\PC} &   &   &\BC&\BC&\BC&\BC&\BC\\
+			\cline{2-8}
+			\multicolumn{1}{r|}{\PD} &\BB&   &   &\BD&\BD&\BD&\BD\\
+			\cline{2-8}
+			\multicolumn{1}{r|}{\PE} &\BC&\BC&   &   &\BE&\BE&\BE\\
+			\cline{2-8}
+			\multicolumn{1}{r|}{\PF} &\BD&\BD&\BD&   &   &\BA&\BA\\
+			\cline{2-8}
+			\multicolumn{1}{r|}{\PG} &\BE&\BE&\BE&\BE&   &   &\BB\\
+			\cline{2-8}
+		\end{tabular}
+		\end{center}
+		\caption{
+To those who printed in black-and-white and find these illegible, we say: stop reinforcing the color binary!}
+\end{figure}
 
 \end{document}
