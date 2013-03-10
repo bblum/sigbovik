@@ -162,21 +162,44 @@ Let us first think about the situation pictured in Figure 1 in which the first h
 
 Now consider another situation, shown in Figure 2, in which the first head is actually a bad guy, and sends an ``attack'' order to Friend 1 and a ``run away'' order to Friend 2. Friend 1 does not know who the bad guy is, and she can't tell what the first head actually said to Friend 2. So, the situations in these two pictures appear exactly the same to Friend 1. If the bad guy lies all the time, then there is no way for Friend 1 to know which situation is happening, so she must listen to the ``attack'' order in both of them. So, any time Friend 1 hears an ``attack'' order from the first head, she must listen to it.
 
-However, in the same way we could show that if Friend 2 hears a ``run away'' order from the first head then he must listen to it even if Friend 1 tells him that the head said "attack". Because of this, in Figure 2, Friend 2 must listen to the ``run away'' order while Friend 1 listens to the ``attack'' order, which means situation FA1 doesn't happen. So, there is no way for three heads to agree if one of them is a bad guy.
+However, in the same way we could show that if Friend 2 hears a ``run away'' order from the first head then he must listen to it even if Friend 1 tells him that the head said "attack". Because of this, in Figure 2, Friend 2 must listen to the ``run away'' order while Friend 1 listens to the ``attack'' order, which means situation FA1 doesn't happen. So, there is no way for three people to agree if one of them is a bad guy.
 
 This way of thinking about it may appear right, but you should think hard before believing such hand-waving reasoning. Although what we said is right after all, we have seen other ``ways of thinking about it'' that are totally wrong.
 We know of no area in the study of computers or the study of numbers in which hand-waving reasoning could more easily lead to wrong answers than in the study of this type of problem. For a stronger way of thinking about why this isn't possible, you should read [3]. % TODO cite
 Using this answer, we can show that no plan can work for a given number of heads if one third of them are bad guys.
 % Omitted: Albanian generals contradiction proof.
 
-You might think that it's so hard to fix the \prob because the heads need to agree with each other completely. Actually, this is not the case, and only-sort-of agreeing with each other is just as hard. Suppose that instead of trying to agree on a complete plan to attack, the heads must agree only upon a set of times, during which the attack should happen. We will say the first head needs to order the time of the attack, and the following two situations need to happen: \\
+You might think that it's so hard to fix the \prob~because the heads need to agree with each other completely. Actually, this is not the case, and only-sort-of agreeing with each other is just as hard. Suppose that instead of trying to agree on a complete plan to attack, the heads must agree only upon a set of times, during which the attack should happen. We will say the first head needs to order the time of the attack, and the following two situations need to happen: \\
 \\
 FA1'. All good guys attack within 10 minutes of one another. \\
 FA2'. If the first head is a good guy, then every other good guy attacks within 10 minutes of the time given in the first head's order. \\
 \\
 (We are supposing that the orders are given and thought about the day before the attack and that the time at which an order is heard doesn't matter--only the attack time given in the order matters.)
 
+Like the \prob, there is no answer to this problem except when more than two-thirds of the heads are good guys. We make sure this is true by first showing that if there were an answer for three people that were okay with one bad guy, then we could answer the first problem, which we already showed was not possible. Suppose the first head wishes to send an ``attack'' or ``run away'' order. We'll say that he can show he wants to attack by ordering an attack time of 1:00, or he could show he wants to run away by ordering an attack time of 2:00.
+ Each of his friends, that is, the other heads, will listen to his order in the following way.
 
+\begin{enumerate}
+	\item After hearing the attack time, a head does one of the following:
+	\begin{enumerate}
+		\item If the time is 1:10 or earlier, then attack.
+		\item If the time is 1:50 or later, then run away.
+		\item Or else, continue to step (2).
+	\end{enumerate}
+	\item Ask the other not-first head what they did in step (1).
+	\begin{enumerate}
+		\item If they did either of the first two things, then do the same thing they did.
+		\item Or else, run away.
+	\end{enumerate}
+\end{enumerate}
+
+It follows from FA2' that if the first head is a good guy, then her good guy friends will hear the right order in step (1), so situation FA2 happens. Also, FA1 follows from FA2, so we only need to make sure of FA1 when we suppose the first head is a bad guy. Since there is at most one bad guy, this means that both of her friends are good guys.
+It follows from FA1' that if one friend decides to attack in step (1), then the other can't decide to run away in step (1). So, either they will both do the same thing in step (1) or at least one of them will wait until step (2).
+In this case, it is easy to see that they both decide to do the same thing, so FA1 happens. This means we just built a three-person answer for the first problem, which is not possible.
+So, we can't have a plan for three people that makes FA1' and FA2' happen if one of them is a bad guy.
+
+Notice how we had one of the heads pretend to be $m$ other heads at the same time. We can now do that again to make sure that no answer with three times $m$ (or fewer) people can ever be okay with $m$ bad guys.
+The way of making sure that's true is like the one for the first problem, and is left for the person reading this paper to do on their own.
 
 % Bibliography
 \bibliographystyle{ACM-Reference-Format-Journals}
