@@ -1198,7 +1198,7 @@ the#1\endcsname{\@thmcounter{#1}}\global
 % \copyright\ \@acmYear\ 
 % ACM \@permissionCodeOne/\@acmYear/\monthInf{\@acmMonth}-ART\@acmArticle\ \$15.00 \\ % Gerry - May 2012 10-to-15
 %\doiline
-Being allowed to take all or part of this paper without paying is given as long as the papers are not made or given for making money, the notice that ACM owns this and the name of the paper and its date appear, and notice is given that taking it is by being allowed by the Agreeing-group for Computer Making. To take in another way, or to put out again, needs paying and/or being more allowed.
+You are allowed to take all or part of this paper without paying as long as the you don't make or give papers for making money, and the notice that Agreeing-group for Computer Making owns this paper, and the name of the paper and its date appear, and you give notice that if anyone takes it, it's because the Agreeing-group for Computer Making allowed them. If you want to take this paper in another way, or to put it in a book or on computers where people can see it, you need to pay and/or to ask us to let you.
 
 \copyright 1982 ACM 0164-0925/82/0700-0382 \$00.75
 
