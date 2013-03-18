@@ -158,11 +158,22 @@ This sort of speaking is the same as how computers usually speak to one another.
 
 We now show that with spoken words, no plan for three people can handle a single bad guy.
 To keep things simple, we consider the case in which the only things to do are ``attack'' or ``run away''.
-Let us first think about the situation pictured in Figure 1 in which the first head is a good guy, and sends an "attack" order, but Friend 2 is a bad guy and tells Friend 1 that he heard a ``run away'' order. For FA2 to happen, Friend 1 must listen to the order to attack.
+Let us first think about the situation pictured in Figure~\ref{fig:1} in which the first head is a good guy, and sends an "attack" order, but the second friend is a bad guy and tells the first friend that he heard a ``run away'' order. For FA2 to happen, the first friend must listen to the order to attack.
 
-Now consider another situation, shown in Figure 2, in which the first head is actually a bad guy, and sends an ``attack'' order to Friend 1 and a ``run away'' order to Friend 2. Friend 1 does not know who the bad guy is, and she can't tell what the first head actually said to Friend 2. So, the situations in these two pictures appear exactly the same to Friend 1. If the bad guy lies all the time, then there is no way for Friend 1 to know which situation is happening, so she must listen to the ``attack'' order in both of them. So, any time Friend 1 hears an ``attack'' order from the first head, she must listen to it.
+Now consider another situation, shown in Figure~\ref{fig:2}, in which the first head is actually a bad guy, and sends an ``attack'' order to the first friend and a ``run away'' order to the second friend. The first friend does not know who the bad guy is, and she can't tell what the first head actually said to the second head. So, the situations in these two pictures appear exactly the same to the first friend. If the bad guy lies all the time, then there is no way for the first friend to know which situation is happening, so she must listen to the ``attack'' order in both of them. So, any time the first friend hears an ``attack'' order from the first head, she must listen to it.
 
-However, in the same way we could show that if Friend 2 hears a ``run away'' order from the first head then he must listen to it even if Friend 1 tells him that the head said "attack". Because of this, in Figure 2, Friend 2 must listen to the ``run away'' order while Friend 1 listens to the ``attack'' order, which means situation FA1 doesn't happen. So, there is no way for three people to agree if one of them is a bad guy.
+\begin{figure}[h]
+	TODO
+	\caption{The second friend is a bad guy.}
+	\label{fig:1}
+\end{figure}
+\begin{figure}[h]
+	TODO
+	\caption{The first head is a bad guy.}
+	\label{fig:2}
+\end{figure}
+
+However, in the same way we could show that if the second friend hears a ``run away'' order from the first head then he must listen to it even if the first friend tells him that the head said "attack". Because of this, in Figure 2, the second friend must listen to the ``run away'' order while the first friend listens to the ``attack'' order, which means situation FA1 doesn't happen. So, there is no way for three people to agree if one of them is a bad guy.
 
 This way of thinking about it may appear right, but you should think hard before believing such hand-waving reasoning. Although what we said is right after all, we have seen other ``ways of thinking about it'' that are totally wrong.
 We know of no area in the study of computers or the study of numbers in which hand-waving reasoning could more easily lead to wrong answers than in the study of this type of problem. For a stronger way of thinking about why this isn't possible, you should read [3]. % TODO cite
@@ -200,6 +211,60 @@ So, we can't have a plan for three people that makes FA1' and FA2' happen if one
 
 Notice how we had one of the heads pretend to be $m$ other heads at the same time. We can now do that again to make sure that no answer with three times $m$ (or fewer) people can ever be okay with $m$ bad guys.
 The way of making sure that's true is like the one for the first problem, and is left for the person reading this paper to do on their own.
+
+\section{An answer for when the heads use spoken words}
+
+We showed above that for an answer to the \prob~using spoken words to be okay with with $m$ bad guys, there must be more than three times $m$ heads in total. We will now give an answer that works for more than three times $m$ heads. However, we first want to make clear exactly what we mean by ``spoken words''.
+Each head is supposed to follow some plan that tells them to send some facts to the other heads, and we suppose that a good guy will actually follow the plan.
+When we say ``spoken words'', we mean that we're supposing the following things about the way the heads talk to each other: \\
+\\
+A1. Every word that is said can be heard by the person who is meant to hear it. \\
+A2. Any person who hears something knows who said it. \\
+A3. If someone tried to say something, but their words went missing, you can know that that happened. \\
+
+By supposing A1 and A2, we make sure a bad guy can't cause two other people to not be able to talk each other or to think they said things that they didn't.
+By supposing A3, we make sure a bad guy can't make people not be able to decide something by not saying anything at all.
+
+The answers that we give in this part of the paper and in the following one only work if each head is able to speak to each other head without needing anyone in between to help. In the part of this paper number five, we talk about answers which do not need this to happen.
+
+A bad guy first-head may decide not to send any order. Since the other heads must decide to follow some order, they need something to do if no-one tells them to do anything. We'll say RUN AWAY will be this order.
+
+We will show how to run a Spoken Words plan, which we call SW($m$), for all numbers $m$, by which a first-head sends an order to the rest of the heads. We'll talk about this plan by a way of supposing that, as long as the plan works for some number of heads, it can also work for one more than that many heads. So if we can show that, then we know it works for all possible numbers of heads.
+
+We show that SW($m$) is an answer to the \prob for more than three times $m$ many heads, as long as there are $m$ or fewer bad guys.
+
+The Spoken Words plan where $m$ is nothing at all (which means there are no bad guys): \begin{enumerate}
+	\item The first head says what he decided to do to every other head.
+	\item Each other head does the thing they heard the first head say, or does RUN AWAY if they didn't hear anything.
+\end{enumerate}
+
+The Spoken Words plan where $m$ is one more than some other number $j$:
+\begin{enumerate}
+	\item The first head says what he decided to do to every other head.
+	\item For each number $i$, let $\fact_i$ be the fact that head number $i$ heard from the first head, or else be RUN AWAY if he hears nothing. Head number $i$ acts as the first-head in the Spoken Word plan for one fewer than $m$, to say $\fact_i$ to the other heads.
+	\item For each number $i$, and each number $j$ not the same as $i$, let $\fact_j$ be the fact that head number $i$ heard from head number $j$ in step (2) (using the Spoken Word plan for one fewer than $m$), or else RUN AWAY if they heard nothing. Head number $i$ will do the thing that they heard most often, among all $\fact_j$.
+\end{enumerate}
+
+To understand how this plan works, we consider the case where $m$ is one and there are four total heads. Figure~\ref{fig:3} shows what the second head hears when the first head says some fact $f$, and the third head is a bad guy.
+The third head says some other fact $g$. In step 3, the second head then heard $f$ two times and $g$ once, so decides to do the right thing, which is $f$.
+
+Next, we see what happens if the first head is a bad guy. Figure~\ref{fig:4} shows what the other heads hear if the first head says whatever he wants, which we'll say are $x$, $y$, and $z$, because they can all be different.
+Each other head hears all three different orders, so they all decide to do the same thing in step (3), no matter if $x$, $y$, and $z$ are the same.
+
+The bigger Spoken Word plan, where there are two or more bad guys, uses the smaller plan many different times. This means that for more than one bad guy, each head will have to talk to the other heads many different times. But there has to be a way for each head to tell which facts are which. You can make sure there is a way to do this by having each head, just before saying some fact $\fact_i$, also says the number $i$, in step (2).
+
+\begin{figure}[h]
+	TODO
+	\caption{Plan SW(1), where the third head is a bad guy.}
+	\label{fig:3}
+\end{figure}
+\begin{figure}[h]
+	TODO
+	\caption{Plan SW(1), where the first head is a bad guy.}
+	\label{fig:4}
+\end{figure}
+
+\section{A plan for when bad guys can't pretend their words came from someone else}
 
 % Bibliography
 \bibliographystyle{ACM-Reference-Format-Journals}
