@@ -20,6 +20,8 @@
 \acmMonth{7}
 
 % Package to generate and customize Algorithm as per ACM style
+\usepackage{multirow}
+\usepackage{rotating}
 \usepackage[ruled]{algorithm2e}
 \SetAlFnt{\algofont}
 \SetAlCapFnt{\algofont}
@@ -162,12 +164,16 @@ Let us first think about the situation pictured in Figure~\ref{fig:1} in which t
 Now consider another situation, shown in Figure~\ref{fig:2}, in which the controlling head is actually a bad guy, and sends an ``attack'' order to the first friend and a ``run away'' order to the second friend. The first friend does not know who the bad guy is, and she can't tell what the controlling head actually said to the second head. So, the situations in these two pictures appear exactly the same to the first friend. If the bad guy lies all the time, then there is no way for the first friend to know which situation is happening, so she must listen to the ``attack'' order in both of them. So, any time the first friend hears an ``attack'' order from the controlling head, she must listen to it.
 
 \begin{figure}[h]
-	TODO
+	\begin{center}
+		\includegraphics[width=0.7\textwidth]{fig1.pdf}
+	\end{center}
 	\caption{The second friend is a bad guy.}
 	\label{fig:1}
 \end{figure}
 \begin{figure}[h]
-	TODO
+	\begin{center}
+		\includegraphics[width=0.75\textwidth]{fig2.pdf}
+	\end{center}
 	\caption{The controlling head is a bad guy.}
 	\label{fig:2}
 \end{figure}
@@ -233,38 +239,77 @@ A bad guy controlling-head may decide not to send any order. Since the other hea
 
 We will show how to run a Spoken Words plan by which a controlling-head sends an order to the rest of the heads. We'll talk about this plan by a way of supposing that, as long as the plan works for some number of heads, it can also work for one more than that many heads. So if we can show that, then we know it works for all possible numbers of heads.
 
-We show that the Spoken Words plan, with some number $m$, is an answer to the \prob~for more than three times $m$ many heads, as long as there are $m$ or fewer bad guys.
+We show that the Spoken Words plan, with some number $m$, is an answer to the \prob~for more than three times $m$ many heads, as long as there are $m$ or fewer bad guys.\\
 
-The Spoken Words plan where $m$ is nothing at all (which means there are no bad guys): \begin{enumerate}
+{\em The Spoken Words plan where $m$ is nothing at all (which means there are no bad guys):}\begin{enumerate}
 	\item The controlling head says what he decided to do to every other head.
 	\item Each other head does the thing they heard the controlling head say, or does RUN AWAY if they didn't hear anything.
 \end{enumerate}
 
-The Spoken Words plan where $m$ is one more than some other number $j$:
-\begin{enumerate}
+{\em The Spoken Words plan where $m$ is one more than some other number $j$:}\begin{enumerate}
 	\item The controlling head says what he decided to do to every other head.
 	\item For each number $i$, let $\fact_i$ be the fact that head number $i$ heard from the controlling head, or else be RUN AWAY if he or she hears nothing. Head number $i$ acts as the controlling-head in the Spoken Word plan for one fewer than $m$, to say $\fact_i$ to the other heads.
 	\item For each number $i$, and each number $j$ not the same as $i$, let $\fact_j$ be the fact that head number $i$ heard from head number $j$ in step (2) (using the Spoken Word plan for one fewer than $m$), or else RUN AWAY if they heard nothing. Head number $i$ will do the thing that they heard most often, among all $\fact_j$.
 \end{enumerate}
 
-To understand how this plan works, we consider the case where $m$ is one and there are four total heads. Figure~\ref{fig:3} shows what the second head hears when the controlling head says some fact $f$, and the third head is a bad guy.
+To understand how this plan works, we consider the case where $m$ is one and there are four total heads. Figure
+%\ref{fig:3}
+3
+shows what the second head hears when the controlling head says some fact $f$, and the third head is a bad guy.
 The third head says some other fact $g$. In step 3, the second head then heard $f$ two times and $g$ once, so decides to do the right thing, which is $f$.
 
-Next, we see what happens if the controlling head is a bad guy. Figure~\ref{fig:4} shows what the other heads hear if the controlling head says whatever he wants, which we'll say are $x$, $y$, and $z$, because they can all be different.
+Next, we see what happens if the controlling head is a bad guy. Figure
+%\ref{fig:4}
+4
+shows what the other heads hear if the controlling head says whatever he wants, which we'll say are $x$, $y$, and $z$, because they can all be different.
 Each other head hears all three different orders, so they all decide to do the same thing in step (3), no matter if $x$, $y$, and $z$ are the same.
 
 The bigger Spoken Word plan, where there are two or more bad guys, uses the smaller plan many different times. This means that for more than one bad guy, each head will have to talk to the other heads many different times. But there has to be a way for each head to tell which facts are which. You can make sure there is a way to do this by having each head, just before saying some fact $\fact_i$, also says the number $i$, in step (2).
 
-\begin{figure}[h]
-	TODO
-	\caption{Spoken Words plan, where the third head is a bad guy.}
-	\label{fig:3}
-\end{figure}
-\begin{figure}[h]
-	TODO
-	\caption{Spoken Words plan, where the controlling head is a bad guy.}
-	\label{fig:4}
-\end{figure}
+\pagebreak
+\thispagestyle{empty}
+\begin{sideways}
+	\begin{tabular}{p{2in}p{9in}p{2in}}
+	\vspace{2em}
+	\\
+	\multicolumn{2}{c}{
+		\includegraphics[width=0.9\textwidth]{fig3.pdf}
+	}
+	&
+	\vspace{-8em}
+	{\footnotesize Fig. 3. Spoken Words plan, where the third head is a bad guy.}
+	\\
+	\vspace{2em}
+	\\
+	\vspace{-10em}
+	{\footnotesize Fig. 4. Spoken Words plan, where the controlling head is a bad guy.}
+	&
+	\multicolumn{2}{c}{
+		\includegraphics[width=0.9\textwidth]{fig4.pdf}
+	}
+	\end{tabular}
+\end{sideways}
+\pagebreak
+\setcounter{figure}{4}
+
+%\begin{figure}[h]
+%	%\begin{sideways}\begin{minipage}{\textwidth}
+%	\begin{center}
+%		\includegraphics[width=0.75\textwidth]{fig3.pdf}
+%	\end{center}
+%	\caption{Spoken Words plan, where the third head is a bad guy.}
+%	\label{fig:3}
+%	%\end{minipage}\end{sideways}
+%\end{figure}
+%\begin{figure}[h]
+%	%\begin{sideways}\begin{minipage}{\textwidth}
+%	\begin{center}
+%		\includegraphics[width=0.75\textwidth]{fig4.pdf}
+%	\end{center}
+%	\caption{Spoken Words plan, where the controlling head is a bad guy.}
+%	\label{fig:4}
+%	%\end{minipage}\end{sideways}
+%\end{figure}
 
 \section{A plan for when bad guys can't pretend their words came from someone else}
 
@@ -318,8 +363,10 @@ Note that in step (2), the heads ignore any letter that talks about an order alr
 
 % omitted: how to decide when no more messages are coming
 
-\begin{figure}[h]
-	TODO
+\begin{figure}[t]
+	\begin{center}
+		\includegraphics[width=0.7\textwidth]{fig5.pdf}
+	\end{center}
 	\caption{Signed Letters plan, with the controlling head as a bad guy}
 	\label{fig:5}
 \end{figure}
