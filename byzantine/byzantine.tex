@@ -61,8 +61,7 @@ the heads are good guys. This means that a single bad guy could confuse two
 good guys. If the good guys use signed written letters, which means a bad guy
 couldn't pretend their letter came from someone else, the problem is possible
 for any number of heads and possible bad guys.
-Finally we will talk about ways to use the plans that are answers to this
-problem in different situations in the real world.
+% Finally we will talk about ways to use the plans that are answers to this problem in different situations in the real world.
 \end{abstract}
 
 % Words about what this paper is about:
@@ -176,7 +175,7 @@ Now consider another situation, shown in Figure~\ref{fig:2}, in which the contro
 However, in the same way we could show that if the second friend hears a ``run away'' order from the controlling head then he must listen to it even if the first friend tells him that the head said "attack". Because of this, in Figure 2, the second friend must listen to the ``run away'' order while the first friend listens to the ``attack'' order, which means situation FA1 doesn't happen. So, there is no way for three people to agree if one of them is a bad guy.
 
 This way of thinking about it may appear right, but you should think hard before believing such hand-waving reasoning. Although what we said is right after all, we have seen other ``ways of thinking about it'' that are totally wrong.
-We know of no area in the study of computers or the study of numbers in which hand-waving reasoning could more easily lead to wrong answers than in the study of this type of problem. For a stronger way of thinking about why this isn't possible, you should read [3]. % TODO cite
+We know of no area in the study of computers or the study of numbers in which hand-waving reasoning could more easily lead to wrong answers than in the study of this type of problem. For a stronger way of thinking about why this isn't possible, you should read [3].
 Using this answer, we can show that no plan can work for a given number of heads if one third of them are bad guys.
 % Omitted: Albanian generals contradiction proof.
 
@@ -333,13 +332,37 @@ Notice that here, which is not like the situation in Figure~\ref{fig:2}, the fri
 
 % omitted: missing communication paths
 
-\section{Groups of computers that you can trust}
+% omitted: \section{Groups of computers that you can trust}
 
+\section{Closing Words}
 
+We have presented several answers to the \prob, in several different situations.
+The plans in these answers can take a lot of time to run and can also need a lot of letters to be sent.
+Both the Spoken Words plan and the Signed Letters plan might need each order to be sent more than $m$ times, where $m$ is the number of bad guys.
+
+In other words, each head may have to wait for orders that came from the controlling head and were then passed on by $m$ other heads.
+Other people who study computers
+have shown that this must be true for any answer that can be okay with with $m$ bad guys, so our answers are as good as possible.
+
+The Spoken Words plan and the Signed Letters plan need you to send up to $(n-1)$ times $(n-2)$ times $(n-m-1)$ letters or words. You can make the number of different times you need to send lower by putting letters or words together and sending them at the same time.
+It may also be possible to lower how much you actually need to say at all, but we have not studied this enough to be sure.
+However, we expect that a large number of letters will still be needed.
+
+Making a group of computers that you can trust even when there might be bad guys that try to confuse you in whatever way they want is a hard problem. It seems like any plan to do this will need to take a lot of time or space.
+The only way to make it need less is to start supposing things about the way things might go wrong.
+One such way is to suppose that a computer may stop responding but will never respond with something wrong.
+However, when you need to trust your computers very very much, you can't suppose that sort of thing, and you need to spend all time and space it takes to solve the \prob.
 
 % Bibliography
-\bibliographystyle{ACM-Reference-Format-Journals}
-\bibliography{citations}
+\section*{PAST THINGS THAT WE BUILT ON}
+
+{\small
+\begin{tabular}{p{0.3em}p{0.95\textwidth}}
+1.& {\sc Monroe, R.} Up Goer Five. {\em XKCD Computer Funny Pictures,} \url{http://xkcd.com/1133/}, 2013.\\
+2.& {\sc Sanderson, T.} The Up-Goer Five Word-Writing Computer Game. \url{http://splasho.com/upgoer5/}, 2013.\\
+3.& {\sc Pease, M., Shostak, R., and Lamport, L.} Reaching a Way to Agree Even When There are Faults. {\em J. ACM 27,} 2 (Month Four 1980), 228-234.
+\end{tabular}
+}
 
 % History dates
 \received{Month Four 1980}{Month Ten-and-One 1981}{Month Four 2013}
