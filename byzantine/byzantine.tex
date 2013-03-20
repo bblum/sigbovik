@@ -52,17 +52,17 @@ confusing facts to the rest of the computers in the group. If we want to be
 able to trust the entire group, it must be able to ignore these confusing facts
 when deciding what to do. We can talk about this situation by playing
 make-believe about the heads of a fighting force from long ago, who are waiting
-with their people around a bad guy city. The people must agree upon a shared
+with their people around a bad-guy city. The people must agree upon a shared
 fighting plan, but can only talk to each other by sending a person who carries
-a letter. However, one or more of the heads may be bad guys who will try to
-confuse the others. The problem is to find a way for the good guys to talk to
-each other, without knowing who the bad guys are, to make sure they can agree
-on what to do anyway. We will show that, if the good guys use only
-word-of-mouth, this problem is possible if and only if more than two-thirds of
-the heads are good guys. This means that a single bad guy could confuse two
-good guys. If the good guys use signed written letters, which means a bad guy
-couldn't pretend their letter came from someone else, the problem is possible
-for any number of heads and possible bad guys.
+a letter with orders written on it. However, one or more of the heads may be
+bad guys who will try to confuse the others. The problem is to find a way for
+the good guys to talk to each other, without knowing who the bad guys are, to
+make sure they can agree on what to do anyway. We will show that, if the good
+guys use only word-of-mouth, this problem is possible if and only if more than
+two-thirds of the heads are good guys. This means that a single bad guy could
+confuse two good guys. If the good guys use signed written letters, which means
+a bad guy couldn't pretend their letter came from someone else, the problem is
+possible for any number of heads and possible bad guys.
 % Finally we will talk about ways to use the plans that are answers to this problem in different situations in the real world.
 \end{abstract}
 
@@ -104,18 +104,16 @@ Where the people who wrote this live: Computer Study Work Place, SRI In Many Par
 % Head 1
 \section{Opening Words}
 
-A group of computers that can be trusted must be able to live with the breaking of one or more of its parts.
-A broken part may act in a way that people often don't think about -- that is, sending facts that don't agree to different parts of the group.
-The problem of living with this type of breaking is talked about with make-believe as the \prob. We spend the biggest part of the paper to talking about this make-believe problem and finish by showing how our answers can be used in building a group of computers that can be trusted.
+If you have a group of computers that you want to be able to trust, it must be able to live even if one of its parts breaks.
+A broken part may act in a way that people often don't think about -- that is, sending confusing facts to different parts of the computer-group.
+We will talk about this kind of breaking-problem, using make-believe, as the \prob.
+%We spend the biggest part of the paper to talking about this make-believe problem and finish by showing how our answers can be used in building a group of computers that can be trusted.
 
-We imagine that several parts of the fighting force from long ago are waiting outside a bad guy city, each group controlled by its own head person.
-The heads can talk with one another only by a person who carries a letter.
-After watching the bad guys, they must decide upon a shared plan of attack.
-However, some of the heads may be bad guys, trying to stop the good guys heads from agreeing. The heads must have an plan to make sure that \\
+We imagine that several parts of the fighting force from long ago are waiting outside a bad-guy city, each group controlled by its own head person. The heads can talk with one another only by sending a person who carries a letter with the orders written on it. After watching the bad guys, they must decide upon a shared plan of attack. However, some of the heads may be bad guys, trying to stop the good guys heads from agreeing. The heads must have an plan to make sure that: \\
 \\
 A. All good guys decide upon the same plan of how to act. \\
 
-The good guy heads will all do what the plan says they should, but the bad guy heads may do anything they wish. The plan must make sure of situation A no matter what the bad guys do.
+The good guy heads will all do what the plan says they should, but the bad guy heads may do anything they wish. The plan must make sure that situation A happens no matter what the bad guys do.
 
 \newcommand\fact{\ensuremath{\mathsf{fact}}}
 
@@ -123,7 +121,14 @@ The good guys should not only agree, but should agree upon a plan that makes sen
 \\
 B. A small number of bad guy heads can't cause the good guy heads to take a bad plan. \\
 
-Situation B is hard to make clear, since it needs you to say exactly what a bad plan is, and we do not attempt to do so. Instead, we consider how the heads reach a way to agree. Each head watches the bad guy city and tells what he or she sees to the others. Let $\fact(i)$ be the facts told by the head with number $i$. Each head uses some way to put together the facts $\fact(1) \dots \fact(n)$ into a single plan of what to do, where $n$ is the number of heads. We can make Situation A happen by having all heads use the same way for putting together the facts, and make Situation B happen by using a way that can be trusted. Think about this case: if the only thing to agree on is whether to attack or run away, then $\fact(i)$ can be Head $i$'s thought of which way is best, and the real plan can come from which way has more heads that want to do it. A small number of bad guys can change the way only if there were almost the same number of good guys who wanted to do each way, in which case not either way could be called bad.
+It is hard to make clear what we mean in Situation B, since it needs you to say exactly what a bad plan is or isn't, and we do not attempt to do so.
+Instead, we consider how the heads reach a way to agree.
+Each head watches the bad-guy city and tells what he or she sees to the others.
+Let $\fact(i)$ be the facts told by the head with number $i$.
+Each head uses some way to put together the facts $\fact(1) \dots \fact(n)$ into a single plan of what to do, where $n$ is the number of heads.
+We can make Situation A happen by having all heads use the same way for putting together the facts, and make Situation B happen by using a way that can be trusted.
+Think about this case: if the only thing to agree on is whether to attack or run away, then $\fact(i)$ can be Head $i$'s thought of which way is best, and the real plan can come from which way has more heads that want to do it.
+A small number of bad guys can change the way only if there were almost the same number of good guys who wanted to do each way, in which case not either way could be called bad.
 
 While this approach may not be the only way to make situations A and B happen, it is the only one we know of.
 It needs a way for the heads to tell their facts $\fact(i)$ to one another. The most clear way is for the head number $i$ to send $\fact(i)$ by a person who carries a letter to each other head. However, this does not work, because making situation A happen needs every good guy head to read the same facts $\fact(1) \dots \fact(n)$, and a bad guy head may send different facts to different heads. For situation A to happen, the following must be true: \\
@@ -146,20 +151,21 @@ Because of this, we can think about the smaller problem of how a single head sen
 
 {\em The \prob.} A controlling head must send an order to her n-1 friends such that \\
 FA1. All good-guy friends listen to the same order. \\
-FA2. If the controlling head is a good guy, then every good guy friend listens to the order he sends. \\
+FA2. If the controlling head is a good guy, then every good guy friend listens to the order she sends. \\
 
 These situations, FA1 and FA2, are called the {\em friends agreeing} situations. Note that if the controlling head is a good guy, then FA1 follows from FA2. However, the controlling head need not be good.
 
-To fix our first problem, head number i sends their fact of $\fact(i)$ by using an answer to the Fighting Force Heads Problem to send the order ``use $\fact(i)$ as my fact'', with the other heads acting as the helping friends.
+\newcommand\shortprob{Fighting Force Heads Problem}
+To fix our first problem, head number i sends their fact of $\fact(i)$ by using an answer to the \shortprob~to send the order ``use $\fact(i)$ as my fact'', with the other heads acting as the helping friends.
 
 \section{Showing What Isn't Possible}
 
-The Problem of Heads of a Fighting Force from Long Ago seems simple, but it is actually not. It is hard because of the surprising fact that if the heads can send only talk to each other out loud, then any plan can only work if more than two-thirds of the heads are good guys. Now, when we say ``talking out loud'', we mean that the words are completely under the control of the person saying them, so a bad guy could say anything he or she wanted to, even ``Your good guy friend said to do such-and-such!''
-This sort of speaking is the same as how computers usually speak to one another. In Part 4, we consider signed, written letters, for which this is not true.
+The Problem of Heads of a Fighting Force from Long Ago seems simple, but it is actually not. It is hard because of the surprising fact that if the heads can send only talk to each other out loud, then any plan can only work if more than two-thirds of the heads are good guys. Now, when we say ``talking out loud'', we mean that the words are completely under the control of the person saying them, so a bad guy could say anything he or she wanted to, even ``Your good-guy friend said to do such-and-such!''
+This sort of speaking is the same as how computers usually speak to one another. In Part~\ref{sec:4}, we consider signed, written letters, for which this is not true.
 
 We now show that with spoken words, no plan for three people can handle a single bad guy.
 To keep things simple, we consider the case in which the only things to do are ``attack'' or ``run away''.
-Let us first think about the situation pictured in Figure~\ref{fig:1} in which the controlling head is a good guy, and sends an "attack" order, but the second friend is a bad guy and tells the first friend that he heard a ``run away'' order. For FA2 to happen, the first friend must listen to the order to attack.
+Let us first think about the situation pictured in Figure~\ref{fig:1} in which the controlling head is a good guy, and sends an ``attack'' order, but the second friend is a bad guy and tells the first friend that he heard a ``run away'' order. For FA2 to happen, the first friend must listen to the order to attack.
 
 Now consider another situation, shown in Figure~\ref{fig:2}, in which the controlling head is actually a bad guy, and sends an ``attack'' order to the first friend and a ``run away'' order to the second friend. The first friend does not know who the bad guy is, and she can't tell what the controlling head actually said to the second head. So, the situations in these two pictures appear exactly the same to the first friend. If the bad guy lies all the time, then there is no way for the first friend to know which situation is happening, so she must listen to the ``attack'' order in both of them. So, any time the first friend hears an ``attack'' order from the controlling head, she must listen to it.
 
@@ -178,22 +184,22 @@ Now consider another situation, shown in Figure~\ref{fig:2}, in which the contro
 	\label{fig:2}
 \end{figure}
 
-However, in the same way we could show that if the second friend hears a ``run away'' order from the controlling head then he must listen to it even if the first friend tells him that the head said "attack". Because of this, in Figure 2, the second friend must listen to the ``run away'' order while the first friend listens to the ``attack'' order, which means situation FA1 doesn't happen. So, there is no way for three people to agree if one of them is a bad guy.
+However, in the same way we could show that if the second friend hears a ``run away'' order from the controlling head then he must listen to it even if the first friend tells him that the head said ``attack''. Because of this, in Figure 2, the second friend must listen to the ``run away'' order while the first friend listens to the ``attack'' order, which means situation FA1 doesn't happen. So, there is no way for three people to agree if one of them is a bad guy.
 
 This way of thinking about it may appear right, but you should think hard before believing such hand-waving reasoning. Although what we said is right after all, we have seen other ``ways of thinking about it'' that are totally wrong.
 We know of no area in the study of computers or the study of numbers in which hand-waving reasoning could more easily lead to wrong answers than in the study of this type of problem. For a stronger way of thinking about why this isn't possible, you should read [3].
 Using this answer, we can show that no plan can work for a given number of heads if one third of them are bad guys.
 % Omitted: Albanian generals contradiction proof.
 
-You might think that it's so hard to fix the \prob~because the heads need to agree with each other completely. Actually, this is not the case, and only-sort-of agreeing with each other is just as hard. Suppose that instead of trying to agree on a complete plan to attack, the heads must agree only upon a set of times, during which the attack should happen. We will say the controlling head needs to order the time of the attack, and the following two situations need to happen: \\
+You might think that it's so hard to fix the \shortprob~because the heads need to agree with each other completely. Actually, this is not the case, and only-sort-of agreeing with each other is just as hard. Suppose that instead of trying to agree on a complete plan to attack, the heads must agree only upon a set of times, during which the attack should happen. We will say the controlling head needs to order the time of the attack, and the following two situations need to happen: \\
 \\
 FA1'. All good guys attack within 10 minutes of one another. \\
 FA2'. If the controlling head is a good guy, then every other good guy attacks within 10 minutes of the time given in the controlling head's order. \\
 \\
 (We are supposing that the orders are given and thought about the day before the attack and that the time at which an order is heard doesn't matter--only the attack time given in the order matters.)
 
-Like the \prob, there is no answer to this problem except when more than two-thirds of the heads are good guys. We make sure this is true by first showing that if there were an answer for three people that were okay with one bad guy, then we could answer the first problem, which we already showed was not possible. Suppose the controlling head wishes to send an ``attack'' or ``run away'' order. We'll say that he can show he wants to attack by ordering an attack time of 1:00, or he could show he wants to run away by ordering an attack time of 2:00.
- Each of his friends, that is, the other heads, will listen to his order in the following way.
+Like the \prob, there is no answer to this problem except when more than two-thirds of the heads are good guys. We make sure this is true by first showing that if there were an answer for three people that were okay with one bad guy, then we could answer the first problem, which we already showed was not possible. Suppose the controlling head wishes to send an ``attack'' or ``run away'' order. We'll say that she can show she wants to attack by ordering an attack time of 1:00, or he could show he wants to run away by ordering an attack time of 2:00.
+ Each of her friends, that is, the other heads, will listen to her order in the following way.
 
 \begin{enumerate}
 	\item After hearing the attack time, a head does one of the following:
@@ -209,7 +215,7 @@ Like the \prob, there is no answer to this problem except when more than two-thi
 	\end{enumerate}
 \end{enumerate}
 
-It follows from FA2' that if the controlling head is a good guy, then his good guy friends will hear the right order in step (1), so situation FA2 happens. Also, FA1 follows from FA2, so we only need to make sure of FA1 when we suppose the controlling head is a bad guy. Since there is at most one bad guy, this means that both of her friends are good guys.
+It follows from FA2' that if the controlling head is a good guy, then her good guy friends will hear the right order in step (1), so situation FA2 happens. Also, FA1 follows from FA2, so we only need to make sure of FA1 when we suppose the controlling head is a bad guy. Since there is at most one bad guy, this means that both of her friends are good guys.
 It follows from FA1' that if one friend decides to attack in step (1), then the other can't decide to run away in step (1). So, either they will both do the same thing in step (1) or at least one of them will wait until step (2).
 In this case, it is easy to see that they both decide to do the same thing, so FA1 happens. This means we just built a three-person answer for the first problem, which is not possible.
 So, we can't have a plan for three people that makes FA1' and FA2' happen if one of them is a bad guy.
@@ -231,25 +237,25 @@ By supposing A1 and A2, we make sure a bad guy can't cause two other people to n
 By supposing A3, we make sure a bad guy can't make people not be able to decide something by not saying anything at all.
 
 The answers that we give in this part of the paper and in the following one only work if each head is able to speak to each other head without needing anyone in between to help.
-% TODO: Decide whether to write this paper
+% Decide whether to write this part -- prob. not
 We would talk about answers which do not need this to happen, but we are leaving that part out of our paper so the paper does not get too long.
 % In the part of this paper number five, we talk about answers which do not need this to happen.
 
-A bad guy controlling-head may decide not to send any order. Since the other heads must decide to follow some order, they need something to do if no-one tells them to do anything. We'll say RUN AWAY will be this order.
+A bad-guy controlling-head may decide not to send any order. Since the other heads must decide to follow some order, they need something to do if no-one tells them to do anything. We'll say RUN AWAY will be this order.
 
 We will show how to run a Spoken Words plan by which a controlling-head sends an order to the rest of the heads. We'll talk about this plan by a way of supposing that, as long as the plan works for some number of heads, it can also work for one more than that many heads. So if we can show that, then we know it works for all possible numbers of heads.
 
 We show that the Spoken Words plan, with some number $m$, is an answer to the \prob~for more than three times $m$ many heads, as long as there are $m$ or fewer bad guys.\\
 
 {\em The Spoken Words plan where $m$ is nothing at all (which means there are no bad guys):}\begin{enumerate}
-	\item The controlling head says what he decided to do to every other head.
+	\item The controlling head says what she decided to do to every other head.
 	\item Each other head does the thing they heard the controlling head say, or does RUN AWAY if they didn't hear anything.
 \end{enumerate}
 
 {\em The Spoken Words plan where $m$ is one more than some other number $j$:}\begin{enumerate}
-	\item The controlling head says what he decided to do to every other head.
-	\item For each number $i$, let $\fact_i$ be the fact that head number $i$ heard from the controlling head, or else be RUN AWAY if he or she hears nothing. Head number $i$ acts as the controlling-head in the Spoken Word plan for one fewer than $m$, to say $\fact_i$ to the other heads.
-	\item For each number $i$, and each number $j$ not the same as $i$, let $\fact_j$ be the fact that head number $i$ heard from head number $j$ in step (2) (using the Spoken Word plan for one fewer than $m$), or else RUN AWAY if they heard nothing. Head number $i$ will do the thing that they heard most often, among all $\fact_j$.
+	\item The controlling head says what she decided to do to every other head.
+	\item For each number $i$, let $\fact_i$ be the fact that head number $i$ heard from the controlling head, or else be RUN AWAY if they hear nothing. Head number $i$ acts as the controlling-head in the Spoken Word plan for one fewer than $m$, to say $\fact_i$ to the other heads.
+	\item For each number $i$, and each number $j$ not the same as $i$, let $\fact_j$ be the fact that head number $i$ heard from head number $j$ in step (2) (using the Spoken Word plan for one fewer than $m$), or else RUN AWAY if they heard nothing. Head number $i$ will do the thing that they heard most often, from all the $\fact_j$.
 \end{enumerate}
 
 To understand how this plan works, we consider the case where $m$ is one and there are four total heads. Figure
@@ -261,10 +267,23 @@ The third head says some other fact $g$. In step 3, the second head then heard $
 Next, we see what happens if the controlling head is a bad guy. Figure
 %\ref{fig:4}
 4
-shows what the other heads hear if the controlling head says whatever he wants, which we'll say are $x$, $y$, and $z$, because they can all be different.
+shows what the other heads hear if the controlling head says whatever she wants, which we'll say are $x$, $y$, and $z$, because they can all be different.
 Each other head hears all three different orders, so they all decide to do the same thing in step (3), no matter if $x$, $y$, and $z$ are the same.
 
 The bigger Spoken Word plan, where there are two or more bad guys, uses the smaller plan many different times. This means that for more than one bad guy, each head will have to talk to the other heads many different times. But there has to be a way for each head to tell which facts are which. You can make sure there is a way to do this by having each head, just before saying some fact $\fact_i$, also says the number $i$, in step (2).
+
+To make sure the Spoken Words plan is right for any number of bad guys, we first make sure the following expression is true.
+
+\newtheorem{mylemma}{Expression}
+\begin{mylemma}
+	\label{lemma:1}
+	For any numbers $m$ and $k$, the Spoken Words plan makes situation FA2 happen if there are more than $2k+m$ heads and at most $k$ bad guys.
+\end{mylemma}
+
+{\sc Reason That is True.}
+We can show the reason this is true by thinking about it in a way of supposing it is true for a given number then showing it must also be true for one more than that number. In this case the number we will pay attention to is $m$. FA2 only talks about what must happen if the
+controlling head is a good guy. First, using A1, it is easy to see that the most simple plan (the Spoken Words plan for no bad guys at all), so the expression is true for the starting case.
+We now suppose the expression is true for one fewer than some number $m$, and show it is true for $m$.
 
 \pagebreak
 \thispagestyle{empty}
@@ -311,9 +330,32 @@ The bigger Spoken Word plan, where there are two or more bad guys, uses the smal
 %	%\end{minipage}\end{sideways}
 %\end{figure}
 
-\section{A plan for when bad guys can't pretend their words came from someone else}
+% TODO: If you rewrite the introduction, readjust this
+In step (1), the good-guy controlling head sends an order to all $n - 1$ of their friends. In step (2),
+each good-guy friend runs the Spoken Words plan for $m-1$ bad guys with $n-1$ heads. Since we supposed $n$ is bigger than $2k+m$, we know $n-1$ is bigger than $2k+(m-1)$, so we can use the thing we supposed to show that every good-guy friend decides to do what the controlling head told them. Since there are at most $k$ bad guys, and $n-1$ is bigger than $2k+(m-1)$, which in turn is bigger than two times $k$, then more than half of the friend-heads are good guys. So, each good-guy friend decides to do what the controlling head told them in the third step, which makes sure that FA2 happens.
+\qed
 
-As we saw from the situations in Figures 1 and 2, it is the fact that bad guys can lie that makes the \prob~so hard.
+The following expression says that the Spoken Words plan is a right answer to the \prob.
+
+\begin{mylemma}
+For any number of bad guys, the Spoken Words plan makes sure both Friends-Agreeing situations happen if there are more than three times as many people as bad guys.
+\end{mylemma}
+
+
+{\sc Reason That is True.}
+We show the reason this is true by the same way of supposing as before. If there are no bad guys, then it is easy to see that the easiest Spoken Words plan makes situations FA1 and FA2 happen. So, we suppose that the expression is true for the Spoken Words plan for $m-1$ bad guys, and show it is true for $m$ bad guys.
+
+We first consider the case in which the controlling head is good. By letting $k$ be the same as $m$ in Expression~\ref{lemma:1},
+we see that the Spoken Words plan for $m$ bad guys makes FA2 happen. FA1 follows from FA2 if the controlling head is good, so we need only make sure FA1 happens in the case that the controlling head is a bad guy.
+
+There are at most $m$ bad guys, and the controlling head is one of them, so at most one fewer than $m$ of their friends are also bad guys. Since there are more than three times $m$ people in total, there are more than $3m-1$ friends, and one fewer than three times $m$ is bigger than three times one fewer than $m$. So we can use the thing we supposed to show that the Spoken Words plan for $m-1$ bad guys makes FA1 and FA2 happen.
+Because of that, any two good-guy friend-heads decide to do the same thing in the third step of the plan, which makes FA1 happen.
+\qed
+
+\section{A plan for when bad guys can't pretend their words came from someone else}
+\label{sec:4}
+
+As we saw from the situations in Figures 1 and 2, it is the fact that bad guys can lie that makes the \shortprob~so hard.
 The problem becomes easier to find an answer for if we can make sure they don't lie. One way to do this is to let the heads send signed letters to each other. Using computers, there are ways to sign your letters where you use some very big numbers that make it very hard for a bad guy to pretend a signed letter was written by someone else or says something different. We'll suppose the heads use this way of signing letters. So, already supposing A1, A2, and A3, we will also suppose the following: \\
 \\
 \begin{tabular}{p{0.8em}p{0.8em}p{0.9\textwidth}}
@@ -329,7 +371,7 @@ Now that we can write signed letters, the thing we said earlier about needing fo
 
 Usually, when signing a letter, you write your name at the bottom of the letter. But since we are using computers and very big numbers for this stronger sort of signing, the thing you write after the letter is numbers, instead of your name. We will call these ``signing-numbers''.
 
-In our answer, the controlling head sends a signed order to each of his friends.
+In our answer, the controlling head sends a signed order to each of her friends.
 Each friend then adds his or her signing-numbers to that order and sends it to the other friends, who add their signing-numbers to that order and send it to everyone else, and so on.
 This means that each head must be given one signed letter and sign it and send it to several other people.
 % omitted discussion of what it means to copy and choice(V)
@@ -342,28 +384,28 @@ Do not confuse $V_i$, the set of orders that a head was given, with the set of w
 \\
 At the start, each $V_i$ is empty.
 \begin{enumerate}
-	\item The controlling head signs and sends his order to every friend head.
+	\item The controlling head signs and sends her order to every friend head.
 	\item For each $i$:
 	\begin{enumerate}
-		\item If head number $i$ is given a letter of the form $f : 1$ from the controlling head and she has not yet heard any order, then
+		\item If head number $i$ is given a letter of the form $f : 1$ from the controlling head and he has not yet heard any order, then
 		\begin{enumerate}
-			\item she lets $V_i$ become just $\{v\}$;
-			\item she sends the signed letter $v: 1 : i$ to every other head.
+			\item he lets $V_i$ become just $\{v\}$;
+			\item he sends the signed letter $v: 1 : i$ to every other head.
 		\end{enumerate}
 		\item If head number $i$ gets a letter of the form $f : 1 :j_1 : \dots : j_k$ and $v$ is not in the set $V_i$, then
 		\begin{enumerate}
-			\item she adds $v$ to $V_i$;
-			\item if $k$ is less than $m$ (the number of bad guys), then she sends the letter $f:1 :j_i1 : \dots :j_k : i$ to every head besides the ones with numbers $j_1$ through $j_k$.
+			\item he adds $v$ to $V_i$;
+			\item if $k$ is less than $m$ (the number of bad guys), then he sends the letter $f:1 :j_i1 : \dots :j_k : i$ to every head besides the ones with numbers $j_1$ through $j_k$.
 		\end{enumerate}
 	\end{enumerate}
-	\item For each $i$: When head number $i$ will get no more letters, he or she decides to any order in the set $V_i$, or RUN AWAY if the set is empty.
+	\item For each $i$: When head number $i$ will get no more letters, he or she decides to follow any order in the set $V_i$, or RUN AWAY if the set is empty.
 \end{enumerate}
 
 Note that in step (2), the heads ignore any letter that talks about an order already in the set $V_i$.
 
 % omitted: how to decide when no more messages are coming
 
-\begin{figure}[t]
+\begin{figure}[ht]
 	\begin{center}
 		\includegraphics[width=0.7\textwidth]{fig5.pdf}
 	\end{center}
@@ -373,7 +415,7 @@ Note that in step (2), the heads ignore any letter that talks about an order alr
 
 Figure~\ref{fig:5} shows the Signed Letters plan for the case of three heads when the controlling head is a bad guy. The controlling head sends an ``attack'' order to one head and a ``run away'' order to another. Both
 friend-heads get the same two orders in step (2), so after step (2) $V_2$ and $V_3$ are both \{``attack'', ``run away''\}, and they both decide what to do the same way.
-Notice that here, which is not like the situation in Figure~\ref{fig:2}, the friends know that the controlling head is a bad guy because he signed two different orders, and A4 states that only he could have made those signing-numbers.
+Notice that here, which is not like the situation in Figure~\ref{fig:2}, the friends know that the controlling head is a bad guy because she signed two different orders, and A4 states that only she could have made those signing-numbers.
 
 % omitted: correctness proof
 
@@ -391,14 +433,14 @@ In other words, each head may have to wait for orders that came from the control
 Other people who study computers
 have shown that this must be true for any answer that can be okay with with $m$ bad guys, so our answers are as good as possible.
 
-The Spoken Words plan and the Signed Letters plan need you to send up to $(n-1)$ times $(n-2)$ times $(n-m-1)$ letters or words. You can make the number of different times you need to send lower by putting letters or words together and sending them at the same time.
+The Spoken Words plan and the Signed Letters plan need you to send up to $(n-1)$ times $(n-2)$ times (and so on\dots) times $(n-m-1)$ letters or words. You can make the number of different times you need to send lower by putting letters or words together and sending them at the same time.
 It may also be possible to lower how much you actually need to say at all, but we have not studied this enough to be sure.
 However, we expect that a large number of letters will still be needed.
 
 Making a group of computers that you can trust even when there might be bad guys that try to confuse you in whatever way they want is a hard problem. It seems like any plan to do this will need to take a lot of time or space.
 The only way to make it need less is to start supposing things about the way things might go wrong.
-One such way is to suppose that a computer may stop responding but will never respond with something wrong.
-However, when you need to trust your computers very very much, you can't suppose that sort of thing, and you need to spend all time and space it takes to solve the \prob.
+One such way is to suppose that a computer may stop responding but will never respond with something confusing.
+However, when you need to trust your computers very very much, you can't suppose that sort of thing, and you need to spend all time and space it takes to find an answer for the \shortprob.
 
 % Bibliography
 \section*{PAST THINGS THAT WE BUILT ON}
