@@ -1007,7 +1007,8 @@ the#1\endcsname{\@thmcounter{#1}}\global
 
 \def\received#1#2#3{{\par\addvspace{14\p@}%
 \parindent\z@%
-\fontfamily{\sfdefault}\fontsize{8}{9}\selectfont{This paper was given to us in\ #1;\ accepted in\ #2;\ and was written again using only the ten hundred most used words in\ #3.}%
+\fontfamily{\sfdefault}\fontsize{8}{9}\selectfont{This paper was given to us in\ #1;\ accepted in\ #2;\ and was written again using only the ten hundred most used words in\ #3.
+In the interest of not being too long, some parts of this paper have been left out.}%
 \par}}
 
 \mark{{}{}} 
