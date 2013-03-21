@@ -2,9 +2,13 @@
 \special{papersize=8.5in,11in}
 \usepackage{fullpage}
 
-\newcommand\track[2]{\center {\Large \bf \em \sc Track #1} \vspace{0.2in}
+\usepackage[lf]{electrum}
+\usepackage[T1]{fontenc}
+
+\newcommand\track[2]{\begin{center} {\Large \bf \em \sc Track #1} \vspace{0.2in}
 
 {\huge \bf #2} \vspace{0.15in}
+\end{center}
 \thispagestyle{empty}}
 
 \newcommand\asdf[2]{\vspace{0.15in} \item {\Large \bf \sf #1}
@@ -14,118 +18,126 @@
 
 {\small {\bf Keywords:} #1}}
 
+\newcommand\intermission[2]{}
+%{\vspace{4em}\begin{tabular}{rl}
+%	\Large \sc Intermission: & \Large \bf \sf #1 \\
+%				 & \keywords{#2}
+%\end{tabular}}
 \begin{document}
 
-\track{1}{Official 2012 Apocalypse Track}
+\track{1}{Contemporary Issues in Politics and Law}
 
 \begin{enumerate}
-\asdf{An Eschatological Approach: The Four Horsemen of Computer Science}
-{The Reverend Nicolas A. Feltman and Joan E. Chao, Mother Supremum}
-\keywords{Eschatology, Horsies, Indulgences}
-\asdf{World Domination Through the Use of a Graphical Reduction of the Six Degrees of Separation Concept with Potential Robot Design for Mode of Implementation}
-{L. S. Berg and P. J. Barton}
-\keywords{Six Degrees of Separation, Kevin Bacon, Turtle Power, World Domination, Bad Cartoon Jokes, Topology, Reduction, Depression, Graphical Model Abuse}
+\asdf{SIGBOVIK License Agreement (excerpt)}
+{Ix Tchow, Ph.D.}
+\asdf{Redistributive Version Control Systems}
+{Karlo Angiuli and Frederick Engels}
+\keywords{redistribution, communism, version control}
+\asdf{Psychology in Response to Presidential Poles}
+{Timothy Broman}
+\keywords{statistics, politics, election, cognitive dissonance, confirmation bias}
 \end{enumerate}
+\intermission{P-Rotip}{dreck, doggerel, puns}
 
 \newpage
 
-\track{2}{Comestibility theory}
+\track{2}{Harry Bovik's Research Calculus}
 
 \begin{enumerate}
-\asdf{Food for Thought: Dining Philosophers}{}
-\keywords{hunger-driven devices, morsels, monads}
-\asdf{Higher-Order Generalized Algebraic Pizzas}
-{Brandon Bohrer and Samir Jindel}
-\keywords{Curry-Pepper Isomorphism, Grease Monad, Monoids in the Category of Delicious, $A^\flat$ Mixolydian}
-\vspace{-0.1in}
-\asdf{Lollipops and Lemma Drops: the sweet, sweet logic of candy}
-{William Lovas}
-\asdf{Algorithms for k/n Power-Hours}
-{Ben Blum, Dr. William Lovas, Ph.D., Chris Martens, and Dr. Tom Murphy VII, Ph.D.}
-\keywords{alcohol in computer science, algorithms for the real world, chemically-assisted reasoning, drinking game theory, hyper-driven devices}
-\end{enumerate}
-
-\newpage
-
-\track{3}{Brought to you by the letter\dots}
-
-\begin{enumerate}
-\setcounter{enumi}{-1}
-\asdf{TBD}
-{Taus Brock-Nannestad and Gian Perrone}
-\keywords{all is well here, send money, love to you and yours}
-\asdf{The Letter}
-{Frederick J. Mesp\"{u}tchy}
-\asdf{Proof of P = NP}
-{Samir Jindel and Brandon Bohrer}
-\asdf{An Epistolary Reconstruction of the Curry-Howard Correspondence}
-{Ben Blum and Michael Sullivan}
-\keywords{Corre-Howard-Spondence, Simply Typed Lambada Calculus, Supernatural Deduction}
-\asdf{The Kardashian Kernel}
-{David F. Fouhey and Daniel Maturana}
-\keywords{Kardashian, Kim, Kourtney, Khloe, Kernel, Kuadratic, Konvex, Koncave, Krylov, Kronecker, Kolmogorov, Karush-Kuhn-Tucker, K-Means, K-Armed-Bandit, Kohonen, Karhunen-Loeve, Kriging, Kalman, Kinect, Kovariance, Kurse-of-dimensionality, Kurvature, K-Nearest-Neighbor}
-\end{enumerate}
-
-\newpage
-
-\track{4}{Did you bring enough to reshare \\ with the class?}
-
-\begin{enumerate}
-\setcounter{enumi}{-1}
-\asdf{Implications of Constrained Thought Expression Achieved via a One Hundred-forty Character Message Limitation Applied to Complex Social Netwo}
-{Nathan Brooks and Tommy Liu}
-\keywords{\#socialmedia, \#sm, \#140}
-\asdf{The Spineless Tagless Tweet Machine: Distributed Cloud-Based Social Crowdsourced Lazy Graph Reduction on the Web 2.0}
-{Michael Sullivan}
-\asdf{SIGBOVIK 2012 Take-Home Midterm Examination}
-{James McCann}
-\asdf{The National Month Of Pushing Spacebar}
-{Tom Murphy VII}
-\keywords{C++harles D:{\textbackslash}ickens, fanfic, repetitive stress injury, 2012: A Space Odyssey}
-\asdf{What Most Medical Students Know About Computer Science}
-{Brian R. Hirshman}
-\keywords{computer science, electronic medical records, all-knowing doctors, important stuff, take two kilobytes and see me in the morning, dude we're too busy learning other things}
-\end{enumerate}
-
-\newpage
-
-\track{5}{Programming languages research and \\ other games for children}
-\begin{enumerate}
-\asdf{Modeling Perceived Cuteness}
-{Nathan Brooks and Evelyn Yarzebinski}
-\keywords{cute, puppy, kitten, turtle, spider, snake, dog, cat, gecko, hamster}
-\asdf{i-PHONE app stor : where is my pants}
-{Dr. Tom Murphy VII, Ph.D. and Dr. Abigale G. Lade, Ph.D.}
-\keywords{pants, where, is my, juvenilia}
-\asdf{An Extensible Platform for Upwards and Sidewards Mobility}
-{David Renshaw}
-\asdf{A modern optimizing compiler for a dynamically typed programming \\ language: Standard ML of New Jersey (preliminary report)}
-{Ian Zerny}
-\asdf{Programming Language Checklist}
-{Colin McMillen, Jason Reed, and Elly Jones}
-\end{enumerate}
-
-\newpage
-
-
-\track{6}{Protect yo' shit}
-\begin{enumerate}
-\asdf{Cryptographically-Strong Hashing with Physics}
-{James McCann and Fake Otherauthor}
-\asdf{The Physics-Based Hashes of Twelve Really Good Ideas}
-{Patent Troll}
-\asdf{A modest proposal for the purity of programming}
-{Robert J. Simmons and Tom Murphy VII}
-\keywords{the next 700 terrible programming languages, hyper-driven devices, types}
-\asdf{Preparation-Hom as the ideal completion of a Hemorrhoidal category}
-{Sitsin C{\o}mfort and Minr{\o}v G{\o}rondt}
-\keywords{hemorrhoids, fistulads, co-fistulads, push outs}
-\asdf{A Randomized Commit Protocol for Adversarial - Nay, Supervillain - \\ Workloads}
+\asdf{The Randomly-Scoped Lambda Calculus}
 {Ben Blum}
-\keywords{two-phase, two-face, randomized algorithms, acid}
-\asdf{Address space content randomization: exploit mitigation through data \\ randomization}
+\keywords{static scope, dynamic scope, lower is better}
+\asdf{Recovered Mathematical Journal}
+{James McCann}
+\asdf{MacLeod Computing: A New Paradigm for Immortal Distribution}
+{Taus Brock-Nannestad, Gian Perrone, and Dr. Tom Murphy VII Ph.D.}
+\keywords{cloude, compute, scottt}
+\asdf{The ($\infty$,1)-Accidentopos Model of Unintentional Type Theory \\(extended abstract)}
 {Carlo Angiuli}
-\keywords{security, optimization, nondeterministic memory, lower is better}
+\keywords{mistaken identity, accidentopos, object misclassifiers}
+\end{enumerate}
+\intermission{Pr-Otip}{art, artifice, artificial}
+
+\newpage
+
+\track{3}{Artificial Stupidity}
+
+\begin{enumerate}
+\asdf{You Only Learn Once: A Stochastically weighted AGGRegation Approach to Online Regret Minimization}
+{danny ``vato loco'' m4turana and d4vid ``the H is silent'' f0uhey}
+\keywords{yolo, swag, swagger, dat, bound, machine learning, ICML, brogrammerproblems, noregrets, belieber}
+\asdf{I Lost The Game, and So Will You: Implications of Mindvirus Circulation in a Post-Singularity World}
+{Shomir Wilson}
+\keywords{singularity, game, experiment}
+\asdf{Fandomized Algorithms and Fandom Number Generation}
+{Lindsey Kuper and Alex Rudnick}
+\keywords{fandomized algorithms, fandom numbers, fentropy}
+\end{enumerate}
+\intermission{pro-tip}{pro, tip, cycle}
+
+\newpage
+
+\track{4}{Computer Vision(aries)}
+
+\begin{enumerate}
+\asdf{Optimal Coupling and Gaybies}
+{Nicolas Feltman}
+\keywords{coupling, gaybies, neil patrick harris}
+\asdf{Cat Basis Purrsuit}
+{Daniel Caturana and David Furry}
+\keywords{Meow, mew, miao, compressed sensing}
+\asdf{A Spectral Approach to Ghost Detection}
+{Daniel Maturana and David Fouhey}
+\keywords{spectral and astral methods, trans-dimensional group lasso, ghosts, occult, hauntology, crystal energy, supernatural, paranormal}
+\end{enumerate}
+\intermission{prot-ip}{bad, twitter, joke}
+
+\newpage
+
+\track{5}{Productivity and Meta-Productivity \\ \large (or ``Synergistic Hyperparadigmatism'', as they say in the literature)}
+\begin{enumerate}
+\asdf{Really Amazing New Idea}
+{Basquet Kase, Nought Job, and Ayn San Ety}
+\keywords{ideas, doggerel, dreck}
+\asdf{METHOD AND APPARATUS FOR PRESSING SPACEBAR}
+{Joshua A. Wise and Jacob D. Potter}
+\keywords{patent, spacebar, microcontrollers}
+\asdf{METHOD AND APPARATUS FOR PUSHING SPACEBAR}
+{Joshua A. Wise and Jacob D. Potter}
+\keywords{patent, lego, spacebar}
+\asdf{Find a Separating Hyperplane With This One Weird Kernel Trick \\(sponsored contribution)}
+{Daniel Maturana and David F. Fouhey}
+\keywords{kernel methods, fast money, overfitting, bayesian monopoly}
+\asdf{On $n$-Dimensional Polytope Schemes}
+{David F. Fouhey and Daniel Maturana}
+\keywords{not pyramid scheme, polytope schemes, get rich fast, algebraic geometry, elimination ideals}
+\asdf{DUI: A Fast Probabilistic Paper Evaluation Tool}
+{Ivan Ruchkin and Ashwini Rao}
+\asdf{Paper and Pencil: a Lightweight WYSIWYG Typesetting System}
+{Paul Stansifer}
+\end{enumerate}
+\intermission{proti-p}{joke, got, old}
+
+\newpage
+
+
+\track{6}{Time Travel, Space Travel, and Other Fun Games for Children}
+\begin{enumerate}
+\asdf{A Proposal for Overhead-Free Dependency Management with Temporally Distributed Virtualization}
+{Peter chapman, Deby Katz, and Stefan Muller}
+\keywords{virtual time machine, time machine, virtualization}
+\asdf{The $n$-People $k$-Bikes Problem}
+{Lancer \r{A}ngstr\"{o}m}
+\keywords{bikes, bixe, biologically-impelled konveyance, motion planning, contiguous allocation algorithms}
+\asdf{The Problem of Heads of a Fighting Force from Long Ago}
+{Leslie Lamport, Robert Shostak, and Marshall Pease}
+\keywords{groups of brains of computers, talking in groups, accepting faults, friends agreeing with themselves, people who go to space, agreeing-group for computer making, ten hundred most used words, sorry to the people who wrote this paper the first time}
+\asdf{duoludo: a game whose purpose is games}
+{David Renshaw}
+\keywords{game, games, gameses}
+\asdf{The First Level of Super Mario Bros. is Easy with Lexicographic Orderings and Time Travel {\normalsize\dots after that it gets a little tricky.}}
+{Dr. Tom Murphy VII Ph.D.*}
+\keywords{computational super mario brothers, memory inspection, lexicographic induction, networked entertainment systems, pit-jumping}
 \end{enumerate}
 
 
