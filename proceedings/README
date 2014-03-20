@@ -1,12 +1,75 @@
 ASSEMBLING THE SIGBOVIK PROCEEDINGS
 
+0. Here is the order everything goes in (and the latex file to use as starter
+code)
+
 Front matter
-- Title page
-- Copyright page
-- Message from committee
-- Table of contents (approx. all the track listings concatenated)
+- Title page (titlepage.tex)
+- Copyright page (copyright-page.tex)
+- Message from committee (message-from-committee.tex)
+- Table of contents (table-of-contents.tex)
 
 Main matter
 - For each track:
-  - Track listing
+  - Track listing (tracks.tex)
   - Papers and revies
+
+Note on software. You will need something that is capable of concatenating PDFs,
+redacting the page numbers that submitted papers come with, inserting new page
+numbers, embedding fonts, resizing pages to all be 8"x11", etc. The recommended
+software for this is Adobe Acrobat Pro (and Adobe Distiller), both of which are
+available on the Mac cluster machines in Wean Hall.
+
+1. Make the filler content.
+
+Decide how to order the submissions in tracks, name the tracks, etc. Write the
+message from the organizing committee. Update the year on the copyright page.
+Make the track listings -- take author names as written on the papers
+themselves, take keywords as submitted in "author keywords" on easychair.
+Etcetera.
+
+2. Assemble the main matter.
+
+- Download submissions.zip from easychair.
+- Use acrobat -> create new -> combine multiple files into one PDF
+- Drag & drop your tracks.pdf track listings, papers, and reviews.
+- I like to drag+drop the entirety of tracks.pdf multiple times, and go through
+  after combining and delete N*(N-1) pages of track listings, rather than
+  having latex compile a separate PDF for each track, because it makes making
+  the table of contents easier.
+- Insert blank pages (shift-command-T) into the PDF so each paper and each track
+  listing starts on an odd-numbered page.
+- Open the "tools" pane on the right, and find the "redaction" option. "Mark for
+  redaction" all the spurious page numbers. Go to redaction preferences and make
+  sure the redaction fill color is set to white, not black. Apply redactions.
+- Still in the tools pane, find "header and footer". Insert actual page numbers.
+  Choose an obnoxious font if possible.
+- Save as PDF if you like, but print to postscript.
+- Feed the postscript into Adobe Distiller. This makes all the pages the same
+  size.
+
+3. Assemble the front matter.
+
+- Insert blank pages so the front matter has an even number of pages (so the
+  main matter is aligned correctly).
+- Write down all the page numbers from the main matter in your table of
+  contents.
+- Insert page numbers in the "i, ii, iii, iv" style. Skip "i" on the title page.
+  I don't know how to make Acrobat do this style on its own, so I just manually
+  type out the roman numerals for each page (using the "page range" button in
+  the header+footer dialog box). It's not so bad; there are only 6-8 pages.
+
+4. Assemble proceedings.pdf.
+
+- Once more do create new -> combine multiple files into one PDF. Combine main
+  matter and front matter.
+- Double check the page numbers in your table of contents. Double check that
+  papers and tracks start on odd-numbered pages.
+- Embed all fonts -- go to Edit -> Preflight -> PDF Fixups -> Embed fonts. This
+  will save it as a new PDF file.
+- Open that PDF file and export as postscript (I almost typed javascript, oh
+  god) and Distill again into a PDF.
+- Upload that final PDF to the website and turn it into a book on Lulu.
+- The Lulu account is the conference gmail address and the password is the same
+  as the gmail account password. Order 30 copies.
+- Save your Lulu order receipt to get reimbursed from the conference funds.
