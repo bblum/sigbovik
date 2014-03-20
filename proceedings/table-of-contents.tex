@@ -4,25 +4,26 @@
 \usepackage{fontspec}
 \usepackage{amsfonts}
 
-\setmainfont{Rumsey}
-\setsansfont{TragicSans}
+\setmainfont{TragicSans}
 
-\newcommand\track[2]{\center {\Large \bf \em \sc Track #1} \vspace{0.2in}
+\newcommand\track[2]{{\Large Track #1: #2}}
 
-{\huge \bf #2} \vspace{0.15in}
-\thispagestyle{empty}}
+\newcommand\paper[2]{\item \sf #1 \dotfill TODO}
 
-\newcommand\paper[2]{\vspace{0.15in} \item {\Large \bf \sf #1}
-
-{\large \em \sf #2}}
-\newcommand\keywords[1]{
-
-{\small {\bf Keywords:} #1}}
+\newcommand\keywords[1]{}
 
 \begin{document}
 
-%\track{8}{Take The Quiz: Which Pointless Time-Wasting Amusement are You?}
-\track{8}{How to Keep Adults Busy and Other Fun Games for Children}
+\begin{center}
+{\Huge You Won't Believe This Table of Contents}
+\end{center}
+\thispagestyle{empty}
+
+\vspace{6em}
+
+
+\track{8}{Take The Quiz: Which Pointless Time-Wasting Amusement are You?}
+%\track{8}{How to Keep Adults Busy and Other Fun Games for Children}
 
 \begin{enumerate}
 \paper{How to Keep a Graduate Student Busy}
@@ -39,10 +40,10 @@
 \keywords{chess, stratego, guess who, clue, candy crush saga, game-tree search, combinations}
 \end{enumerate}
 
-\newpage
+\vspace{4em}
 
-%\track{88}{Epic Local News You'll Be Sad You Missed}
-\track{88}{Concerning Local Affairs}
+\track{88}{Epic Local News Stories You'll Be Sad You Missed}
+%\track{88}{Concerning Local Affairs}
 
 \begin{enumerate}
 \paper{PARTIAL TRANSCRIPT OF DEAN'S SPEECH TO THE FACULTY OF THE MELLON COLLEGE OF SCIENCES}
@@ -59,14 +60,14 @@
 \keywords{open house, destruction of universe, herding cats}
 \end{enumerate}
 
-\newpage
+\vspace{4em}
 
-%\track{888}{Four Unbelievable New Theoretical Perspectives}
-\track{888}{New Theoretical Perspectives}
+\track{888}{Four Unbelievable New Theoretical Perspectives}
+%\track{888}{New Theoretical Perspectives}
 
 \begin{enumerate}
 %\setcounter{enumi}{-1}
-\paper{Heterotopy Type Theory: \\ A Defense of the Traditional Foundations of Mathematics}
+\paper{Heterotopy Type Theory: A Defense of the Traditional Foundations of Mathematics}
 {Thomas Cramer and Sam Yeager}
 \keywords{heterotopy type theory, identity type, freedom of expression axiom}
 \paper{The Dumping Lemma - Assessing Regularity}
@@ -80,10 +81,10 @@
 \keywords{category, diagram, functor, diagram diagram}
 \end{enumerate}
 
-\newpage
+\vspace{4em}
 
-%\track{8,888}{Three Important Ways to Stay Safe This Research Season}
-\track{8,888}{Stay Safe Out There}
+\track{8,888}{The Three Most Important Ways to Stay Safe This Research Season}
+%\track{8,888}{Stay Safe Out There}
 
 \begin{enumerate}
 %\setcounter{enumi}{-1}
@@ -107,10 +108,10 @@ hashtag}
 \keywords{pain, suffering, frustration}
 \end{enumerate}
 
-\newpage
+\vspace{4em}
 
-%\track{88,888}{Improve Your Own Research With These Five Weird Tricks}
-\track{88,888}{Easier, Better, Faster, Stronger Research Methodologies}
+\track{88,888}{Improve Your Own Research With These Five Weird Tricks}
+%\track{88,888}{Easier, Better, Faster, Stronger Research Methodologies}
 \begin{enumerate}
 \paper{Belief-Sustaining Inference}
 {Alex Reinhart and Jerzy Wieczorek}
@@ -126,7 +127,7 @@ occult computing,
 miskatonic university,
 installing linux on a dead badger,
 playing god}
-\paper{Measuring Your $\mathbb{P}$-ness: Determining How Like a Probability Distribution a Given Mathematical Object Is}
+\paper{Measuring Your $\mathbb{P}$-ness: \\ Determining How Like a Probability Distribution a Given Mathematical Object Is}
 {John T. Longwood}
 \keywords{lowbrow humour,
 probability,
@@ -143,10 +144,10 @@ epsilon,
 very-small and medium-small numbers}
 \end{enumerate}
 
-\newpage
+\vspace{4em}
 
-%\track{888,888}{These New Ways to Program Will Blow Your Mind}
-\track{888,888}{Innovations in Natural and Unnatural Languages}
+\track{888,888}{These New Ways to Program Will Blow Your Mind}
+%\track{888,888}{Novel Programming Methodologies}
 \begin{enumerate}
 \paper{IRS-1040-Based Computing: The Untapped Computational Power of Bureaucracy}
 {William Gunther and Brian Kell}
@@ -175,6 +176,7 @@ translation}
 automatic stubbornness,
 holy grail}
 \end{enumerate}
+\thispagestyle{empty}
 
 
 \end{document}
