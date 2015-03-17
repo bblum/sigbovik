@@ -38,21 +38,21 @@ Current speculation holds that the time machine operators forgot to disable the 
 
 \section{Introduction}
 
-Victoria said I had to write this section, even though she's the only one of us who actually knows how the 4-color theorem proof goes. But luckily I found a proof for the 5-color theorem that made sense, and since having more colors is obviously better, that should be even better. It goes like this:
+Victoria said I had to write this section, even though she's the only one of us who actually knows how the 4-color theorem proof goes. But luckily I found a proof for the 5-color theorem that made sense, and since having more colors is obviously better, that should work just as good. It goes like this:
 
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{corollary}[theorem]{Corollary}
 \begin{lemma}
-All planar graphs have at least one vertex with at most 5 neighbors.
+All planar graphs have at least one nobe with at most 5 neighbors.
 \end{lemma}
 
 \begin{proof}
-	Let $N(n)$ mean how many neighbors a given nobe $n$ has. Then because each edge connects two nobes, the sum of all nobes' neighbours $\sum_n N(n) = 2e$. Let's assume all nobes have at least six neighbours. Then $6n \le 2e$.
+	Let $N(n)$ mean how many neighbors a given nobe $n$ has. Then because each edge connects two nobes, the sum of all nobes' neighbors $\sum_n N(n) = 2e$. Let's assume all nobes have at least six neighbors. Then $6n \le 2e$.
 
 	Next let $E(f)$ mean the number of edges that make up the border of a given face $f$ of the graph. Since each edge borders 2 faces, $\sum_f E(f) = 2e$. Every region is bounded by at least 3 edges so that means $3f \le 2e$.
 
-	If we plug all that into the ``Euler's Forumula'' that Mr. Blum gave us in class, which says that $n-e+f=2$, here's what we get: $n-e+f \le \frac{e}{3} - e + \frac{2e}{3} = 0$. But since $n-e+f = 2$ we end up with $2\le0$. Then we must have been wrong to assume all nobes have at least six neighbours. That's a ``contradiction''!
+	If we plug all that into the ``Euler's Forumula'' that Mr. Blum gave us in class, which says that $n-e+f=2$, here's what we get: $n-e+f \le \frac{e}{3} - e + \frac{2e}{3} = 0$. But since $n-e+f = 2$ we end up with $2\le0$. Then we must have been wrong to assume all nobes have at least six neighbors. That's a ``contradiction''!
 \end{proof}
 
 \begin{theorem}
@@ -61,13 +61,14 @@ All planar graphs can be colored with no more than 5 colors so that no neighbor 
 \end{theorem}
 
 \begin{proof}
-	Let $G$ mean the graph we're trying to prove this for. Using the lemon I just proved, pick the nobe $n$ that has at most five neighbors and call those $n_1$, $n_2$, $n_3$, $n_4$, $n_5$ in whatever order you want. Let $G'$ mean the smaller graph you get by taking out $n$, which of course is still planar. Because $G'$ is smaller, we know with ``induction'' that $G'$ can be 5-colored. (That step seemed kinda weird to me but Victoria said it was legit so please don't take points off.)
+	Let $G$ mean the graph we're trying to prove this for. Using the lemon I just proved, pick the nobe $n$ that has at most five neighbors and call those $n_1$, $n_2$, $n_3$, $n_4$, $n_5$ in whatever order you want, but remember the order! Let $G'$ mean the smaller graph you get by taking out $n$, which of course is still planar. Because $G'$ is smaller, we already know with ``induction'' that $G'$ can be 5-colored. (That step seemed kinda weird to me but Victoria said it was legit so please don't take points off.)
 
-	Now we're gonna assume $G$ cannot be 5-colored. For this to be true, then each $n_i$ from $1$ to $5$ must all have different colors, or else you could just pick the missing one for $n$. Let's think about the sub-graph that has only the 2 colors matching $n_1$ and $n_3$, call it $G_{13}$. If the graph is disjoint, meaning $n_1$ and $n_3$ are in two separate parts, then you would be able to re-color the graph to make $n_3$ have color $1$, so you can paint $n$ color $3$. Therefore $G_{13}$ must be connected. You can make the same argument for $G_{24}$ to be connected, but suddenly that doesn't make any sense, because a path that keeps $G_{24}$ connected would have to intersect the connected $G_{13}$!
+	Now we're gonna assume $G$ can't be 5-colored. For this to be true, then each $n_i$ from $1$ to $5$ must all have different colors, or else you could just pick the missing one for $n$. Let's think about the sub-graph that has only the 2 colors matching $n_1$ and $n_3$, call it $G_{13}$. If the graph is disjoint, meaning $n_1$ and $n_3$ are in two separate parts, then you would be able to re-color the graph to make $n_3$ have color $1$, so you can paint $n$ with color $3$. Therefore $G_{13}$ must be connected. You can make the same argument for $G_{24}$ to be connected, but suddenly that doesn't make any sense, because a path that keeps $G_{24}$ connected would have to intersect the connected $G_{13}$!
 
-	Therefore, even if the 5-coloring of $G'$ gives all different colors to $n_1$, $n_2$, $n_3$, $n_4$, and $n_5$, you should be able to re-color one of the $n_i$ so you can have a spare color to give to $n$. Therefore $G$ can be 5-colored.
+	So now, even if the 5-coloring of $G'$ gives all different colors to $n_1$, $n_2$, $n_3$, $n_4$, $n_5$, you should be able to re-color one of the $n_i$s so you can have a spare color to give to $n$. That means you can 5-color $G$.
 \end{proof}
 
+Nice! Hey, that wasn't so bad.
 
 \section{The 12-Color Theorem}
 
@@ -124,7 +125,7 @@ The most significant limitation of our work is that a generalized version of our
 	\quad
 	\begin{subfigure}[b]{0.45\textwidth}
 	\includegraphics[width=\textwidth]{50color.pdf}
-	\caption{If you had 51 different colors and wanted to use them all, it would look like this. However, a proof of the existence of generalized 51-colorings is left to future work.}
+	\caption{If you had 51 different colors and wanted to use them all, it would look like this. However, we are leaving a proof of the existence of generalized 51-colorings to future work.}
 	\end{subfigure}
 	\caption{Mr. Blum said we needed to have some pictures in our paper, so we pretended the USA was a graph and colored it like our algorithm says.}
 	\label{fig:usa}
