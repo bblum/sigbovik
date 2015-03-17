@@ -1,0 +1,34 @@
+// a east end
+// b north
+// c south
+graph kpbp {
+	a[label = "NORTH SHORE" fontname = "OldNewspaperTypes" ]
+	b[label = "EAST END" fontname = "OldNewspaperTypes" ]
+	c[label = "SOUVTH SIDE" fontname = "OldNewspaperTypes" ]
+	//a -- b; // 32nd
+
+	a -- b [fontname = "OldNewspaperTypes" label = "HP"]; // highland
+	a -- b [fontname = "OldNewspaperTypes" label = "62"]; // 5xth st
+	a -- b [fontname = "OldNewspaperTypes" label = "40"]; // 40th st
+
+	a -- b [fontname = "OldNewspaperTypes" label = "16"]; // 16th
+	a -- b [fontname = "OldNewspaperTypes" label = "RaC"]; // carson
+	a -- b [fontname = "OldNewspaperTypes" label = "AW"]; // clemente
+	a -- b [fontname = "OldNewspaperTypes" label = "RoC"]; // the other twin
+	a -- b [fontname = "OldNewspaperTypes" label = "FtD"]; // ft pitt
+
+	a -- c [fontname = "OldNewspaperTypes" label = "WE"]; // west end
+	a -- c [fontname = "OldNewspaperTypes" label = "MKR"]; // mckees rocks
+
+	c -- b [fontname = "OldNewspaperTypes" label = "HSG"]; // homestead
+	c -- b [fontname = "OldNewspaperTypes" label = "GF"]; // greenfield
+	c -- b [fontname = "OldNewspaperTypes" label = "HMS"]; // hot metal saint
+	c -- b [fontname = "OldNewspaperTypes" label = "BH"]; // birmingham
+	c -- b [fontname = "OldNewspaperTypes" label = "Lib"]; // libiberty
+	c -- b [fontname = "OldNewspaperTypes" label = "10"]; // 10th st
+	c -- b [fontname = "OldNewspaperTypes" label = "SF"]; // smithfield
+	c -- b [fontname = "OldNewspaperTypes" label = "FtP"]; // ft duquesne
+
+	{ rank=min; a }
+	{ rank=max; c }
+}
