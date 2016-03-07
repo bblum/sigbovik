@@ -2,33 +2,35 @@
 // b north
 // c south
 graph kpbp {
-	a[label = "NORTH SHORE" fontname = "OldNewspaperTypes" ]
-	b[label = "EAST END" fontname = "OldNewspaperTypes" ]
-	c[label = "SOUVTH SIDE" fontname = "OldNewspaperTypes" ]
+	ranksep=0.5;
+	a[fontsize=16 label = "NORTH SHORE" fontname = "OldNewspaperTypes" ordering = "out" ]
+	b[fontsize=16 label = "EAST END" fontname = "OldNewspaperTypes" ordering = "out" ]
+	c[fontsize=16 label = "SOVTH SIDE" fontname = "OldNewspaperTypes" ]
 	//a -- b; // 32nd
 
-	a -- b [fontname = "OldNewspaperTypes" label = "HP"]; // highland
-	a -- b [fontname = "OldNewspaperTypes" label = "62"]; // 5xth st
-	a -- b [fontname = "OldNewspaperTypes" label = "40"]; // 40th st
+	a -- c [fontsize=13 weight = 3 fontname = "OldNewspaperTypes" label = "MKR"]; // mckees rocks
+	a -- c [fontsize=13 weight = 1 fontname = "OldNewspaperTypes" label = "WE"]; // west end
 
-	a -- b [fontname = "OldNewspaperTypes" label = "16"]; // 16th
-	a -- b [fontname = "OldNewspaperTypes" label = "RaC"]; // carson
-	a -- b [fontname = "OldNewspaperTypes" label = "AW"]; // clemente
-	a -- b [fontname = "OldNewspaperTypes" label = "RoC"]; // the other twin
-	a -- b [fontname = "OldNewspaperTypes" label = "FtD"]; // ft pitt
+	a -- b [fontsize=13 fontname = "OldNewspaperTypes" label = "FtD"]; // ft pitt
+	a -- b [fontsize=13 fontname = "OldNewspaperTypes" label = "RoC"]; // the other twin
+	a -- b [fontsize=13 fontname = "OldNewspaperTypes" label = "AW"]; // clemente
+	a -- b [fontsize=13 fontname = "OldNewspaperTypes" label = "RaC"]; // carson
+	a -- b [fontsize=13 fontname = "OldNewspaperTypes" label = "16"]; // 16th
 
-	a -- c [fontname = "OldNewspaperTypes" label = "WE"]; // west end
-	a -- c [fontname = "OldNewspaperTypes" label = "MKR"]; // mckees rocks
+	a -- b [fontsize=13 fontname = "OldNewspaperTypes" label = "40"]; // 40th st
+	a -- b [fontsize=13 fontname = "OldNewspaperTypes" label = "62"]; // 5xth st
+	a -- b [fontsize=13 fontname = "OldNewspaperTypes" label = "HP"]; // highland
 
-	c -- b [fontname = "OldNewspaperTypes" label = "HSG"]; // homestead
-	c -- b [fontname = "OldNewspaperTypes" label = "GF"]; // greenfield
-	c -- b [fontname = "OldNewspaperTypes" label = "HMS"]; // hot metal saint
-	c -- b [fontname = "OldNewspaperTypes" label = "BH"]; // birmingham
-	c -- b [fontname = "OldNewspaperTypes" label = "Lib"]; // libiberty
-	c -- b [fontname = "OldNewspaperTypes" label = "10"]; // 10th st
-	c -- b [fontname = "OldNewspaperTypes" label = "SF"]; // smithfield
-	c -- b [fontname = "OldNewspaperTypes" label = "FtP"]; // ft duquesne
+	c -- b [fontsize=13 fontname = "OldNewspaperTypes" label = "FtP"]; // ft duquesne
+	c -- b [fontsize=13 fontname = "OldNewspaperTypes" label = "SF"]; // smithfield
+	c -- b [fontsize=13 fontname = "OldNewspaperTypes" label = "10"]; // 10th st
+	c -- b [fontsize=13 fontname = "OldNewspaperTypes" label = "Lib"]; // libiberty
+	c -- b [fontsize=13 fontname = "OldNewspaperTypes" label = "BH"]; // birmingham
+	c -- b [fontsize=13 fontname = "OldNewspaperTypes" label = "HMS"]; // hot metal saint
+	c -- b [fontsize=13 fontname = "OldNewspaperTypes" label = "GF"]; // greenfield
+	c -- b [fontsize=13 fontname = "OldNewspaperTypes" label = "HSG"]; // homestead
 
 	{ rank=min; a }
 	{ rank=max; c }
 }
+
