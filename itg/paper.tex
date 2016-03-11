@@ -1,0 +1,109 @@
+%-----------------------------------------------------------------------------
+%
+%               Template for sigplanconf LaTeX Class
+%
+% Name:         sigplanconf-template.tex
+%
+% Purpose:      A template for sigplanconf.cls, which is a LaTeX 2e class
+%               file for SIGPLAN conference proceedings.
+%
+% Guide:        Refer to "Author's Guide to the ACM SIGPLAN Class,"
+%               sigplanconf-guide.pdf
+%
+% Author:       Paul C. Anagnostopoulos
+%               Windfall Software
+%               978 371-2316
+%               paul@windfall.com
+%
+% Created:      15 February 2005
+%
+%-----------------------------------------------------------------------------
+
+
+%\documentclass[preprint]{sigplanconf}
+\documentclass[10pt]{sigplanconf}
+
+% The following \documentclass options may be useful:
+%
+% 10pt          To set in 10-point type instead of 9-point.
+% 11pt          To set in 11-point type instead of 9-point.
+% authoryear    To obtain author/year citation style instead of numeric.
+
+\usepackage{yfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+%\usepackage{mathpartir}
+\usepackage{url}
+\usepackage{graphics}
+\usepackage{graphicx}
+\usepackage{marvosym}
+\usepackage{stmaryrd}
+\usepackage{epsdice}
+\usepackage{multirow}
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage[utopia]{mathdesign}
+
+% ____________________________________________________________
+% Listings Package Configuration
+% \usepackage[scaled]{beramono}
+
+%\renewcommand*\ttdefault{txtt}
+\usepackage[T1]{fontenc}
+
+% This Deep Tex Voodoo is from
+%   <http://www.latex-community.org/forum/viewtopic.php?f=5&t=2072>
+% It's purpose is to make \lstinline normal size, without affecting
+% \lstinputlisting.  It seems to work but I have no idea how or why,
+% and I rather hope never to learn.
+%\makeatletter
+%\lst@AddToHook{TextStyle}{\let\lst@basicstyle\ttfamily\normalsize}
+%\makeatother
+
+\begin{document}
+
+\conferenceinfo{SIGBOVIK '16}{Pittsburgh, PA, USA}
+\copyrightyear{2016}
+\copyrightdata{}
+
+\titlebanner{banner above paper title}        % These are ignored unless
+\preprintfooter{short description of paper}   % 'preprint' option specified.
+
+\title{
+Which ITG Stepcharts are Turniest?
+}
+% \subtitle{\em The Randomly-Scoped Lambda Calculus}
+% \subtitle{Subtitle Text, if any}
+
+\authorinfo{Ben Blum}{}{bblum@cs.cmu.edu}
+
+\maketitle
+
+\begin{abstract}
+	ITG is a popular dance game in which players step on arrows while listening to music. The arrow patterns, indicated by a {\em stepchart}, may range among any level of complexity and difficulty. Among the many factors contributing to a stepchart's difficulty is how much the player must turn from side to side.
+	Other more obvious factors, such as raw speed, have been well studied in prior work. % TODO cite.
+	This paper presents an analytic study of this {\em turniness} factor.
+	We study the turniness of many existing stepcharts, and present a novel (but unsurprising) approach to automatically generating maximally (or minimally) turny charts.
+
+
+\end{abstract}
+
+\category{D.D.R.}{Exercise and Fitness}{Arcade Dance Games}
+
+\keywords
+
+
+\section{Introduction}
+
+In 2005, Roxor Games, Inc. released {\em In The Groove}, a dance rhythm music video arcade fitness game, in which players control a protagonist using their feet to step on floor-mounted directional indicators. The protagonist, shown in Figure~\ref{fig:protagonist}, takes the form of any number of arrow-shaped directional receptacles, and must navigate a world of similarly-shaped obstacles (henceforth ``arrows'') by consuming them with the appropriate receptacle.
+Roxor Games, Inc. In The Groove (henceforth ``ITG'')
+
+
+\bibliographystyle{alpha}
+\bibliography{paper}
+
+%\onecolumn
+%
+%\appendix
+
+
+\end{document}
