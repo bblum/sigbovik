@@ -31,14 +31,15 @@
 
 \usepackage{yfonts}
 \usepackage{amsmath}
+\usepackage{amsthm}
 \usepackage{amssymb}
 %\usepackage{mathpartir}
 \usepackage{url}
 \usepackage{graphics}
 \usepackage{graphicx}
+\usepackage{wasysym}
+\usepackage{harmony}
 \usepackage{marvosym}
-\usepackage{stmaryrd}
-\usepackage{epsdice}
 \usepackage{multirow}
 \usepackage[usenames,dvipsnames]{xcolor}
 \usepackage[utopia]{mathdesign}
@@ -90,39 +91,49 @@ Which ITG Stepcharts are Turniest?
 \category{D.D.R.}{Exercise and Fitness}{Arcade Dance Games}
 
 \keywords
+in, the, groove
 
 
 \section{Introduction}
 
 In 2005, Roxor Games, Inc. released {\em In The Groove}, a dance rhythm music video arcade fitness game, in which players control a protagonist using their feet to step on floor-mounted directional indicators. The protagonist, shown in Figure~\ref{fig:protagonist}, takes the form of any number of arrow-shaped directional receptacles, and must navigate a world of similarly-shaped obstacles (henceforth ``arrows'') by consuming them with the appropriate receptacle.
 Roxor Games, Inc. In The Groove (henceforth ``ITG'') is most commonly played using the ``cabinet'' form factor, shown in Figure~\ref{fig:cab}, which includes two large metal dance pads, each with four directional indicators (henceforth, also, ``arrows'').
+
 The game includes a library of rhythmic audio accompaniment files (henceforth, ``songs''), each of which is associated with one or more fixed patterns of arrows (henceforth, ``stepcharts''). These charts are often, but not always, synchronized to the beat of the song.
 During gameplay, the stepcharts appear on screen and scroll towards the protagonist avatar at a rate either fixed or variable (henceforth, ``BPM'').
 When the position of an arrow in the chart coincides with the avatar, the player must actuate the arrow of the corresponding direction.
 The game will judge the player's timing accuracy, and penalize or reward them accordingly with scores and life bar fill.
 A ``Fantastic'' judgement (as in Figure~\ref{fig:protagonist}) indicates a timing error not exceeding 15 milliseconds.
 Other judgements include Excellent, Great, Decent, Way Off, and Miss.
+As a visual assist to the player, notes are coloured according to their beat granularity:
+\color{red}\Vier,
+\color{Purple}\Vier$^3$,
+\color{blue}\Acht
+\color{LimeGreen}\Sech,
+\color{Magenta}\Sech$^3$,
+\color{Dandelion}\Zwdr.
+\color{black}
 
 
 \begin{figure}[t]
 	\begin{center}
 	\includegraphics[width=0.25\textwidth]{protagonist.png}
 	\end{center}
-	\caption{ITG gameplay, including score indicator (top), protagonist avatar (mid), directional obstacles (low), and step judgement, life bar, and combo indicator (figure these out for yourself).}
+	\caption{ITG gameplay, including score indicator (top), protagonist avatar (mid), directional obstacles (low), and step judgement, life bar, and combo indicator (figure these out for yourself, I'm getting tired).}
 	\label{fig:protagonist}
 \end{figure}
 \begin{figure}[t]
 	\begin{center}
 	\includegraphics[width=0.2\textwidth]{itg2cabinet.jpg}
 	\end{center}
-	\caption{An ITG cabinet. RIP in Peace, Roxor.}
+	\caption{An ITG cab. RIP in peace, Roxor \cite{konami}.}
 	\label{fig:cab}
 \end{figure}
 
-The game may be played in several modes, the most common of which supports up to two (2) players, each operating their own protagonist using either the left or right set of four arrows.
+The game may be played in several modes, the most common supporting up to two (2) players, each operating their own protagonist using either the left or right set of four arrows.
 This game mode may be played with or without the assist of a curved metal rod mounted behind the arrows (henceforth, ``bar''), as shown in Figure~\ref{fig:bengreg}.
 In other game modes, a single player may operate up to all 8 of the arrows. When all 8 are used, the game mode is known as ``Doubles'', as shown in Figure~\ref{fig:jim}, and is often associated with excessive No-Barring, use of hands and knees to operate the arrows, and impressive facial hair.
-In this body of work, we will focus exclusively on the Singles game mode, in which each player controls four arrows: one Up ($U$), one Down ($D$), one Left ($L$), and one Right ($R$). Without loss of generality, we further assume that only one player plays at a time, and that she or he will shower immediately afterward.
+In this body of work, we will focus exclusively on the Singles game mode, in which each player controls four arrows: one Up ($U$), one Down ($D$), one Left ($L$), and one Right ($R$). Without loss of generality, we further assume that only one player plays at a time, using exactly two feet at a time, and that she will shower immediately afterward.
 
 \begin{figure}[t]
 	\begin{center}
@@ -133,18 +144,318 @@ In this body of work, we will focus exclusively on the Singles game mode, in whi
 \end{figure}
 \begin{figure}[t]
 	\begin{center}
-	\includegraphics[width=0.25\textwidth]{jim.jpg}
+	\includegraphics[width=0.2\textwidth]{jim.jpg}
 	\end{center}
 	\caption{Doubles play is beyond the scope of our work. It requires (or perhaps produces?) a magnificent beard.}
 	\label{fig:jim}
 \end{figure}
 
-\bibliographystyle{alpha}
-\bibliography{paper}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%\onecolumn
-%
-%\appendix
+\section{Properties of Stepcharts}
 
+Being a game, one might assume that players find it fun to step the arrows in the indicated patterns, as opposed to, for example, stepping them in random unrelated patterns, or stepping off the pad entirely to go play Rocket League \cite{rocketleague}.
+Accordingly, step authors take care to produce stepcharts with interesting patterns.
+Typically, players step the arrows alternatingly with either foot.
+Step authors can either reinforce this tendency, by maintaining that left and right arrow targets always receive arrows of different (even or odd) sequential parity;
+or subvert it, forcing the player to step on the left arrow with their right foot (or v.v.).
+The former pattern is called a {\em stream}, and the latter pattern a {\em crossover}. Crossovers are loved by some players (Figure~\ref{fig:bengreg}, left), and hated by others (Figure~\ref{fig:bengreg}, right).
+
+Figure~\ref{fig:patterns} shows many common step patterns.
+Among these, note especially the {\em lateral} ($LURLDR$), in which the player briefly faces backwards (left foot on $R$ and right foot on $L$), and the {\em spin} ($LURDLU$), in which, yeah, you get the picture.
+
+\begin{figure}[t]
+	\begin{center}
+	\includegraphics[width=0.48\textwidth]{patterns.jpg}
+	\end{center}
+	\caption{Common step patterns \cite{patterns}.}
+	\label{fig:patterns}
+\end{figure}
+
+\subsection{Difficulty}
+
+Stepcharts are rated in difficulty on a scale from 1 to 20 ``feet''\footnote{
+Other dance games \cite{konami}, which shall remain unnamed, feature wimpier stepcharts rated only up to 10, but as ITG players got better, they left those charts in the dust and began creating their own charts to challenge themselves with ridiculous difficulties. This paper's author plays ITG at the 13-14 level.}
+To date, difficulty is always judged by a human (typically the step author), and primarily reflects factors such as burstiness (footspeed), prolognedness of streams (stamina), and complexity of jumps, holds, and crossovers (technical).
+These measures of difficulty have been well-studied in prior works \cite{callofthehound,dawgsinthehouse}.
+
+\subsection{Facing}
+
+Regardless of the presence of crossovers, all step patterns will keep the player {\em facing} one way or another, and most include sequences that will change the player's facing back and forth.
+For example, when the player stands with left foot on $L$ and right foot on $U$, they are facing up-left, or $UL$. Standing on $D$ and $R$ also produces the same $UL$ facing, unless the player is crossed-over (left foot on $R$), in which case the facing is $DL$.
+Table~\ref{tab:facing} shows all possibilities of facing using two feet on four arrows.
+We exclude the possibility for both feet to be instantaneously on the same arrow (called a ``footswitch''), leaving this pattern to future work.
+
+\begin{table}[h]
+	\begin{center}
+	\begin{tabular}{cc|cccc}
+		& & \multicolumn{4}{c}{Right foot} \\
+		& & $\leftarrow$ & $\downarrow$ & $\uparrow$ & $\rightarrow$ \\
+		\hline
+		\multirow{4}{*}{Left foot}
+		%                 L   D   U   R
+		& $\leftarrow$  & - & $UR$ & $UL$ & $U$ \\
+		& $\downarrow$  & $DL$* & - & $L$ & $UL$ \\
+		& $\uparrow$    & $DR$* & $R$ & - & $UR$ \\
+		& $\rightarrow$ & $D\dagger$ & $DR$* & $DL$* & - \\
+
+	\end{tabular}
+	\end{center}
+	\caption{Facing directions. ``Crossover'' facings are marked (*), and the ``lateral'' facing is marked ($\dagger$). Note the appealing diagonal symmetry.}
+	\label{tab:facing}
+\end{table}
+
+\subsection{Turning}
+
+A stepchart contains a {\em turn} when a sequence of steps changes the player's facing.
+
+\newtheorem{definition}{Definition}
+\begin{definition}[Turniness]
+	The turniness $\mathcal{T}$ of a single step is the angular distance (measured in increments of $\pi/4$) which that step changes the facing compared to the facing from the previous two steps.
+
+	The turniness $\mathcal{T}$ of a stream is the average of each step's turniness (excluding the first two for which it is undefined).
+\end{definition}
+
+Because only one foot may change at a time, it is easy to see that the maximum turniness of a single step is 2.
+These steps always involve one foot moving entirely across the middle of the pad (from $U$ to $D$, from $L$ to $R$, etc).
+By tradition, these are called {\em candle steps}, according to the imagery that if a candle were placed in the middle of the 4 arrows, this step would knock it over. I don't know why it couldn't be called a beer step instead, though.
+
+{\bf Turning is exhausting.} Consider the three stream patterns shown in Figure~\ref{fig:stream}.
+In the leftmost stream, the player must barely move her feet at all, never changing facing from $U$.
+In the middle stream, the player faces largely $UR$, with brief $U$ facings ($\mathcal{T}=1$) as she moves between the $L$/$D$ and $U$/$R$ arrows.
+Both of these streams are very easy to step without becoming fatigued.
+However, the rightmost stream features many candle steps (or beer steps), changing facing from $UR$ to $UL$ and back in the span of a single measure.
+ITG players hate this \cite{weirdtrick}!
+However, note that even in this stream, not {\em all} of the steps have $\mathcal{T}=2$: the {\em average turniness} of this stream is only 4/3.
+
+\begin{figure}[t]
+	\begin{center}
+	\includegraphics[width=0.15\textwidth]{tower.png}
+	\includegraphics[width=0.15\textwidth]{staircase.png}
+	\includegraphics[width=0.15\textwidth]{twistystair.png}
+	\end{center}
+	\caption{Three streams of differing turniness.
+	Note how the color-coding of the notes by beat aids to discern turniness at a glance: the right foot is always on blue, and it moves among 1, 2, or 3 different arrows respectively.}
+	\label{fig:stream}
+\end{figure}
+
+We are interested in the following questions:
+\begin{enumerate}
+	\item What is the turniest possible stepchart?
+	\item How is maximum turniness affected by various constraints to contain no crossovers/laterals/etc?
+	\item How turny are real-world ITG charts?
+\end{enumerate}
+
+\section{Chart Synthesis}
+
+We developed a program for exploring all possible step patterns using a little-known yet powerful computational technique \cite{bruteforce1,bruteforce2}.
+This program computes the average turniness of every such pattern.
+However, while some players enjoy any step pattern including spins \cite{alanv},
+other players may prefer only crossovers and laterals in their charts,
+while still others prefer charts entirely crossover-free.
+Hence, our program is further capable of filtering patterns according to 5 predicates:
+\begin{itemize}
+	\item All patterns allowed
+	\item No spins
+	\item No 270s
+	\item No laterals
+	\item No crossovers
+\end{itemize}
+Note that each predicate captures a strict subset of step patterns compared to the one above it (a lateral is a crossover, and so forth).
+These predicates are implemented as shown in Figure~\ref{fig:eqn}.
+
+\begin{figure*}
+	\begin{eqnarray*}
+		\mathsf{is\_xover}(\phi) &=& \phi \equiv DL \vee \phi \equiv DR \\
+		\mathsf{is\_lateral}(\phi) &=& \phi \equiv D \\
+		\mathsf{is\_270}(\phi, \phi_1, \phi_2) &=& (\phi \equiv DR \wedge (\phi_1 \equiv DL \vee (\phi_1 \equiv D \wedge \phi_2 \equiv DL))) \vee \\
+                                              & & (\phi \equiv DL \wedge (\phi_1 \equiv DR \vee (\phi_1 \equiv D \wedge \phi_2 \equiv DR))) \\
+		\mathsf{is\_spin}(\phi, \phi_1, \phi_2, \phi_3) &=& (\phi \equiv R \vee \phi \equiv UR \vee \phi \equiv L \vee \phi \equiv UL) \wedge \mathsf{is\_270}(\phi_1, \phi_2, \phi_3)
+	\end{eqnarray*}
+	\caption{Formal definitions of crossovers, laterals, 270s, and spins. Each predicate takes as arguments the current facing $\phi$, and up to the three most recent previous facings, $\phi_1$, $\phi_2$, $\phi_3$.}
+	\label{fig:eqn}
+\end{figure*}
+
+Deciding on how long of step sequences we should search for is a tradeoff between accuracy, in judging turniness in small fractions, and (drumroll...) exponential explosion.
+To strike a balance we decided to experimentally measure turniness at a granularity of 1/8th, which requires searching for step sequences of length 18 (twice the denominator, plus 2 for the first 2 steps whose turniness is undefined).
+Figure~\ref{fig:graph} shows our results.
+The highest data point clocks in at 40,609,780: there are 40 million unique 18-step sequences, any patterns allowed, that have turniness 0.875.
+
+We see that, with one exception, allowing each new type of step pattern increases the maximum possible turniness of the chart.
+The exception is that 270s do not allow for any additional turniness over laterals, although they do allow for {\em more possible ways} to achieve maximum turniness.
+Despite no additional turniness, this is crucial information for stepchart authors, as ITG players will (usually) get bored of any chart that simply repeats the same pattern over and over.
+
+\begin{figure}[t]
+	\begin{center}
+	\includegraphics[width=0.48\textwidth]{turniness.pdf}
+	\end{center}
+	\caption{Distribution of unique step sequences among turninesses, classified by what types of step patterns are allowed in the chart.}
+	\label{fig:graph}
+\end{figure}
+
+{\bf Maximum turniness!}
+Now to the paper's titular question: what step sequences underlie those data points on the far right of each curve?
+Though it would be tedious to transcribe them all into Stepmania's step editor \cite{stepmania}, we manually inspected many of them to select the most representative and/or photogenic ones from each category. We show these sequences in Figure~\ref{fig:sequences}.
+These visualizations allow us to manually compute the true turniness of each sequence, imagining the core sequence repeated ad infinitum, freeing ourselves from the 1/8th granularity imposed by our experimental setup.
+We find that the turniest crossovers have $\mathcal{T}=3/2$ and that the turniest laterals have $\mathcal{T}=8/5$.
+
+The case of 270s is irregular: we found no 18-step sequence turnier than the turniest laterals, and most notably,
+none of the sequences included a 270 step in the {\em middle} of the stream.
+Figure~\ref{fig:sequences}(d) shows a stream with crossovers and laterals and no 270 step until the very last one.
+To see why, imagine yourself on the pad here: the only possible 19th step that doesn't result in a spin is to step back on the same arrow your left foot is already on.
+That step has $\mathcal{T}=0$, which would undo any potential turniness gained from going into the 270.
+Nevertheless, 270s retain some real-world application, as demonstrated by \cite{utopia} as the very last step.
+
+\begin{figure*}[t]
+	\begin{center}
+	\begin{tabular}{ccccc}
+		\includegraphics[width=0.17\textwidth]{result-1-3-vanilla.png} &
+		\includegraphics[width=0.17\textwidth]{result-1-5-xover.png} &
+		\includegraphics[width=0.17\textwidth]{result-1-6-lats.png} &
+		\includegraphics[width=0.17\textwidth]{result-irregular-270.png} &
+		\includegraphics[width=0.17\textwidth]{result-2-spin.png} \\
+		\small (a) Vanilla, $\mathcal{T}=4/3$. &
+		\small (b) Crossovers, $\mathcal{T}=3/2$. &
+		\small (c) Laterals, $\mathcal{T}=8/5$. &
+		\small (d) 270s (irregular). &
+		\small (e) Spins, $\mathcal{T}=2$.
+	\end{tabular}
+	\end{center}
+	\caption{The turniest possible stepcharts.}
+	\label{fig:sequences}
+\end{figure*}
+
+\section{Existing Chart Analysis}
+
+TODO % TODO
+
+\section{Conclusion}
+
+In conclusion, LURR DURR!
+
+\bibliographystyle{abbrvnat}
+\bibliography{citations}
+
+\appendix
+
+
+\section{Most turny patterns}
+
+% TODO: figure out how to uniquify these.
+
+\subsection{Vanilla}
+
+Following are the most turny 18-step patterns that are totally vanilla, with turniness of 1.375. (Manual inspection reveals the true turniness to be 4/3.)
+
+\noindent
+URDULDURDULDURDULD
+DRUDLUDRUDLUDRUDLU
+
+\subsection{Crossovers}
+
+Following are the most turny 18-step patterns that may include crossovers only, with turniness of 1.5.
+
+\noindent
+URDULDURDLDRULURDL
+URDULDRDLUDRULURDL
+URDULDRDLURULDURDL
+URDULDRDLURULDRDLU
+URDLDRUDLUDRULURDL
+URDLDRUDLURULDURDL
+URDLDRUDLURULDRDLU
+URDLDRULURDULDURDL
+URDLDRULURDULDRDLU
+URDLDRULURDLDRUDLU
+URDLDRULURDLDRULUR
+URDLDRULURDLDRURDL
+URDLDRULURDRULURDL
+URDLDRURDLDRULURDL
+URDRULURDLDRULURDL
+DRUDLUDRULURDLDRUL
+DRUDLURULDURDLDRUL
+DRUDLURULDRDLUDRUL
+DRUDLURULDRDLURULD
+DRULURDULDURDLDRUL
+DRULURDULDRDLUDRUL
+DRULURDULDRDLURULD
+DRULURDLDRUDLUDRUL
+DRULURDLDRUDLURULD
+DRULURDLDRULURDULD
+DRULURDLDRULURDLDR
+DRULURDLDRULURDRUL
+DRULURDLDRURDLDRUL
+DRULURDRULURDLDRUL
+DRURDLDRULURDLDRUL
+LUDRULURDLDRULURDL
+LURULDURDLDRULURDL
+LURULDRDLUDRULURDL
+LURULDRDLURULDURDL
+LURULDRDLURULDRDLU
+LDURDLDRULURDLDRUL
+LDRDLUDRULURDLDRUL
+LDRDLURULDURDLDRUL
+LDRDLURULDRDLUDRUL
+LDRDLURULDRDLURULD
+
+\subsection{Laterals}
+
+Following are the most turny 18-step patterns that may include crossovers and laterals, with turniness of 1.625. (Manual inspection reveals the true turniness to be 8/5.)
+
+\noindent
+URDLDRULRDLURLDRUL
+URDLRULDRDLURLDRUL
+URDLRULDRLURDLDRUL
+URDLRULDRLURDLRULD
+DRULURDLRULDRLURDL
+DRULRDLURULDRLURDL
+DRULRDLURLDRULURDL
+DRULRDLURLDRULRDLU
+LURLDRULRDLURLDRUL
+LDRLURDLRULDRLURDL
+
+\subsection{270s}
+
+Following are the most turny 18-step patterns that may include crossovers, laterals, and 270s, with turniness of 1.625.
+(Manual inspection reveals irregularity; these streams exhibit no core pattern that can be repeated to retain the maximum turniness.)
+
+\noindent
+URDULDRLURDLRULDRU
+URDLDRULURDLRULDRU
+URDLDRULRDLURULDRU
+URDLDRULRDLURLDRUL
+URDLRULDURDLRULDRU
+URDLRULDRDLURULDRU
+URDLRULDRDLURLDRUL
+URDLRULDRLURDULDRU
+URDLRULDRLURDLDRUL
+URDLRULDRLURDLRULD
+DRUDLURLDRULRDLURD
+DRULURDLDRULRDLURD
+DRULURDLRULDRDLURD
+DRULURDLRULDRLURDL
+DRULRDLUDRULRDLURD
+DRULRDLURULDRDLURD
+DRULRDLURULDRLURDL
+DRULRDLURLDRUDLURD
+DRULRDLURLDRULURDL
+DRULRDLURLDRULRDLU
+LURULDRLURDLRULDRU
+LURLDRULURDLRULDRU
+LURLDRULRDLURULDRU
+LURLDRULRDLURLDRUL \\
+LDRDLURLDRULRDLURD
+LDRLURDLDRULRDLURD
+LDRLURDLRULDRDLURD
+LDRLURDLRULDRLURDL
+
+\subsection{Spins}
+
+Following are the most turny 18-step patterns that may include any pattern, with turniness of 2.
+
+\noindent
+URDLURDLURDLURDLUR
+DRULDRULDRULDRULDR
+LURDLURDLURDLURDLU
+LDRULDRULDRULDRULD
 
 \end{document}

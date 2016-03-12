@@ -87,14 +87,14 @@ bool is_270(enum facing new_facing, enum facing last_facing, enum facing two_fac
 	if (new_facing == F_DR) {
 		if (last_facing == F_DL) {
 			return true; // LURD
-		} else if (last_facing == F_D && two_facings_ago == F_DR) {
+		} else if (last_facing == F_D && two_facings_ago == F_DL) {
 			return true; // LRDLRD
 		}
 	// symmetric case
 	} else if (new_facing == F_DL) {
 		if (last_facing == F_DR) {
 			return true; // RULD
-		} else if (last_facing == F_D && two_facings_ago == F_DL) {
+		} else if (last_facing == F_D && two_facings_ago == F_DR) {
 			return true; // RLDRLD
 		}
 	}
@@ -103,10 +103,12 @@ bool is_270(enum facing new_facing, enum facing last_facing, enum facing two_fac
 bool is_spin(enum facing new_facing, enum facing last_facing, enum facing two_facings_ago, enum facing three_facings_ago) {
 	// Patterns such as LURD are allowed but you have to twist back around the way you came
 	// from. So check at facings L, R, UR, and UL.
-	return (new_facing == F_R || new_facing == F_UR) && is_270(last_facing, two_facings_ago, three_facings_ago);
+	return (new_facing == F_R || new_facing == F_UR ||
+		new_facing == F_L || new_facing == F_UL) &&
+		is_270(last_facing, two_facings_ago, three_facings_ago);
 }
 
-#define SEARCHDEPTH 16
+#define SEARCHDEPTH 18
 #define MAX(x, y) ({ typeof(x) __x = (x); typeof(y) __y = (y); __x < __y ? __y : __x; })
 
 enum search_rule { NONE = 0, NO_SPINS, NO_270S, NO_LATERALS, NO_XOVERS, NUM_RULES };
@@ -191,6 +193,6 @@ unsigned int search(enum arrow *chart, unsigned int index, unsigned int turnines
 void main()
 {
 	enum arrow chart[SEARCHDEPTH];
-	unsigned int result = search(chart, 0, 0, NO_XOVERS);
+	unsigned int result = search(chart, 0, 0, NONE); // can customize this
 	printf("Best turniness %u\n", result);
 }
