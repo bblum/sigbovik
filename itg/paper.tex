@@ -174,8 +174,8 @@ Among these, note especially the {\em lateral} ($LURLDR$), in which the player b
 
 \subsection{Difficulty}
 
-Stepcharts are rated in difficulty on a scale from 1 to 20 ``feet''\footnote{
-Other dance games \cite{konami}, which shall remain unnamed, feature wimpier stepcharts rated only up to 10, but as ITG players got better, they left those charts in the dust and began creating their own charts to challenge themselves with ridiculous difficulties. This paper's author plays ITG at the 13-14 level.}
+Stepcharts are rated in difficulty on a scale from 1 to 20 ``feet'' \cite{simplylove}\footnote{
+Other dance games \cite{konami}, which shall remain unnamed, feature wimpier stepcharts rated only up to 10, but as ITG players got better, they left those charts in the dust and began creating their own charts to challenge themselves with ridiculous difficulties. This paper's author plays ITG at the 13-14 level.}.
 To date, difficulty is always judged by a human (typically the step author), and primarily reflects factors such as burstiness (footspeed), prolognedness of streams (stamina), and complexity of jumps, holds, and crossovers (technical).
 These measures of difficulty have been well-studied in prior works \cite{callofthehound,dawgsinthehouse}.
 
@@ -226,7 +226,7 @@ In the middle stream, the player faces largely $UR$, with brief $U$ facings ($\m
 Both of these streams are very easy to step without becoming fatigued.
 However, the rightmost stream features many candle steps (or beer steps), changing facing from $UR$ to $UL$ and back in the span of a single measure.
 ITG players hate this \cite{weirdtrick}!
-However, note that even in this stream, not {\em all} of the steps have $\mathcal{T}=2$: the {\em average turniness} of this stream is only 4/3.
+However, note that even in this stream, not {\em all} of the steps have $\mathcal{T}=2$: the {\em average} turniness of this stream is only 4/3.
 
 \begin{figure}[t]
 	\begin{center}
@@ -252,14 +252,14 @@ We developed a program for exploring all possible step patterns using a little-k
 This program computes the average turniness of every such pattern.
 However, while some players enjoy any step pattern including spins \cite{alanv},
 other players may prefer only crossovers and laterals in their charts,
-while still others prefer charts entirely crossover-free.
-Hence, our program is further capable of filtering patterns according to 5 predicates:
+while still others prefer charts completely vanilla.
+Hence, our program is further capable of filtering patterns by 5 predicates:
 \begin{itemize}
 	\item All patterns allowed
 	\item No spins
 	\item No 270s
 	\item No laterals
-	\item No crossovers
+	\item No crossovers (vanilla)
 \end{itemize}
 Note that each predicate captures a strict subset of step patterns compared to the one above it (a lateral is a crossover, and so forth).
 These predicates are implemented as shown in Figure~\ref{fig:eqn}.
@@ -267,7 +267,7 @@ These predicates are implemented as shown in Figure~\ref{fig:eqn}.
 \begin{figure*}
 	\begin{eqnarray*}
 		\mathsf{is\_xover}(\phi) &=& \phi \equiv DL \vee \phi \equiv DR \\
-		\mathsf{is\_lateral}(\phi) &=& \phi \equiv D \\
+		\mathsf{is\_lat}(\phi) &=& \phi \equiv D \\
 		\mathsf{is\_270}(\phi, \phi_1, \phi_2) &=& (\phi \equiv DR \wedge (\phi_1 \equiv DL \vee (\phi_1 \equiv D \wedge \phi_2 \equiv DL))) \vee \\
                                               & & (\phi \equiv DL \wedge (\phi_1 \equiv DR \vee (\phi_1 \equiv D \wedge \phi_2 \equiv DR))) \\
 		\mathsf{is\_spin}(\phi, \phi_1, \phi_2, \phi_3) &=& (\phi \equiv R \vee \phi \equiv UR \vee \phi \equiv L \vee \phi \equiv UL) \wedge \mathsf{is\_270}(\phi_1, \phi_2, \phi_3)
@@ -278,8 +278,9 @@ These predicates are implemented as shown in Figure~\ref{fig:eqn}.
 
 Deciding on how long of step sequences we should search for is a tradeoff between accuracy, in judging turniness in small fractions, and (drumroll...) exponential explosion.
 To strike a balance we decided to experimentally measure turniness at a granularity of 1/8th, which requires searching for step sequences of length 18 (twice the denominator, plus 2 for the first 2 steps whose turniness is undefined).
+Also, our program WLOG restricts streams to always start on the left foot, and never to start crossed over.
 Figure~\ref{fig:graph} shows our results.
-The highest data point clocks in at 40,609,780: there are 40 million unique 18-step sequences, any patterns allowed, that have turniness 0.875.
+The highest data point clocks in at 40,609,780: there are over 40 million unique 18-step sequences, any patterns allowed, that have turniness 0.875.
 
 We see that, with one exception, allowing each new type of step pattern increases the maximum possible turniness of the chart.
 The exception is that 270s do not allow for any additional turniness over laterals, although they do allow for {\em more possible ways} to achieve maximum turniness.
@@ -304,7 +305,12 @@ none of the sequences included a 270 step in the {\em middle} of the stream.
 Figure~\ref{fig:sequences}(d) shows a stream with crossovers and laterals and no 270 step until the very last one.
 To see why, imagine yourself on the pad here: the only possible 19th step that doesn't result in a spin is to step back on the same arrow your left foot is already on.
 That step has $\mathcal{T}=0$, which would undo any potential turniness gained from going into the 270.
-Nevertheless, 270s retain some real-world application, as demonstrated by \cite{utopia} as the very last step.
+Nevertheless, 270s retain some real-world application, as demonstrated by \cite{utopia} which similarly employs a 270 as the very last step.
+
+Perhaps predictably, pure spins make for the turniest possible chart. There are only two possible ways to candle every step; one's name is ``clockwise'', and you can guess the other.
+
+{\bf Minimum turniness.}
+Each of the 5 categories shares the same data point at $\mathcal{T}=0$: there are 7 possible streams that never turn at all. These are the 7 tower patterns $LULU$, $LRLR$, $LDLD$, $URUR$, $DRDR$, $UDUD$, and $DUDU$. We already showed the first of these in Figure~\ref{fig:stream}, left. For further treatment of minimally turny charts, we refer the reader to \cite{deltamax}.
 
 \begin{figure*}[t]
 	\begin{center}

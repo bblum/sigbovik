@@ -2,6 +2,12 @@
 #include <stdbool.h>
 #include <assert.h>
 
+#define analysis_main main
+
+/******************************************************************************
+ * Common helpers
+ ******************************************************************************/
+
 /*
    1  2  3
       U
@@ -30,15 +36,19 @@ enum facing whichway(enum arrow left_foot, enum arrow right_foot) {
 		[U][D] = F_R,
 		[U][L] = F_DR, // xover
 		[U][R] = F_UR,
+		//[U][U] = F_U, // footswitch
 		[L][U] = F_UL,
 		[L][D] = F_UR,
 		[L][R] = F_U,
+		//[L][L] = F_L, // xover footswitch
 		[D][U] = F_L,
 		[D][L] = F_DL, // xover
 		[D][R] = F_UL,
+		//[D][D] = F_U, // footswitch (to be theoretically beautiful, this would be F_D, a backwards switch, but who the hell does that?)
 		[R][L] = F_D, // lateral
 		[R][U] = F_DL, // xover
 		[R][D] = F_DR, // xover
+		//[R][R] = F_R, // xover footswitch
 	};
 	return way_table[left_foot][right_foot];
 }
@@ -80,6 +90,83 @@ unsigned int turn_distance(enum facing before, enum facing after)
 	};
 	return turn_table[before][after];
 }
+
+/******************************************************************************
+ * Analysis
+ ******************************************************************************/
+
+// 1 = tap; 2 = hold; 3 = hold release; 4 = roll; M = mine
+// IDK what stepmania does for lifts/fakes; I don't know of any chart that uses them anyway.
+#define COULD_BE_NOTE(c) (((c) >= '0' && (c) <= '9') || (c) == 'M' || (c) == 'm')
+#define IS_NOTE(c) ((c) == '1' || (c) == '2' || (c) == '4')
+
+bool get_note(char *buf, enum arrow *note)
+{
+	char l, d, u, r;
+	if (sscanf(buf, "%c%c%c%c\n", &l, &d, &u, &r) == 4) {
+		if (COULD_BE_NOTE(l) && COULD_BE_NOTE(d) && COULD_BE_NOTE(u) && COULD_BE_NOTE(r)) {
+			if (IS_NOTE(l) && !IS_NOTE(d) && !IS_NOTE(u) && !IS_NOTE(r)) {
+				*note = L;
+				return true;
+			} else if (!IS_NOTE(l) && IS_NOTE(d) && !IS_NOTE(u) && !IS_NOTE(r)) {
+				*note = D;
+				return true;
+			} else if (!IS_NOTE(l) && !IS_NOTE(d) && IS_NOTE(u) && !IS_NOTE(r)) {
+				*note = U;
+				return true;
+			} else if (!IS_NOTE(l) && !IS_NOTE(d) && !IS_NOTE(u) && IS_NOTE(r)) {
+				*note = R;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+void analysis_main()
+{
+	char buf[256];
+	enum facing last_facing;
+	enum arrow last_note;
+	unsigned int notes = 0;
+	unsigned int turniness = 0;
+	while (fgets(buf, 256, stdin)) {
+		buf[255] = 0;
+		enum arrow note;
+		// XXX: Ignores jumps, hands, &c.
+		if (get_note(buf, &note)) {
+			if (notes != 0) {
+				// Check for double-step. Foot switches are future work!
+				if (note == last_note) {
+					continue;
+				}
+				// XXX: Assumes no doublesteps.
+				// NB. Assumes song always starts on left foot.
+				// But tbh, it doesn't affect the turniness calculation
+				// if we think you're backwards the entire song!
+				// XXX: Fails to parse the Boten Anna roll-stream pattern.
+				enum facing this_facing = notes % 2 == 0 ?
+					whichway(note, last_note) :
+					whichway(last_note, note);
+				if (notes > 1) {
+					// subsequent notes not first or second ones
+					unsigned int distance = turn_distance(last_facing, this_facing);
+					assert(distance <= 2);
+					turniness += distance;
+				}
+				last_facing = this_facing;
+			}
+			last_note = note;
+			notes++;
+		}
+	}
+	printf("%u turniness (x1000) (%u turns / %u notes)\n", (turniness * 1000 / notes), turniness, notes);
+}
+
+
+/******************************************************************************
+ * Synthesis
+ ******************************************************************************/
 
 bool is_270(enum facing new_facing, enum facing last_facing, enum facing two_facings_ago) {
 	// Facing F_D is allowed, but twisting past that to face the opposite direction you came
@@ -190,7 +277,7 @@ unsigned int search(enum arrow *chart, unsigned int index, unsigned int turnines
 	return max_turniness;
 }
 
-void main()
+void synthesis_main()
 {
 	enum arrow chart[SEARCHDEPTH];
 	unsigned int result = search(chart, 0, 0, NONE); // can customize this
