@@ -160,7 +160,7 @@ void analysis_main()
 			notes++;
 		}
 	}
-	printf("%u turniness (x1000) (%u turns / %u notes)\n", (turniness * 1000 / notes), turniness, notes);
+	printf("%u turniness (x10000) (%u turns / %u notes)\n", (turniness * 10000 / notes), turniness, notes);
 }
 
 

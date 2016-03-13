@@ -84,6 +84,7 @@ Which ITG Stepcharts are Turniest?
 	Other more obvious factors, such as raw speed, have been well studied in prior work. % TODO cite.
 	This paper presents an analytic study of this {\em turniness} factor.
 	We study the turniness of many existing stepcharts, and present a novel (but unsurprising) approach to automatically generating maximally (or minimally) turny charts.
+	Among real-world songs, we find stepcharts with overall turniness ranging from 0\% to 81.33\% of the theoretical maximum.
 
 
 \end{abstract}
@@ -117,14 +118,14 @@ As a visual assist to the player, notes are coloured according to their beat gra
 
 \begin{figure}[t]
 	\begin{center}
-	\includegraphics[width=0.25\textwidth]{protagonist.png}
+	\includegraphics[width=0.2\textwidth]{protagonist.png}
 	\end{center}
 	\caption{ITG gameplay, including score indicator (top), protagonist avatar (mid), directional obstacles (low), and step judgement, life bar, and combo indicator (figure these out for yourself, I'm getting tired).}
 	\label{fig:protagonist}
 \end{figure}
 \begin{figure}[t]
 	\begin{center}
-	\includegraphics[width=0.2\textwidth]{itg2cabinet.jpg}
+	\includegraphics[width=0.18\textwidth]{itg2cabinet.jpg}
 	\end{center}
 	\caption{An ITG cab. RIP in peace, Roxor \cite{konami}.}
 	\label{fig:cab}
@@ -331,19 +332,230 @@ Each of the 5 categories shares the same data point at $\mathcal{T}=0$: there ar
 	\label{fig:sequences}
 \end{figure*}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{Existing Chart Analysis}
 
-TODO % TODO
+Of course, composing a stepchart of nothing but the theoretically-turniest patterns would be extremely tiresome (in more ways than one).
+We turn our attention to existing ITG charts which were developed prior to this study, to investigate how much ITG players turn in the real world.
+We processed every stepchart in our collection, which includes 70+ song packs.
+Most well-known pack series from the ITG community are included, such as {\em Cirque}, {\em ITG}, {\em Mute Sims}, {\em Pendulum}, {\em r21*}, {\em SPEEDCOOOORE}, {\em The Legend of Zim}, and {\em Valex's Magical 4-Arrow Adventure}.
+
+{\bf Limitations.}
+Real-world stepcharts include many patterns not accounted for in our analysis. We did not expect much trouble from jumps and jacks, opting simply to ignore them and count the turns among the surrounding single-steps.
+Footswitches and doublesteps, however, can foil this strategy, as our analysis will inadvertently begin stepping with feet inverted from where they should be.
+Merely getting turned around is not a problem (computers don't have eyes), but the act of turning around involves some candle-steps, which could cause a footswitch-heavy chart to seem very spinny even though the proper footing would never make the player cross over at all.
+Coping with these limitations is beyond the scope of our work, although we will highlight some experimental false-positives later.
+
+\subsection{Results}
+
+As shown in Figure~\ref{fig:distribution}, the vast majority of real-world stepcharts have average turniness between 0.6 and 1.0.
+We don't really care about those.
+
+\begin{figure}[t]
+	\begin{center}
+	\includegraphics[width=0.48\textwidth]{realworld.pdf}
+	\end{center}
+	\caption{Distribution of turniness among 8,278 existing ITG charts.}
+	\label{fig:distribution}
+\end{figure}
+
+{\bf The Least Turny Charts.}
+16 charts in our collection have $\mathcal{T}=0$. Most of these are beginner charts, rated 2 or 3 feet and with no more than 100 steps. \cite{deltamax} stands out, as a 15 with 945 steps. God is that chart ever annoying.
+
+Ignoring all beginner-difficulty and turn-free charts, the least turny stepchart is {\em Sick Dubstep Track} \cite{sickdubstep}, a 4-measure joke rated 6,482 feet, the majority of which is shown in Figure~\ref{fig:example}(a).
+
+
+{\bf The Turniest Charts.}
+No joker has yet dared to make the turniest possible chart (all spins), but one chart comes close.
+Standing alone as the only chart turnier than 1.5 is the Easy 3 for {\em DO ME} \cite{dome}, which is mostly spins punctuated by a few breaks, as shown in Figure~\ref{fig:example}(d).
+\cite{alanv} loves this chart.
+
+Actually, 20 of the 30 turniest charts are all from DDR packs, most of which are Easies. Although DDR charts are known for being fairly crossovery in the upper ranges of difficulty, a close inspection of the easier charts will show that very little care was put in while writing them to avoid excessive double-stepping.
+It's no wonder new ITG players, who used to play DDR, always double-step even when they don't need to. Sheesh, Konami.
+
+Beyond these extreme examples, we are interested in some more normal charts people might actually like to play.
+Table~\ref{tab:feets} shows the turniest charts of each level, for the most popular difficulty levels ranging from 7 to 17.
+So, next time you want to work on your laterals or candles, you have me to thank!
+
+Surprisingly, {\em BRILLIANT 2U (Orchestra-Groove)} \cite{brilliant2u} is full of 270s. I didn't think anybody ever put those in real charts.
+Finally, an honourable mention goes to {\em Oedo Hop} \cite{oedo}, the 2nd turniest 7 (and 4th turniest chart overall!) with $\mathcal{T}=1.384$.
+\cite{deltax} really likes that one so we had to mention it.
+
+\begin{figure*}[t]
+	\begin{center}
+	\begin{tabular}{cccc}
+		\hspace{-2em}
+		\begin{tabular}{c}
+		\includegraphics[width=0.18\textwidth]{sick-dubstep-track.png} \\
+		\small
+		\begin{tabular}{l}
+			(a) {\em Sick Dubstep Track}, $\mathcal{T}=0.26$. \\
+		The least turny non-trivial \\
+		chart.\\
+		\\
+		\end{tabular}
+		\end{tabular}
+		&
+		\hspace{-1em}
+		\begin{tabular}{c}
+		\includegraphics[width=0.18\textwidth]{mr-saxobeat.png} \\
+		\small
+		\begin{tabular}{l}
+			(b) {\em Mr. Saxobeat}, $\mathcal{T}=1.04$. \\
+		Look at all those candles! \\
+		No wonder it was so hard. \\
+		\\
+		\end{tabular}
+		\end{tabular}
+		&
+		\hspace{-1em}
+		\begin{tabular}{c}
+		\includegraphics[width=0.185\textwidth]{flames.png} \\
+		\small
+		\begin{tabular}{l}
+			(c) {\em Flames of the Sky}, $\mathcal{T}=1.04$. \\
+		False-positive with foot-\\
+		switches. Actually faces \\
+		$UR$/$U$/$UL$ the whole time.
+		\end{tabular}
+		\end{tabular}
+		&
+		\hspace{-1em}
+		\begin{tabular}{c}
+		\includegraphics[width=0.18\textwidth]{do-me.png} \\
+		\small
+		\begin{tabular}{l}
+			(d) {\em DO ME}, $\mathcal{T}=1.63$. \\
+		I'll pass, thanks.\\
+		\\
+		\\
+		\end{tabular}
+		\end{tabular}
+	\end{tabular}
+	\end{center}
+	\caption{Real-world ITG charts of varying degrees of turniness.}
+	\label{fig:example}
+\end{figure*}
+
+\begin{table}[t]
+	\begin{center}
+		\small
+	\begin{tabular}{r|l|l|c}
+		Ft. & Name & Pack & $\mathcal{T}$ \\
+		\hline
+		7 & Trip Machine & DDR 1st & 1.407 \\
+		%7 & Oedo Hop & r2112 & 1.38 \\
+		%  & (honorable mention; way better chart) & & \\
+		8 & Brilliant 2U (O-G) & DDR 2ndMIX & 1.347 \\
+		9 & Hearts of Ice & In The Groove 3 & 1.127 \\
+		10 & Visible Noise & In The Groove 2 & 1.188 \\
+		11 & KKKKK Come On & r2112 & 1.145 \\
+		12 & Winnipeg is Fucking Over & best of r21freak ii & 1.150 \\
+		13 & Mr. Saxobeat (*) & Sexuality Violation 2 & 1.044 \\
+		14 & Fancy Footwork ($\dagger$) & Cirque du Zeppelin & 1.026 \\
+		15 & Flames of the Sky (*,$\dagger$) & Ft. Rapids VII &  1.037 \\
+		16 & {\em (no 16 with $\mathcal{T}\ge 1$)} & - & - \\
+		17 & Superluminal & Ft. Rapids VII & 1.058 \\
+	\end{tabular}
+	\end{center}
+	\caption{The turniest existing stepcharts of each difficulty. Songs marked (*) are also shown in Figure~\ref{fig:example}. Songs marked ($\dagger$) are false-positives resulting from too many footswitches incorrectly analyzed as spins.}
+	\label{tab:feets}
+\end{table}
+
+{\bf The Turniest Other Things.}
+Although our analysis picked out a good many turny charts, any ITG player will inevitably get tired of playing the same ones over and over.
+Hence, we are also interested in an aggregated turniness profile to show the average scores of many different stepcharts at once.
+We computed average turninesses for stepcharts grouped {\em by pack} and {\em by step artist}.
+Abbreviated results for the former are shown in Table~\ref{tab:pack} and for the latter in Table~\ref{tab:artist}.
+For the sake of players who dislike turniness, we also list the lowest-scoring packs and artists in addition to the highest-scoring ones.
+
+\begin{table}[t]
+	\begin{center}
+		\small
+	\begin{tabular}{l|c|c}
+		Song Pack & \# of Charts & Avg. $\mathcal{T}$ \\
+		\hline
+		Valex's Magical 4-Arrow Adventure 5 & 150 & 0.964 \\
+		Valex's Magical 4-Arrow Adventure 4 & 170 & 0.956 \\
+		Valex's Magical 4-Arrow Adventure 3 & 155 & 0.950 \\
+		Valex's Magical 4-Arrow Adventure 7 & 150 & 0.937 \\
+		Valex's Magical 4-Arrow Adventure 2 & 130 & 0.929 \\
+		Valex's Magical 4-Arrow Adventure   & 95 & 0.919 \\
+		Valex's Magical 4-Arrow Adventure 6 & 145 & 0.917 \\
+		Subluminal & 16 & 0.906 \\
+		The Legend of Zim 1 & 26 & 0.906 \\
+		FoxyMix 5 & 30 & 0.901 \\
+		FoxyMix 4 - Nuclear Overdrive & 68 & 0.899 \\ 
+		Mute Sims 9 & 48 & 0.886 \\
+		In The Groove Rebirth + & 147 & 0.881 \\
+		StepMania 5 & 5 & 0.869 \\
+		\multicolumn{3}{c}{\normalsize\dots} \\
+		Stephcharts and Richarts & 81 & 0.770 \\
+		Tachyon Delta & 32 & 0.769 \\
+		Tachyon Alpha & 151 & 0.769 \\
+		Sexuality Violation 2 & 219 & 0.766 \\
+		TLOES Chapter 1 & 120 & 0.765 \\
+		Fort Rapids V (12s-16s) r3 Final & 98 & 0.759 \\
+		Noisiastreamz & 20 & 0.758 \\
+		In The Groove & 331 & 0.754 \\
+		Pendulum & 150 & 0.747 \\
+		SPEEDCOOOORE 2 & 70 & 0.731 \\
+		SPEEDCOOOORE & 47 & 0.709 \\
+		The Legend of Zim 3 & 40 & 0.702 \\
+		The Legend of Zim 4 & 44 & 0.701 \\
+		The Legend of Zim 5 & 19 & 0.667 \\
+	\end{tabular}
+	\end{center}
+	\caption{The turniest and least turny stepfile packs. Wow, great job Valex! Zim had a good thing going but has been slacking off recently.}
+	\label{tab:pack}
+\end{table}
+\begin{table}[t]
+	\begin{center}
+		\small
+	\begin{tabular}{l|c|c}
+		Step Artist & \# of Charts & Avg. $\mathcal{T}$ \\
+		\hline
+		M. Emirzian & 25 & 0.981 \\
+		sssmsm & 40 & 0.980 \\
+		M. Calfin & 16 & 0.947 \\
+		J. Berkowitz (Valex) & 1016 & 0.940 \\
+		B. Dinh & 10 & 0.919 \\
+		J. DeGarmo & 24 & 0.915 \\
+		X. Ythar & 17 & 0.914 \\
+		R. McKanna & 59 & 0.895 \\
+		R. Woods & 18 & 0.892 \\
+		Fraxtil & 23 & 0.880 \\
+		\multicolumn{3}{c}{\normalsize\dots} \\
+		I. Pyles & 175 & 0.754 \\
+		P. Shanklin & 29 & 0.752 \\
+		Gazebo & 355 & 0.751 \\
+		zimlord & 199 & 0.750 \\
+		C. Emirzian & 17 & 0.736 \\
+		Mootz & 22 & 0.734 \\
+		B. Abear & 27 & 0.729 \\
+		Insane Steve & 41 & 0.718 \\
+		Blazing & 15 & 0.696 \\
+		C. Foy (\smiley) & 138 & 0.678 \\
+	\end{tabular}
+	\end{center}
+	\caption{The turniest and least turny step authors. Only authors with 10 or more charts are included.}
+	\label{tab:artist}
+\end{table}
+
 
 \section{Conclusion}
 
-In conclusion, LURR DURR!
 
-\bibliographystyle{abbrvnat}
-\bibliography{citations}
+In conclusion, $LURR$ $DURR$!
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \appendix
 
+\section{Linx}
+
+Our analysis program can be found at \url{https://github.com/bblum/sigbovik/tree/master/itg/code}, and our full experimental data-set is available at \url{http://tinyurl.com/turniness}.
 
 \section{Most turny patterns}
 
@@ -463,5 +675,8 @@ URDLURDLURDLURDLUR
 DRULDRULDRULDRULDR
 LURDLURDLURDLURDLU
 LDRULDRULDRULDRULD
+
+\bibliographystyle{abbrvnat}
+\bibliography{citations}
 
 \end{document}
