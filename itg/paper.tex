@@ -34,6 +34,7 @@
 \usepackage{amsthm}
 \usepackage{amssymb}
 %\usepackage{mathpartir}
+\usepackage{hyperref}
 \usepackage{url}
 \usepackage{graphics}
 \usepackage{graphicx}
@@ -43,6 +44,7 @@
 \usepackage{multirow}
 \usepackage[usenames,dvipsnames]{xcolor}
 \usepackage[utopia]{mathdesign}
+\usepackage{natbib}
 
 % ____________________________________________________________
 % Listings Package Configuration
@@ -81,7 +83,7 @@ Which ITG Stepcharts are Turniest?
 
 \begin{abstract}
 	ITG is a popular dance game in which players step on arrows while listening to music. The arrow patterns, indicated by a {\em stepchart}, may range among any level of complexity and difficulty. Among the many factors contributing to a stepchart's difficulty is how much the player must turn from side to side.
-	Other more obvious factors, such as raw speed, have been well studied in prior work. % TODO cite.
+	Other more obvious factors, such as raw speed, have been well studied in prior work.
 	This paper presents an analytic study of this {\em turniness} factor.
 	We study the turniness of many existing stepcharts, and present a novel (but unsurprising) approach to automatically generating maximally (or minimally) turny charts.
 	Among real-world songs, we find stepcharts with overall turniness ranging from 0\% to 81.33\% of the theoretical maximum.
@@ -177,7 +179,7 @@ Among these, note especially the {\em lateral} ($LURLDR$), in which the player b
 
 Stepcharts are rated in difficulty on a scale from 1 to 20 ``feet'' \cite{simplylove}\footnote{
 Other dance games \cite{konami}, which shall remain unnamed, feature wimpier stepcharts rated only up to 10, but as ITG players got better, they left those charts in the dust and began creating their own charts to challenge themselves with ridiculous difficulties. This paper's author plays ITG at the 13-14 level.}.
-To date, difficulty is always judged by a human (typically the step author), and primarily reflects factors such as burstiness (footspeed), prolognedness of streams (stamina), and complexity of jumps, holds, and crossovers (technical).
+To date, difficulty is always judged by a human (typically the step author), and primarily reflects factors such as burstiness (footspeed), prolongedness of streams (stamina), and complexity of jumps, holds, and crossovers (technical).
 These measures of difficulty have been well-studied in prior works \cite{callofthehound,dawgsinthehouse}.
 
 \subsection{Facing}
@@ -311,7 +313,7 @@ Nevertheless, 270s retain some real-world application, as demonstrated by \cite{
 Perhaps predictably, pure spins make for the turniest possible chart. There are only two possible ways to candle every step; one's name is ``clockwise'', and you can guess the other.
 
 {\bf Minimum turniness.}
-Each of the 5 categories shares the same data point at $\mathcal{T}=0$: there are 7 possible streams that never turn at all. These are the 7 tower patterns $LULU$, $LRLR$, $LDLD$, $URUR$, $DRDR$, $UDUD$, and $DUDU$. We already showed the first of these in Figure~\ref{fig:stream}, left. For further treatment of minimally turny charts, we refer the reader to \cite{deltamax}.
+Each of the 5 categories shares the same data point at $\mathcal{T}=0$: there are 7 possible streams that never turn at all. These are the 7 ``tower'' patterns $LULU$, $LRLR$, $LDLD$, $URUR$, $DRDR$, $UDUD$, and $DUDU$. We already showed the first of these in Figure~\ref{fig:stream}, left. For further treatment of minimally turny charts, we refer the reader to \cite{deltamax}.
 
 \begin{figure*}[t]
 	\begin{center}
@@ -360,44 +362,31 @@ We don't really care about those.
 	\label{fig:distribution}
 \end{figure}
 
-{\bf The Least Turny Charts.}
-16 charts in our collection have $\mathcal{T}=0$. Most of these are beginner charts, rated 2 or 3 feet and with no more than 100 steps. $\Delta$MAX \cite{deltamax} stands out, as a 15-footer with 945 steps. God is that chart ever annoying.
-
-Ignoring all beginner-difficulty and turn-free charts, the least turny stepchart is {\em Sick Dubstep Track} \cite{sickdubstep}, a 4-measure joke rated 6,482 feet, the majority of which is shown in Figure~\ref{fig:example}(a). It has $\mathcal{T}=0.263$.
-
-
 {\bf The Turniest Charts.}
 No joker has yet dared to make the turniest possible chart (all spins), but one chart comes close.
-Standing alone as the only chart turnier than 1.5 is the Easy 3 for {\em DO ME} \cite{dome}, which is mostly spins punctuated by a few breaks, as shown in Figure~\ref{fig:example}(d).
+Standing alone as the only chart turnier than 1.5 is the Easy 3 for {\em DO ME} \cite{dome}, which is mostly spins punctuated by a few breaks, as shown in Figure~\ref{fig:example}(a).
 \cite{alanv} loves this chart.
 
 Actually, 20 of the 30 turniest charts are all from DDR packs, most of which are Easies. Although DDR charts are known for being fairly crossovery in the upper ranges of difficulty, a close inspection of the easier charts will show that very little care was put in while writing them to avoid excessive double-stepping.
 It's no wonder new ITG players, who used to play DDR, always double-step even when they don't need to. Sheesh, Konami.
 
-Beyond these extreme examples, we are interested in some more normal charts people might actually like to play.
-Table~\ref{tab:feets} shows the turniest charts of each level, for the most popular difficulty levels ranging from 7 to 17.
-So, next time you want to work on your laterals or candles, you have me to thank!
-
-Surprisingly, {\em BRILLIANT 2U (Orchestra-Groove)} \cite{brilliant2u} is full of 270s. I didn't think anybody ever put those in real charts.
-Finally, an honourable mention goes to {\em Oedo Hop} \cite{oedo}, the 2nd turniest 7 (and 4th turniest chart overall!) with $\mathcal{T}=1.384$.
-\cite{deltax} really likes that one so we had to mention it.
 
 \begin{figure*}[t]
 	\begin{center}
 	\begin{tabular}{cccc}
-		\hspace{-2em}
+		\hspace{-1em}
 		\begin{tabular}{c}
-		\includegraphics[width=0.18\textwidth]{sick-dubstep-track.png} \\
+		\includegraphics[width=0.18\textwidth]{do-me.png} \\
 		\small
 		\begin{tabular}{l}
-			(a) {\em Sick Dubstep Track}, $\mathcal{T}=0.26$. \\
-		The least turny non-trivial \\
-		chart.\\
-		\\
+			(a) {\em DO ME}, $\mathcal{T}=1.63$. \\
+			Proportion of non-spinny \\
+			section enlarged to show \\
+			detail. \\
 		\end{tabular}
 		\end{tabular}
 		&
-		\hspace{-1.5em}
+		\hspace{-1em}
 		\begin{tabular}{c}
 		\includegraphics[width=0.18\textwidth]{mr-saxobeat.png} \\
 		\small
@@ -409,7 +398,7 @@ Finally, an honourable mention goes to {\em Oedo Hop} \cite{oedo}, the 2nd turni
 		\end{tabular}
 		\end{tabular}
 		&
-		\hspace{-1.5em}
+		\hspace{-2em}
 		\begin{tabular}{c}
 		\includegraphics[width=0.185\textwidth]{flames.png} \\
 		\small
@@ -421,14 +410,15 @@ Finally, an honourable mention goes to {\em Oedo Hop} \cite{oedo}, the 2nd turni
 		\end{tabular}
 		\end{tabular}
 		&
-		\hspace{-1.5em}
+		\hspace{-2em}
 		\begin{tabular}{c}
-		\includegraphics[width=0.18\textwidth]{do-me.png} \\
+		\includegraphics[width=0.18\textwidth]{sick-dubstep-track.png} \\
 		\small
 		\begin{tabular}{l}
-			(d) {\em DO ME}, $\mathcal{T}=1.63$. \\
-		I'll pass, thanks.\\
-		\\
+			(d) {\em Sick Dubstep Track}, $\mathcal{T}=$ \\
+			$0.26$. 
+		The least turny non- \\trivial
+		non-beginner chart.\\
 		\\
 		\end{tabular}
 		\end{tabular}
@@ -444,10 +434,10 @@ Finally, an honourable mention goes to {\em Oedo Hop} \cite{oedo}, the 2nd turni
 	\begin{tabular}{r|l|l|c}
 		Ft. & Name & Pack & $\mathcal{T}$ \\
 		\hline
-		7 & Trip Machine & DDR 1st & 1.407 \\
+		7 & TRIP MACHINE & DDR 1st & 1.407 \\
 		%7 & Oedo Hop & r2112 & 1.38 \\
 		%  & (honorable mention; way better chart) & & \\
-		8 & Brilliant 2U (O-G) & DDR 2ndMIX & 1.347 \\
+		8 & BRILLIANT 2U (O-G) & DDR 2ndMIX & 1.347 \\
 		9 & Hearts of Ice & In The Groove 3 & 1.127 \\
 		10 & Visible Noise & In The Groove 2 & 1.188 \\
 		11 & KKKKK Come On & r2112 & 1.145 \\
@@ -457,18 +447,38 @@ Finally, an honourable mention goes to {\em Oedo Hop} \cite{oedo}, the 2nd turni
 		15 & Flames of the Sky (*,$\dagger$) & Ft. Rapids VII &  1.037 \\
 		16 & {\em (no 16 with $\mathcal{T}\ge 1$)} & - & - \\
 		17 & Superluminal & Ft. Rapids VII & 1.058 \\
+		18 & {\em (no 18s+ with $\mathcal{T}\ge 1$)} & - & - \\
 	\end{tabular}
 	\end{center}
 	\caption{The turniest existing stepcharts of each difficulty. Songs marked (*) are also shown in Figure~\ref{fig:example}. Songs marked ($\dagger$) are false-positives resulting from too many footswitches incorrectly analyzed as spins.}
 	\label{tab:feets}
 \end{table}
 
-{\bf The Turniest Other Things.}
-Although our analysis picked out a good many turny charts, any ITG player will inevitably get tired of playing the same ones over and over.
-Hence, we are also interested in an aggregated turniness profile to show the average scores of many different stepcharts at once.
-We computed average turninesses for stepcharts grouped {\em by pack} and {\em by step artist}.
-Abbreviated results for the former are shown in Table~\ref{tab:pack} and for the latter in Table~\ref{tab:artist}.
-For the sake of players who dislike turniness, we also list the lowest-scoring packs and artists in addition to the highest-scoring ones.
+\begin{table}[t]
+	\begin{center}
+		\small
+	\begin{tabular}{r|l|l|c}
+		Ft. & Name & Pack & $\mathcal{T}$ \\
+		\hline
+		7  & King Kong & In The Groove 3 & 0.354 \\
+		8  & Jam Jam Reggae & DDR 2ndMIX & 0.428 \\
+		9  & Fantasia & In The Groove 3 & 0.382 \\
+		10 & Oosanbashi & TLOES Chapter 1 & 0.534 \\
+		11 & Release the Music & Ft. Rapids VII & 0.507 \\
+		12 & Payon (Theme Of) & CuoReNeRo MeGaPacK & 0.396 \\
+		13 & Technodildo & The Legend of Zim 5 & 0.436 \\
+		14 & Gentleman & TLOES Chapter 1 & 0.556 \\
+		15 & $\Delta$MAX & Tachyon Alpha & 0.000 \\
+		16 & Dash Hopes 2 & Tachyon Alpha & 0.327 \\
+		17 & Resist & SPEEDCOOOORE & 0.592\\
+		18 & Baby & Sexuality Violation 2 & 0.524 \\
+		19 & Pedal to the Metal & SPEEDCOOOORE & 0.468 \\
+		%6482 & Sick Dubstep Track & Mute Sims 7 & 0.263 \\
+	\end{tabular}
+	\end{center}
+	\caption{The least turny existing stepcharts of each difficulty (trivial charts excluded).}
+	\label{tab:feets2}
+\end{table}
 
 \begin{table}[t]
 	\begin{center}
@@ -542,20 +552,50 @@ For the sake of players who dislike turniness, we also list the lowest-scoring p
 	\caption{The turniest and least turny step authors. Only authors with 10 or more charts are included.}
 	\label{tab:artist}
 \end{table}
+Beyond these extreme examples, we are interested in some more normal charts people might actually like to play.
+Table~\ref{tab:feets} shows the turniest charts of each level, for the most popular difficulty levels ranging from 7 to 17.
+So, next time you want to work on your laterals or candles, you have me to thank!
 
+Surprisingly, {\em BRILLIANT 2U (Orchestra-Groove)} \cite{brilliant2u} is full of 270s. I didn't think anybody ever put those in real charts.
+Finally, an honourable mention goes to {\em Oedo Hop} \cite{oedo}, the 2nd turniest 7 (and 4th turniest chart overall!) with $\mathcal{T}=1.384$.
+\cite{deltax} really likes that one so we had to mention it.
+
+{\bf The Least Turny Charts.}
+16 charts in our collection have $\mathcal{T}=0$. Most of these are beginner charts, rated 2 or 3 feet and with no more than 100 steps. $\Delta$MAX \cite{deltamax} stands out, as a 15-footer with 945 steps. God is that chart ever annoying.
+
+Ignoring all beginner-difficulty and turn-free charts, the least turny stepchart is {\em Sick Dubstep Track} \cite{sickdubstep}, a 4-measure joke rated 6,482 feet, the majority of which is shown in Figure~\ref{fig:example}(d). It has $\mathcal{T}=0.263$.
+
+For readers who prefer more to tower than to turn, we similarly tabulated the least turny charts of each common difficulty in Table~\ref{tab:feets2}.
+
+{\bf The Turniest Other Things.}
+Although our analysis picked out a good many turny charts, any ITG player will inevitably get tired of playing the same ones over and over.
+Hence, we are also interested in an aggregated turniness profile to show the average scores of many different stepcharts at once.
+We computed average turninesses for stepcharts grouped {\em by pack} and {\em by step artist}.
+Abbreviated results for the former are shown in Table~\ref{tab:pack} and for the latter in Table~\ref{tab:artist}.
+For the sake of players who dislike turniness, we also list the lowest-scoring packs and artists in addition to the highest-scoring ones.
+
+\section{Future Work}
+
+\defcitealias{ode}{Anonymized 2016}
+The most obvious next step for this work is to account for jumps.
+This seems quite easy: compute the two possible facings of the jump, depending which foot lands on which arrow, and use whichever facing produces the least turniness when compared to the previous and next steps in the sequence.
+Honestly, we should have implemented that for this paper, but we only realized how it should work after we finished computing our dataset;
+and owing to an inferior conference's deadline coming up in 10 days \citepalias{ode}, we don't have time for re-running experiments \citepalias{ode}.
+
+More difficult is the matter of deciding whether stepping the same arrow twice in a row constitutes a jack (same foot) or a footswitch. As we saw in Figure~\ref{fig:example}, our current approach of assuming it's always a jack can lead to some false-positive $\mathcal{T}$ values.
+Judging the presence of footswitches is a nontrivial problem even for human intuition, so we view this as an exciting area for future research.
+So as not to piss off the player, most stepcharts tend to feature only jacks or only switches, never both.
+Future extensions of our algorithm could exploit this convention to decide with high confidence whether or not an entire chart is footswitchy.
 
 \section{Conclusion}
 
-
 In conclusion, $LURR$ $DURR$!
+
+Our analysis program can be found at \url{https://github.com/bblum/sigbovik/tree/master/itg/code}, and our full experimental data-set is available at \url{http://tinyurl.com/turniness}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \appendix
-
-\section{Linx}
-
-Our analysis program can be found at \url{https://github.com/bblum/sigbovik/tree/master/itg/code}, and our full experimental data-set is available at \url{http://tinyurl.com/turniness}.
 
 \section{Most turny patterns}
 
