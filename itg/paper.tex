@@ -591,13 +591,24 @@ Future extensions of our algorithm could exploit this convention to decide with 
 Experienced ITG players do not step with their feet on the middle of each arrow; rather, they try to step on the edges and ``brackets'' between arrows, hitting each step with heel or toes only to minimize the distance their feet must move.
 This tendency distinguishes further granularity of turning than what we identify in this work.
 Consider the two streams shown in Figure~\ref{fig:future} (a) and (b).
-Although they measure the same $\mathcal{T}$ value of 1337, % TODO
+Although they measure the same $\mathcal{T}$ value of $1$,
 (b) is considerably more exhausting to step, as (a) allows the player to bracket the entire run.
 Future work could handle this by counting a 1-turn step as the full value only if the player subsequently continues turning farther in the same direction (which would force the player's feet off the brackets), and otherwise assign $\mathcal{T}=1/2$ for such a step.
 
 
 \begin{figure}[t]
-	% TODO
+	\begin{tabular}{c}
+	\includegraphics[width=0.13\textwidth]{future-a.png} \\
+	\small (a) Bracketable.
+	\end{tabular}
+	\begin{tabular}{c}
+	\includegraphics[width=0.13\textwidth]{future-b.png} \\
+	\small (b) Forced turns.
+	\end{tabular}
+	\begin{tabular}{c}
+	\includegraphics[width=0.13\textwidth]{boten.png} \\
+	\small (c) Roll-stream.
+	\end{tabular}
 	\caption{Future work.}
 	\label{fig:future}
 \end{figure}
