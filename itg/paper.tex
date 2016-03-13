@@ -577,21 +577,45 @@ For the sake of players who dislike turniness, we also list the lowest-scoring p
 \section{Future Work}
 
 \defcitealias{ode}{Anonymized 2016}
-The most obvious next step for this work is to account for jumps.
+{\bf Jumps.} The most obvious next step for this work is to account for jumps.
 This seems quite easy: compute the two possible facings of the jump, depending which foot lands on which arrow, and use whichever facing produces the least turniness when compared to the previous and next steps in the sequence.
 Honestly, we should have implemented that for this paper, but we only realized how it should work after we finished computing our dataset;
 and owing to an inferior conference's deadline coming up in 10 days \citepalias{ode}, we don't have time for re-running experiments \citepalias{ode}.
 
-More difficult is the matter of deciding whether stepping the same arrow twice in a row constitutes a jack (same foot) or a footswitch. As we saw in Figure~\ref{fig:example}, our current approach of assuming it's always a jack can lead to some false-positive $\mathcal{T}$ values.
+{\bf Footswitches.} More difficult is the matter of deciding whether stepping the same arrow twice in a row constitutes a jack (same foot) or a footswitch. As we saw in Figure~\ref{fig:example}, our current approach of assuming it's always a jack can lead to some false-positive $\mathcal{T}$ values.
 Judging the presence of footswitches is a nontrivial problem even for human intuition, so we view this as an exciting area for future research.
 So as not to piss off the player, most stepcharts tend to feature only jacks or only switches, never both.
 Future extensions of our algorithm could exploit this convention to decide with high confidence whether or not an entire chart is footswitchy.
 
+{\bf Fractional Turns.}
+Experienced ITG players do not step with their feet on the middle of each arrow; rather, they try to step on the edges and ``brackets'' between arrows, hitting each step with heel or toes only to minimize the distance their feet must move.
+This tendency distinguishes further granularity of turning than what we identify in this work.
+Consider the two streams shown in Figure~\ref{fig:future} (a) and (b).
+Although they measure the same $\mathcal{T}$ value of 1337, % TODO
+(b) is considerably more exhausting to step, as (a) allows the player to bracket the entire run.
+Future work could handle this by counting a 1-turn step as the full value only if the player subsequently continues turning farther in the same direction (which would force the player's feet off the brackets), and otherwise assign $\mathcal{T}=1/2$ for such a step.
+
+
+\begin{figure}[t]
+	% TODO
+	\caption{Future work.}
+	\label{fig:future}
+\end{figure}
+
+{\bf Holds and Rolls.}
+Many charts use holds or rolls to force the player to step all concurrent tap-steps with the other foot, which breaks our alternating-feet assumption.
+When multiple steps are concurrent with a hold, they must be double-stepped, and the facing for each computed using the hold's arrow rather than the most recent one.
+When multiple steps are concurrent with a roll, the facings are determined similarly, but repeatedly stepping the roll results in a stream, as shown in Figure~\ref{fig:future}(c) \cite{botenanna}.
+%Roll-streams have comparatively more steps, which will affect the turniness.
+Judging how hold-steps and roll-streams must be stepped is another exciting opportunity for future work.
+
 \section{Conclusion}
 
-In conclusion, $LURR$ $DURR$!
+Our analysis program can be found at \url{https://github.com/bblum/sigbovik/tree/master/itg/code}, and our full experimental dataset is available at \url{http://tinyurl.com/turniness}.
 
-Our analysis program can be found at \url{https://github.com/bblum/sigbovik/tree/master/itg/code}, and our full experimental data-set is available at \url{http://tinyurl.com/turniness}.
+The value of this work is already abundantly clear, as through it, the author has found several new charts he is interested to play. We hope our published dataset can provide similar value to other ITG players worldwide.
+Please accept our paper.
+We worked hard on it.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
