@@ -1,0 +1,15 @@
+6,1,1,0
+#TITLE:Test;
+#NOTES:
+	dance-single:
+	test:
+	Edit:
+	1:
+	:
+0001
+0100
+0001 // force right footed
+0100
+1000 // x
+1000 // fs
+;
