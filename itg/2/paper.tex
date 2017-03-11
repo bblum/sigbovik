@@ -1,0 +1,214 @@
+%-----------------------------------------------------------------------------
+%
+%               Template for sigplanconf LaTeX Class
+%
+% Name:         sigplanconf-template.tex
+%
+% Purpose:      A template for sigplanconf.cls, which is a LaTeX 2e class
+%               file for SIGPLAN conference proceedings.
+%
+% Guide:        Refer to "Author's Guide to the ACM SIGPLAN Class,"
+%               sigplanconf-guide.pdf
+%
+% Author:       Paul C. Anagnostopoulos
+%               Windfall Software
+%               978 371-2316
+%               paul@windfall.com
+%
+% Created:      15 February 2005
+%
+%-----------------------------------------------------------------------------
+
+
+%\documentclass[preprint]{sigplanconf}
+\documentclass[10pt]{sigplanconf}
+
+% The following \documentclass options may be useful:
+%
+% 10pt          To set in 10-point type instead of 9-point.
+% 11pt          To set in 11-point type instead of 9-point.
+% authoryear    To obtain author/year citation style instead of numeric.
+
+\usepackage{yfonts}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+%\usepackage{mathpartir}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{graphics}
+\usepackage{graphicx}
+\usepackage{wasysym}
+\usepackage{harmony}
+\usepackage{marvosym}
+\usepackage{multirow}
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage[utopia]{mathdesign}
+\usepackage{natbib}
+
+% ____________________________________________________________
+% Listings Package Configuration
+% \usepackage[scaled]{beramono}
+
+%\renewcommand*\ttdefault{txtt}
+\usepackage[T1]{fontenc}
+
+% This Deep Tex Voodoo is from
+%   <http://www.latex-community.org/forum/viewtopic.php?f=5&t=2072>
+% It's purpose is to make \lstinline normal size, without affecting
+% \lstinputlisting.  It seems to work but I have no idea how or why,
+% and I rather hope never to learn.
+%\makeatletter
+%\lst@AddToHook{TextStyle}{\let\lst@basicstyle\ttfamily\normalsize}
+%\makeatother
+
+\begin{document}
+
+\conferenceinfo{SIGBOVIK '17}{Pittsburgh, PA, USA}
+\copyrightyear{2017}
+\copyrightdata{}
+
+\titlebanner{banner above paper title}        % These are ignored unless
+\preprintfooter{short description of paper}   % 'preprint' option specified.
+
+\title{
+A Boring Follow-Up Paper to \\
+``Which ITG Stepcharts are Turniest?'' \\
+Titled, ``Which ITG Stepcharts are Crossoveriest and/or Footswitchiest?'' \\
+%That `Boring' Stuff Was Part of the Title, BTW. \\
+%So was that. And that, and this too. \\
+%You got it all, right? \\
+%Or Just, ``More Boring Crap about ITG'', for Short. \\
+%Oh, That Was Also Part of the Title.
+}
+% \subtitle{\em The Randomly-Scoped Lambda Calculus}
+% \subtitle{Subtitle Text, if any}
+
+\authorinfo{Ben Blum}{}{bblum@cs.cmu.edu}
+
+\maketitle
+
+\begin{abstract}
+	%ITG is a popular dance game in which players step on arrows while listening to music. The arrow patterns, indicated by a {\em stepchart}, may range among any level of complexity and difficulty. Among the many factors contributing to a stepchart's difficulty is how much the player must turn from side to side.
+	%Other more obvious factors, such as raw speed, have been well studied in prior work.
+	%This paper presents an analytic study of this {\em turniness} factor.
+	%We study the turniness of many existing stepcharts, and present a novel (but unsurprising) approach to automatically generating maximally (or minimally) turny charts.
+	%Among real-world songs, we find stepcharts with overall turniness ranging from 0\% to 81.33\% of the theoretical maximum.
+
+
+\end{abstract}
+
+\category{D.D.R.}{Exercise and Fitness}{Arcade Dance Games}
+
+\keywords
+in, the, groove
+
+
+\section{Introduction}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Flashback Scene}
+
+
+\begin{table}[h]
+	\begin{center}
+	\begin{tabular}{cc|cccc}
+		& & \multicolumn{4}{c}{Right foot} \\
+		& & $\leftarrow$ & $\downarrow$ & $\uparrow$ & $\rightarrow$ \\
+		\hline
+		\multirow{4}{*}{Left foot}
+		%                 L   D   U   R
+		& $\leftarrow$  & - & $UR$ & $UL$ & $U$ \\
+		& $\downarrow$  & $DL$* & - & $L$ & $UL$ \\
+		& $\uparrow$    & $DR$* & $R$ & - & $UR$ \\
+		& $\rightarrow$ & $D\dagger$ & $DR$* & $DL$* & - \\
+
+	\end{tabular}
+	\end{center}
+	\caption{Facing directions. ``Crossover'' facings are marked (*), and the ``lateral'' facing is marked ($\dagger$). Note the appealing diagonal symmetry.}
+	\label{tab:facing}
+\end{table}
+
+% dont forget
+% http://dancedancerevolutionddr.wikia.com/wiki/Afronova_walk
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand\hilight[2]{\color{#1}#2\color{black}}
+\definecolor{pink}{RGB}{128,0,192}
+\definecolor{orange}{RGB}{192,96,0}
+\definecolor{olivegreen}{RGB}{0,127,32}
+\definecolor{brickred}{RGB}{192,0,0}
+\definecolor{commentblue}{RGB}{0,128,192}
+
+\begin{figure*}[t]
+\begin{center}
+\begin{tabular}{l}
+	\texttt{\hilight{orange}{data}~\hilight{olivegreen}{Step}~= \hilight{brickred}{L}~| \hilight{brickred}{D}~| \hilight{brickred}{U}~| \hilight{brickred}{R}~| \hilight{brickred}{Jump}~\hilight{orange}{deriving}~\hilight{olivegreen}{Eq}} \\
+\texttt{} \\
+\texttt{\hilight{orange}{data}~\hilight{olivegreen}{AnalysisState}~= \hilight{brickred}{S}~\{ steps :: \hilight{olivegreen}{Int}, xovers :: \hilight{olivegreen}{Int}, switches :: \hilight{olivegreen}{Int}, jacks :: \hilight{olivegreen}{Int},} \\
+\texttt{~~~~~~~~~~~~~~~~~~~~~~~~ lastStep :: \hilight{olivegreen}{Maybe}~\hilight{olivegreen}{Step}, doubleStep :: \hilight{olivegreen}{Bool}, lastFlip :: \hilight{olivegreen}{Bool},} \\
+\texttt{~~~~~~~~~~~~~~~~~~~~~~~~ lastFoot :: \hilight{olivegreen}{Bool}, stepsL :: [\hilight{olivegreen}{Bool}], stepsR :: [\hilight{olivegreen}{Bool}] \}} \\
+\texttt{} \\
+\texttt{\hilight{pink}{commitStream}~:: \hilight{olivegreen}{AnalysisState}~-> \hilight{olivegreen}{AnalysisState}} \\
+\texttt{\hilight{pink}{commitStream}~s = s \{ xovers~~ = xovers~~ s + \hilight{orange}{if}~f \hilight{orange}{then}~ns - nx \hilight{orange}{else}~nx, } \\
+\texttt{~~~~~~~~~~~~~~~~~~~~ switches = switches s + \hilight{orange}{fromEnum}~(f == lastFlip s \&\& doubleStep s), } \\
+\texttt{~~~~~~~~~~~~~~~~~~~~ jacks~~~~= jacks~~~~s + \hilight{orange}{fromEnum}~(f /= lastFlip s \&\& doubleStep s), } \\
+	\texttt{~~~~~~~~~~~~~~~~~~~~ lastFlip = f, stepsL = \hilight{brickred}{[]}, stepsR = \hilight{brickred}{[]}~\}} \\
+\texttt{~~~~\hilight{orange}{where}~ns = \hilight{orange}{length}~\$~~~~~~~~~~~~~~stepsL s ++ stepsR s} \\
+\texttt{~~~~~~~~~~nx = \hilight{orange}{length}~\$ \hilight{orange}{filter not}~\$ stepsL s ++ stepsR s} \\
+\texttt{~~~~~~~~~~\hilight{commentblue}{-{}- if more than half the L/R steps in this stream were crossed over,}} \\
+\texttt{~~~~~~~~~~\hilight{commentblue}{-{}- then we got the footing backwards and need to flip the stream.}} \\
+\texttt{~~~~~~~~~~\hilight{commentblue}{-{}- as a tiebreaker, flip if the stream is already more jacky than}} \\
+\texttt{~~~~~~~~~~\hilight{commentblue}{-{}- footswitchy, i.e., if past streams flipped more often than not.}} \\
+\texttt{~~~~~~~~~~f = nx * 2 > ns || nx * 2 == ns \&\& ((jacks s > switches s) /= lastFlip s)} \\
+\texttt{} \\
+\texttt{\hilight{pink}{analyzeStep}~:: \hilight{olivegreen}{AnalysisState}~-> \hilight{olivegreen}{Step}~-> \hilight{olivegreen}{AnalysisState}} \\
+\texttt{\hilight{pink}{analyzeStep}~s step} \\
+\texttt{~~~~\hilight{commentblue}{-{}- a jump resets the footing, so the next step can be stepped with either}} \\
+\texttt{~~~~\hilight{commentblue}{-{}- foot. commit the stream so far to treat it separately from what follows.}} \\
+\texttt{~~~~\hilight{commentblue}{-{}- bracket-jumps are, of course, future work.}} \\
+\texttt{~~~~| step == \hilight{brickred}{Jump}~= (\hilight{pink}{commitStream}~s) \{ lastStep = \hilight{brickred}{Nothing}, doubleStep = \hilight{brickred}{False}~\}} \\
+\texttt{~~~~\hilight{commentblue}{-{}- two steps on the same arrow might be a jack, or might be a footswitch.}} \\
+\texttt{~~~~\hilight{commentblue}{-{}- to figure out which, commit the stream so far, and begin a new stream}} \\
+\texttt{~~~~\hilight{commentblue}{-{}- whose footing will retroactively determine how to foot this step.}} \\
+\texttt{~~~~\hilight{commentblue}{-{}- also, unlike jumps, this step gets counted as part of the next stream.}} \\
+\texttt{~~~~| lastStep s == \hilight{brickred}{Just}~step = stream (\hilight{pink}{commitStream}~s) \{ doubleStep = \hilight{brickred}{True}~\}} \\
+\texttt{~~~~\hilight{commentblue}{-{}- a normal streamy step.}} \\
+	\texttt{~~~~| \hilight{orange}{otherwise}~= stream s} \\
+\texttt{~~~~\hilight{orange}{where}~foot = \hilight{orange}{not}~\$ lastFoot s} \\
+\texttt{~~~~~~~~~~\hilight{commentblue}{-{}- record whether we stepped on a matching or opposite L/R arrow here}} \\
+\texttt{~~~~~~~~~~addStep ft \hilight{brickred}{L}~steps = ft:steps} \\
+\texttt{~~~~~~~~~~addStep ft \hilight{brickred}{R}~steps = (\hilight{orange}{not}~ft):steps} \\
+\texttt{~~~~~~~~~~addStep ft \_ steps = steps \hilight{commentblue}{-{}- U/D don't help to determine L/R footing.}} \\
+\texttt{~~~~~~~~~~\hilight{commentblue}{-{}- add the (matching? xover?) step to the list corresponding to this foot.}} \\
+\texttt{~~~~~~~~~~newLs s = \hilight{orange}{if}~foot \hilight{orange}{then}~addStep foot step \$ stepsL s \hilight{orange}{else}~stepsL s} \\
+\texttt{~~~~~~~~~~newRs s = \hilight{orange}{if}~foot \hilight{orange}{then}~stepsR s \hilight{orange}{else}~addStep foot step \$ stepsR s} \\
+\texttt{~~~~~~~~~~stream s = s \{ steps = steps s + \hilight{brickred}{1}, lastStep = \hilight{brickred}{Just}~step,} \\
+\texttt{~~~~~~~~~~~~~~~~~~~~~~~~ lastFoot = foot, stepsL = newLs s, stepsR = newRs s \} } \\
+\texttt{} \\
+\texttt{\hilight{pink}{analyze}~:: [\hilight{olivegreen}{Step}] -> \hilight{olivegreen}{AnalysisState}} \\
+	\texttt{\hilight{pink}{analyze}~= \hilight{pink}{commitStream}~. \hilight{orange}{foldl}~\hilight{pink}{analyzeStep}~(\hilight{brickred}{S 0 0 0 0}~\hilight{brickred}{Nothing}~\hilight{brickred}{False}~\hilight{brickred}{False}~\hilight{brickred}{False}~\hilight{brickred}{[] []}) } \\
+\end{tabular}
+\end{center}
+\caption{it's pseudocode lol}
+\label{fig:pseudocode-lol}
+\end{figure*}
+
+
+\section{Existing Chart Analysis}
+
+
+\section{Conclusion}
+
+Please accept our paper.
+We worked hard on it.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\bibliographystyle{abbrvnat}
+\bibliography{citations}
+
+\end{document}
