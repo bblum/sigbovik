@@ -55,6 +55,6 @@ function process() {
 
 for DIFF in Beginner Easy Medium Hard Challenge Edit; do
 	if grep "$DIFF:" "$FILE" >/dev/null; then
-		cat "$FILE" | process
+		grep -A1000000000 "$DIFF:" "$FILE" | process
 	fi
 done
