@@ -6,15 +6,15 @@ data Step = L | D | U | R | Jump deriving Eq
 
 data AnalysisState = S { steps :: Int, xovers :: Int, switches :: Int, jacks :: Int,
                          lastStep :: Maybe Step, doubleStep :: Bool, lastFlip :: Bool,
-                         lastFoot :: Bool, stepsL :: [Bool], stepsR :: [Bool] }
+                         lastFoot :: Bool, stepsLR :: [Bool] }
 
 commitStream :: AnalysisState -> AnalysisState
 commitStream s = s { xovers   = xovers   s + if f then ns - nx else nx,
                      switches = switches s + fromEnum (f == lastFlip s && doubleStep s),
                      jacks    = jacks    s + fromEnum (f /= lastFlip s && doubleStep s),
-                     lastFlip = f, stepsL = [], stepsR = [] }
-    where ns = length $              stepsL s ++ stepsR s
-          nx = length $ filter not $ stepsL s ++ stepsR s
+                     lastFlip = f, stepsLR = [] }
+    where ns = length $ stepsLR s
+          nx = length $ filter not $ stepsLR s
           -- if more than half the L/R steps in this stream were crossed over,
           -- then we got the footing backwards and need to flip the stream.
           -- as a tiebreaker, flip if the stream is already more jacky than
@@ -35,18 +35,15 @@ analyzeStep s step
     -- a normal streamy step.
     | otherwise = stream s
     where foot = not $ lastFoot s
-          -- record whether we stepped on a matching or opposite L/R arrow here
+          -- record whether we stepped on a matching or crossed-over L/R arrow.
           addStep ft L steps = ft:steps
           addStep ft R steps = (not ft):steps
           addStep ft _ steps = steps -- U/D don't help to determine L/R footing.
-          -- add the (matching? xover?) step to the list corresponding to this foot.
-          newLs s = if foot then addStep foot step $ stepsL s else stepsL s
-          newRs s = if foot then stepsR s else addStep foot step $ stepsR s
-          stream s = s { steps = steps s + 1, lastStep = Just step,
-                         lastFoot = foot, stepsL = newLs s, stepsR = newRs s }
+          stream s = s { steps = steps s + 1, lastStep = Just step, lastFoot = foot,
+                         stepsLR = addStep foot step $ stepsLR s }
 
 analyze :: [Step] -> AnalysisState
-analyze = commitStream . foldl analyzeStep (S 0 0 0 0 Nothing False False False [] [])
+analyze = commitStream . foldl analyzeStep (S 0 0 0 0 Nothing False False False [])
 
 -- turns a line of stepchart, eg "0100", into a Step, e.g. "D"
 -- in stepchart-ese: 1 = tap; 2 = hold; 3 = hold release; 4 = roll; M = mine
