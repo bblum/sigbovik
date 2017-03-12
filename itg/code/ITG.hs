@@ -56,9 +56,9 @@ stepify = step . map fst . filter snd . zip [L,D,U,R] . map (flip elem "124")
           step [s] = Just s
           step ss = Just Jump
 
--- handles chart metadata and formats the analysis result into CSV
+-- handles chart metadata and formats the analysis result into tsv
 process :: (String, [String]) -> String
-process (title,(name:diff:feet:_:rest)) = intercalate "," $ metadata ++ result
+process (title,(name:diff:feet:_:rest)) = intercalate "\t" $ metadata ++ result
     where -- chop off the trailing ":"
           trim = reverse . tail . dropWhile isSpace . reverse . dropWhile isSpace
           metadata = map trim [title,name,diff,feet]
