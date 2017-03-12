@@ -14,7 +14,7 @@ commitStream s = maybe s0 splitStream splitIndex
           nx = length $ filter not $ stepsLR s
           -- if more than half the L/R steps in this stream were crossed over,
           -- then we got the footing backwards and need to flip the stream.
-          -- as a tiebreaker, flip if the stream is already more jacky than
+          -- as a tiebreaker, flip if the chart is already more jacky than
           -- footswitchy, i.e., if past streams flipped more often than not.
           f = nx * 2 > ns || nx * 2 == ns && ((jacks s > switches s) /= lastFlip s)
           -- if "too much" of the stream is *completely* crossed-over, force
@@ -72,14 +72,14 @@ process (title,(name:diff:feet:_:rest)) = intercalate "\t" $ metadata ++ result
     where -- chop off the trailing ":"
           trim = reverse . tail . dropWhile isSpace . reverse . dropWhile isSpace
           metadata = map trim [title,name,diff,feet]
-          finalState = analyze $ catMaybes $ map stepify rest
+          finalState = analyze $ catMaybes $ map (stepify . dropWhile isSpace) rest
           result = map (show . ($ finalState)) [steps, xovers, switches, jacks, doubles]
 
 -- splits up the input file by the "#NOTES:" lines
 charts :: String -> [String] -> [(String, [String])]
 charts t [] = []
 charts t xs = chart ++ charts title rest
-    where title = fromMaybe t $ drop 7 <$> find (isPrefixOf "#TITLE:") xs
+    where title = fromMaybe t $ drop 7 <$> dropWhile isSpace <$> find (isInfixOf "#TITLE:") xs
           -- get everything after the first "#NOTES"
           notnotes = not . isInfixOf "#NOTES:"
           stuff = tail $ dropWhile notnotes xs
