@@ -66,9 +66,7 @@ process (title,(name:diff:feet:_:rest)) = intercalate "\t" $ metadata ++ result
 charts :: String -> [String] -> [(String, [String])]
 charts t [] = []
 charts t xs = chart ++ charts title rest
-    where stripTitle t | isPrefixOf "#TITLE:" t = reverse $ tail $ reverse $ drop 7 t
-                       | otherwise = stripTitle $ tail t
-          title = fromMaybe t $ stripTitle <$> find (isInfixOf "#TITLE:") xs
+    where title = fromMaybe t $ drop 7 <$> find (isPrefixOf "#TITLE:") xs
           -- get everything after the first "#NOTES"
           notnotes = not . isInfixOf "#NOTES:"
           stuff = tail $ dropWhile notnotes xs
