@@ -16,7 +16,7 @@ commitStream s = maybe s0 splitStream splitIndex
           -- then we got the footing backwards and need to flip the stream.
           -- as a tiebreaker, flip if the chart is already more jacky than
           -- footswitchy, i.e., if past streams flipped more often than not.
-          f = nx * 2 > ns || nx * 2 == ns && ((jacks s > switches s) /= lastFlip s)
+          f = nx * 2 > ns || nx * 2 == ns && ((switches s > jacks s) == lastFlip s)
           -- if "too much" of the stream is *completely* crossed-over, force
           -- a double-step there by splitting the stream to stay facing forward.
           -- heuristic value was chosen by inspection on Subluminal - After Hours.
