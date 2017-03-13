@@ -95,16 +95,28 @@ Titled, ``Which ITG Stepcharts are Crossoveriest and/or Footswitchiest?'' \\
 	%We study the turniness of many existing stepcharts, and present a novel (but unsurprising) approach to automatically generating maximally (or minimally) turny charts.
 	%Among real-world songs, we find stepcharts with overall turniness ranging from 0\% to 81.33\% of the theoretical maximum.
 
+In which I deliver on last year's promise of future work.
 
 \end{abstract}
 
 \category{D.D.R.}{Exercise and Fitness}{Arcade Dance Games}
 
 \keywords
-in, the, groove
+in, the, groove, 2
 
 
 \section{Introduction}
+
+Right, let's resume right where I left off in my last paper \cite{turniness}, shown in Figure~\ref{fig:you-stutid-fuckass}.
+Unlike mainstream conferences, SIGBOVIK doesn't make me waste space repeating all the background material,
+and I can just say go read that paper first and get back to me.
+It's probably a lot funnier than this one anyway, which is gonna be sort of dry, and really of interest only to other ITG players.
+
+\begin{figure}[h]
+	\includegraphics[angle=90,width=0.48\textwidth]{../paper.pdf}
+	\caption{(okay twist your head to read this)}
+	\label{fig:you-stutid-fuckass}
+\end{figure}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -150,18 +162,18 @@ in, the, groove
 \texttt{} \\
 \texttt{\hilight{orange}{data}~\hilight{olivegreen}{AnalysisState}~= \hilight{brickred}{S}~\{ steps :: \hilight{olivegreen}{Int}, xovers :: \hilight{olivegreen}{Int}, switches :: \hilight{olivegreen}{Int}, jacks :: \hilight{olivegreen}{Int},} \\
 \texttt{~~~~~~~~~~~~~~~~~~~~~~~~ lastStep :: \hilight{olivegreen}{Maybe}~\hilight{olivegreen}{Step}, doubleStep :: \hilight{olivegreen}{Bool}, lastFlip :: \hilight{olivegreen}{Bool},} \\
-\texttt{~~~~~~~~~~~~~~~~~~~~~~~~ lastFoot :: \hilight{olivegreen}{Bool}, stepsL :: [\hilight{olivegreen}{Bool}], stepsR :: [\hilight{olivegreen}{Bool}] \}} \\
+\texttt{~~~~~~~~~~~~~~~~~~~~~~~~ lastFoot :: \hilight{olivegreen}{Bool}, stepsLR :: [\hilight{olivegreen}{Bool}] \}} \\
 \texttt{} \\
 \texttt{\hilight{pink}{commitStream}~:: \hilight{olivegreen}{AnalysisState}~-> \hilight{olivegreen}{AnalysisState}} \\
 \texttt{\hilight{pink}{commitStream}~s = s \{ xovers~~ = xovers~~ s + \hilight{orange}{if}~f \hilight{orange}{then}~ns - nx \hilight{orange}{else}~nx, } \\
 \texttt{~~~~~~~~~~~~~~~~~~~~ switches = switches s + \hilight{orange}{fromEnum}~(f == lastFlip s \&\& doubleStep s), } \\
 \texttt{~~~~~~~~~~~~~~~~~~~~ jacks~~~~= jacks~~~~s + \hilight{orange}{fromEnum}~(f /= lastFlip s \&\& doubleStep s), } \\
-	\texttt{~~~~~~~~~~~~~~~~~~~~ lastFlip = f, stepsL = \hilight{brickred}{[]}, stepsR = \hilight{brickred}{[]}~\}} \\
-\texttt{~~~~\hilight{orange}{where}~ns = \hilight{orange}{length}~\$~~~~~~~~~~~~~~stepsL s ++ stepsR s} \\
-\texttt{~~~~~~~~~~nx = \hilight{orange}{length}~\$ \hilight{orange}{filter not}~\$ stepsL s ++ stepsR s} \\
+	\texttt{~~~~~~~~~~~~~~~~~~~~ lastFlip = f, stepsLR = \hilight{brickred}{[]}~\}} \\
+\texttt{~~~~\hilight{orange}{where}~ns = \hilight{orange}{length}~\$~stepsLR s} \\
+\texttt{~~~~~~~~~~nx = \hilight{orange}{length}~\$ \hilight{orange}{filter not}~\$ stepsLR s} \\
 \texttt{~~~~~~~~~~\hilight{commentblue}{-{}- if more than half the L/R steps in this stream were crossed over,}} \\
 \texttt{~~~~~~~~~~\hilight{commentblue}{-{}- then we got the footing backwards and need to flip the stream.}} \\
-\texttt{~~~~~~~~~~\hilight{commentblue}{-{}- as a tiebreaker, flip if the stream is already more jacky than}} \\
+\texttt{~~~~~~~~~~\hilight{commentblue}{-{}- as a tiebreaker, flip if the chart is already more jacky than}} \\
 \texttt{~~~~~~~~~~\hilight{commentblue}{-{}- footswitchy, i.e., if past streams flipped more often than not.}} \\
 \texttt{~~~~~~~~~~f = nx * 2 > ns || nx * 2 == ns \&\& ((jacks s > switches s) /= lastFlip s)} \\
 \texttt{} \\
@@ -179,18 +191,15 @@ in, the, groove
 \texttt{~~~~\hilight{commentblue}{-{}- a normal streamy step.}} \\
 	\texttt{~~~~| \hilight{orange}{otherwise}~= stream s} \\
 \texttt{~~~~\hilight{orange}{where}~foot = \hilight{orange}{not}~\$ lastFoot s} \\
-\texttt{~~~~~~~~~~\hilight{commentblue}{-{}- record whether we stepped on a matching or opposite L/R arrow here}} \\
-\texttt{~~~~~~~~~~addStep ft \hilight{brickred}{L}~steps = ft:steps} \\
-\texttt{~~~~~~~~~~addStep ft \hilight{brickred}{R}~steps = (\hilight{orange}{not}~ft):steps} \\
+\texttt{~~~~~~~~~~\hilight{commentblue}{-{}- record whether we stepped on a matching or crossed-over L/R arrow.}} \\
+\texttt{~~~~~~~~~~addStep ft \hilight{brickred}{L}~steps = steps ++ [ft]} \\
+\texttt{~~~~~~~~~~addStep ft \hilight{brickred}{R}~steps = steps ++ [\hilight{orange}{not}~ft]} \\
 \texttt{~~~~~~~~~~addStep ft \_ steps = steps \hilight{commentblue}{-{}- U/D don't help to determine L/R footing.}} \\
-\texttt{~~~~~~~~~~\hilight{commentblue}{-{}- add the (matching? xover?) step to the list corresponding to this foot.}} \\
-\texttt{~~~~~~~~~~newLs s = \hilight{orange}{if}~foot \hilight{orange}{then}~addStep foot step \$ stepsL s \hilight{orange}{else}~stepsL s} \\
-\texttt{~~~~~~~~~~newRs s = \hilight{orange}{if}~foot \hilight{orange}{then}~stepsR s \hilight{orange}{else}~addStep foot step \$ stepsR s} \\
-\texttt{~~~~~~~~~~stream s = s \{ steps = steps s + \hilight{brickred}{1}, lastStep = \hilight{brickred}{Just}~step,} \\
-\texttt{~~~~~~~~~~~~~~~~~~~~~~~~ lastFoot = foot, stepsL = newLs s, stepsR = newRs s \} } \\
+\texttt{~~~~~~~~~~stream s = s \{ steps = steps s + \hilight{brickred}{1}, lastStep = \hilight{brickred}{Just}~step, lastFoot = foot,} \\
+\texttt{~~~~~~~~~~~~~~~~~~~~~~~~ stepsLR = addStep foot step \$ stepsLR s \} } \\
 \texttt{} \\
 \texttt{\hilight{pink}{analyze}~:: [\hilight{olivegreen}{Step}] -> \hilight{olivegreen}{AnalysisState}} \\
-	\texttt{\hilight{pink}{analyze}~= \hilight{pink}{commitStream}~. \hilight{orange}{foldl}~\hilight{pink}{analyzeStep}~(\hilight{brickred}{S 0 0 0 0}~\hilight{brickred}{Nothing}~\hilight{brickred}{False}~\hilight{brickred}{False}~\hilight{brickred}{False}~\hilight{brickred}{[] []}) } \\
+	\texttt{\hilight{pink}{analyze}~= \hilight{pink}{commitStream}~. \hilight{orange}{foldl}~\hilight{pink}{analyzeStep}~(\hilight{brickred}{S 0 0 0 0}~\hilight{brickred}{Nothing}~\hilight{brickred}{False}~\hilight{brickred}{False}~\hilight{brickred}{False}~\hilight{brickred}{[]}) } \\
 \end{tabular}
 \end{center}
 \caption{it's pseudocode lol}
