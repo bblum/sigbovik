@@ -45,6 +45,7 @@
 \usepackage[usenames,dvipsnames]{xcolor}
 \usepackage[utopia]{mathdesign}
 \usepackage{natbib}
+\renewcommand{\UrlBreaks}{\do\/\do\a\do\b\do\c\do\d\do\e\do\f\do\g\do\h\do\i\do\j\do\k\do\l\do\m\do\n\do\o\do\p\do\q\do\r\do\s\do\t\do\u\do\v\do\w\do\x\do\y\do\z}
 
 % ____________________________________________________________
 % Listings Package Configuration
@@ -102,12 +103,12 @@ In which I deliver on last year's promise of future work.
 \category{D.D.R.}{Exercise and Fitness}{Arcade Dance Games}
 
 \keywords
-in, the, groove, 2
+crossovers, footswitches, jacks, sidefoots
 
 
 \section{Introduction}
 
-Right, let's resume right where I left off in my last paper \cite{turniness}, shown in Figure~\ref{fig:you-stutid-fuckass}.
+Let's resume right where I left off in my last paper \cite{turniness}, shown in Figure~\ref{fig:you-stutid-fuckass}.
 Unlike mainstream conferences, SIGBOVIK doesn't make me waste space repeating all the background material,
 and I can just say go read that paper first and get back to me.
 It's probably a lot funnier than this one anyway, which is gonna be sort of dry,
@@ -119,14 +120,25 @@ and really of interest only to other ITG players who already know what's going o
 	\label{fig:you-stutid-fuckass}
 \end{figure}
 
+The TL;DR is that I made a program which figures out how to foot stepcharts in the least crossovery possible way (short of double-stepping everything),
+then found which charts ultimately had the most.
+The algorithm also naturally identifies footswitches and jacks, %, jacks, forced double-steps, and crossover-footswitches;
+and sometimes it's smarter than me in amusing ways.
+I put all the goodies in a giant spreadsheet at \url{http://tinyurl.com/crossoveriest},
+and the program itself is of course freely available at \url{https://github.com/bblum/sigbovik/blob/master/itg/code/ITG.hs}.
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Flashback Scene}
+\section{Revisiting Turniness (Flashback Scene)}
 
-Recall Table~\ref{tab:facing} from the last paper, in which I left undefined the facings for $LL$, $DD$, $UU$, and $RR$, the four footswitch footings.
+Recall Table~\ref{tab:facing} from the last paper, in which I left undefined the facings for $LL$, $DD$, $UU$, and $RR$, the four footswitches.
+I show a typical $DD$/$UU$ footswitch pattern in Figure~\ref{fig:fs}(a), and typical $LL$/$RR$ switches (henceforth ``crossover footswitches'') in Figure~\ref{fig:fs}(b).
+To step these patterns, the player still alternates feet as usual, but must lift one foot off the repeated arrow before stepping it with her other foot.
+Chart authors will often, but not always, include a ``mine cue'' (shown in the figure) to hint that the second foot should switch onto the same arrow.
 
-\begin{table}[h]
+\begin{table}[t]
 	\begin{center}
 	\begin{tabular}{cc|cccc}
 		& & \multicolumn{4}{c}{Right foot} \\
@@ -134,16 +146,104 @@ Recall Table~\ref{tab:facing} from the last paper, in which I left undefined the
 		\hline
 		\multirow{4}{*}{Left foot}
 		%                 L   D   U   R
-		& $\leftarrow$  & - & $UR$ & $UL$ & $U$ \\
-		& $\downarrow$  & $DL$* & - & $L$ & $UL$ \\
-		& $\uparrow$    & $DR$* & $R$ & - & $UR$ \\
-		& $\rightarrow$ & $D\dagger$ & $DR$* & $DL$* & - \\
+		& $\leftarrow$  & \bf ? & $UR$ & $UL$ & $U$ \\
+		& $\downarrow$  & $DL$ & \bf ? & $L$ & $UL$ \\
+		& $\uparrow$    & $DR$ & $R$ & \bf ? & $UR$ \\
+		& $\rightarrow$ & $D$ & $DR$ & $DL$ & \bf ? \\
 
 	\end{tabular}
 	\end{center}
-	\caption{Facing directions. ``Crossover'' facings are marked (*), and the ``lateral'' facing is marked ($\dagger$). Note the appealing diagonal symmetry.}
+	\caption{Facing directions.
+	%``Crossover'' facings are marked (*), and the ``lateral'' facing is marked ($\dagger$). Note the appealing diagonal symmetry.}
+	}
 	\label{tab:facing}
 \end{table}
+
+\begin{figure}[t]
+	\begin{tabular}{c}
+	\includegraphics[width=0.13\textwidth]{fs-dd-uu.png} \\
+	(a) DD/UU
+	\end{tabular}
+	\begin{tabular}{c}
+	\includegraphics[width=0.13\textwidth]{fs-ll-rr.png} \\
+	(b) LL/RR
+	\end{tabular}
+	\begin{tabular}{c}
+	\includegraphics[width=0.13\textwidth]{fs-ll-rr-2.png} \\
+	(c) RR/LL
+	\end{tabular}
+	\caption{Footswitches of various crossoveriness/facing.}
+	\label{fig:fs}
+\end{figure}
+
+It is tempting to assign the facings $L$, $U$, $U$, and $R$ respectively to the $LL$, $DD$, $UU$, and $RR$ footswitches.
+However, Figure~\ref{fig:fs}(c) shows that if a footswitch begins with a crossover on $U$, the facing should be reversed:
+the $RR$ footing should face $L$, and $LL$ should face $R$.
+``Backwards footswitches'' with $D$ facing are also theoretically possible,
+arising from patterns such as $LURDDL$ or $LDRUUL$, although I know of no real-world chart which does this (hmm, tempting...).
+
+Before I realized that, I modified the turniness algorithm \cite{turniness} to face footswitches as above, %the bad way mentioned above,
+%to be faced $L$ for $LL$ and so on, as above,
+and it surprised me with charts of $\mathcal{T}>2$, in excess of the theoretical maximum!
+I show one such chart in Figure~\ref{fig:fs-turniness}(a), in which the step from $LL$ ($\phi=L$) to $UL$ ($\phi=DR$) has individual $\mathcal{T}=3$, and so on for $UL \rightsquigarrow_R UU \rightsquigarrow_L RU \rightsquigarrow_R RR$.
+The steps $RR \rightsquigarrow_L LR \rightsquigarrow_R LL$ are both candles ($\mathcal{T}=2$),
+resulting overall in $\mathcal{T}=8/3$ for the whole chart.
+
+Indeed, when I further modified the algorithm to force $DD$ switches to face $D$ (i.e., always facing the direction of the repeated arrow),
+it produced the chart shown in Figure~\ref{fig:fs-turniness}(b), with overall $\mathcal{T}=3$.
+(Note its resemblance to the basic spin pattern, $LDRU$, whose $\mathcal{T}=2$.)
+
+To fairly represent a human player's desire to step in the least turny of ambiguous ways,
+I extended the algorithm to provide either the assigned facing, from above, or its polar opposite,
+chosen at runtime by whichever is closer to the presequent facing.
+This restores the maximum overall chart turniness to $\mathcal{T}=2$,
+a new example of which is shown in Figure~\ref{fig:fs-turniness}(c).
+
+However, note that individual steps may still have $\mathcal{T}=3$,
+%because after a footswitch's facing is determined, the next step may still ... ?
+as shown in Figure~\ref{fig:fs-turniness}(d).
+In this example, the step $DL \rightsquigarrow_L LL$ assigns $LL$ to face $L$,
+but the subsequent step to $LD$ cannot avoid facing $UR$.
+The reason charts still cannot exceed overall $\mathcal{T}=2$ is that
+setting up such a situation requires a $\mathcal{T}=1$ step,
+which negates the benefit.
+A chart could conceivably end right before such a step,
+sneaking through some small $\epsilon$ extra turniness \cite{epsilon}
+(similar to the case of 270s in \cite{turniness}),
+but {\em sustained} average $\mathcal{T}>2$ remains impossible.
+
+Another approach could assign such a footswitch the opposite footing of the previous facing,
+%regardless of the switch arrow itself;
+so in this case the $LL$ would face $UL$, and each step would have exactly $\mathcal{T}=2$.
+Anyway, remember that all-candle switch stream from (c). We'll see it again soon.
+
+\begin{figure}[t]
+	\begin{center}
+	\begin{tabular}{c}
+	\begin{tabular}{c}
+	\includegraphics[width=0.13\textwidth]{fs-turniness-8-3.png} \\
+	(a) $\mathcal{T}=8/3$(?)%\stackrel{?}{=}8/3$
+	\end{tabular}
+	\begin{tabular}{c}
+	\includegraphics[width=0.13\textwidth]{fs-turniness-3.png} \\
+	(b) $\mathcal{T}=3$(?)%\stackrel{?}{=}3$
+	\end{tabular}
+	\\
+	\\
+	\begin{tabular}{c}
+	\includegraphics[width=0.13\textwidth]{fs-turniness-2.png} \\
+	(c) $\mathcal{T}=2$.
+	\end{tabular}
+	\begin{tabular}{c}
+	\includegraphics[width=0.13\textwidth]{fs-turniness-2-plus-epsilon.png} \\
+	(d) $\mathcal{T}=2+\epsilon$.
+	\end{tabular}
+	\end{tabular}
+	\end{center}
+	\caption{The turniest footswitch patterns. (a) and (b) are false positives (see prose), while (c) and (d) provide theoretically maximal turniness.}
+	\label{fig:fs-turniness}
+\end{figure}
+
 
 % dont forget
 % http://dancedancerevolutionddr.wikia.com/wiki/Afronova_walk
@@ -221,7 +321,9 @@ Recall Table~\ref{tab:facing} from the last paper, in which I left undefined the
 
 % TODO: Put a * on charts where you're going to put a pict of mario man
 % TODO: Put a dagger on footswitch charts where the footing is a clever reinterpretation, rather than intended
+
 % TODO: Make a special mention of sandstorm and put a pict of mario man
+% TODO: put the above in an honourable mention subsection, and also mention the slow train and sidefoots
 
 \begin{figure}[t]
 	\begin{center}
