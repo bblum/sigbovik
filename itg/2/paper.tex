@@ -162,15 +162,15 @@ Chart authors will often, but not always, include a ``mine cue'' (shown in the f
 \begin{figure}[t]
 	\begin{tabular}{c}
 	\includegraphics[width=0.13\textwidth]{fs-dd-uu.png} \\
-	(a) DD/UU
+	(a) DD, UU
 	\end{tabular}
 	\begin{tabular}{c}
 	\includegraphics[width=0.13\textwidth]{fs-ll-rr.png} \\
-	(b) LL/RR
+	(b) LL, RR
 	\end{tabular}
 	\begin{tabular}{c}
 	\includegraphics[width=0.13\textwidth]{fs-ll-rr-2.png} \\
-	(c) RR/LL
+	(c) RR, LL
 	\end{tabular}
 	\caption{Footswitches of various crossoveriness/facing.}
 	\label{fig:fs}
@@ -213,9 +213,9 @@ sneaking through some small $\epsilon$ extra turniness \cite{epsilon}
 but {\em sustained} average $\mathcal{T}>2$ remains impossible.
 
 Another approach could assign such a footswitch the opposite footing of the previous facing,
-%regardless of the switch arrow itself;
+regardless of the arrow itself;
 so in this case the $LL$ would face $UL$, and each step would have exactly $\mathcal{T}=2$.
-Anyway, remember that all-candle switch stream from (c). We'll see it again soon.
+Anyway, remember that all-candle switch stream in (c). We'll see it again soon.
 
 \begin{figure}[t]
 	\begin{center}
@@ -250,6 +250,34 @@ Anyway, remember that all-candle switch stream from (c). We'll see it again soon
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\section{Analyzing Crossoveriness}
+
+The major flaw of the turniness algorithm \cite{turniness}
+is that it didn't care whether a stream started with the left or right foot;
+it simply exploited the symmetry of Table~\ref{tab:facing} to find turniness regardless of footing.
+Hence, it could not distinguish technical footing patterns which could affect the way a human would play the chart.
+\cite{turniness} often played charts inhumanly, facing backwards and/or stepping 270s for most of a song.
+
+So, my contribution this year is an algorithm which plays charts more like a human,
+and which consequently can report on a chart's technical patterns beyond simple turniness.
+The algorithm realizes three principles of ITG:
+\begin{enumerate}
+	\item Alternate feet as much as possible.
+	\item Step crossed-over as little as possible.
+	\item Jumps allow the player to reset her footing.
+\end{enumerate}
+
+Figure~\ref{fig:pseudocode} describes the algorithm in pseudocode.
+To summarize it in prose:
+\begin{itemize}
+	\item Split the chart into several units of stream,
+		the boundaries of which occur at every jump and any time an arrow is repeated.
+	\item Step each stream with alternating feet.
+	\item Compare the number of matching steps (i.e., $L$ foot on $L$ arrow or $R$ on $R$) versus crossover steps.
+		If the latter is greater, re-step the stream with opposite feet from before (this kills the crossovers).
+	\item After flipping each stream, if necessary, count the total crossovers in the whole chart.
+\end{itemize}
+
 \newcommand\hilight[2]{\color{#1}#2\color{black}}
 \definecolor{pink}{RGB}{128,0,192}
 \definecolor{orange}{RGB}{192,96,0}
@@ -257,7 +285,7 @@ Anyway, remember that all-candle switch stream from (c). We'll see it again soon
 \definecolor{brickred}{RGB}{192,0,0}
 \definecolor{commentblue}{RGB}{0,128,192}
 
-\begin{figure*}[t]
+\begin{figure*}[p]
 \begin{center}
 \begin{tabular}{l}
 	\texttt{\hilight{orange}{data}~\hilight{olivegreen}{Step}~= \hilight{brickred}{L}~| \hilight{brickred}{D}~| \hilight{brickred}{U}~| \hilight{brickred}{R}~| \hilight{brickred}{Jump}~\hilight{orange}{deriving}~\hilight{olivegreen}{Eq}} \\
@@ -304,16 +332,30 @@ Anyway, remember that all-candle switch stream from (c). We'll see it again soon
 	\texttt{\hilight{pink}{analyze}~= \hilight{pink}{commitStream}~. \hilight{orange}{foldl}~\hilight{pink}{analyzeStep}~(\hilight{brickred}{S 0 0 0 0}~\hilight{brickred}{Nothing}~\hilight{brickred}{False}~\hilight{brickred}{False}~\hilight{brickred}{False}~\hilight{brickred}{[]}) } \\
 \end{tabular}
 \end{center}
-\caption{it's pseudocode lol}
-\label{fig:pseudocode-lol}
+	\caption{Pseudocode description of the crossoveriness and footswitchiness algorithm.}
+\label{fig:pseudocode}
 \end{figure*}
 
+\section{Analyzing Footswitchiness}
 
-\section{Existing Chart Analysis}
+Because we split the chart whenever an arrow is repeated,
+figuring out whether that arrow is stepped with different feet on either side of the stream boundary
+is a natural consequence of figuring out how to step each stream individually.
+This is also shown in Figure~\ref{fig:pseudocode}'s pseudocode.
+To summarize in prose,
+if neither stream needed to be flipped (or if both did), then the alternating feet assumption holds,
+and the repeat must be a footswitch.
+
+\section{Analyzing Jackiness}
+
+A jack occurs when a repeat arrow is stepped with the same foot,
+rather than alternating (hence the name, from ``jackhammer'').
+You've got the idea by now, right?
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%\section{A Bit More on Turniness}
+\section{Forced Doublesteps}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
