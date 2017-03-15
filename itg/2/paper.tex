@@ -451,6 +451,7 @@ In my analysis next section, I will use $\nflip = 9$
 % Stuff to talk about.
 % Dataset size now >10k
 % I reran turniness on fancy footwork and it actually got turnier (double check dis), b/c of all the candles
+% 9-15 is clearly the sweet spot for techni jawnz
 
 % By author/by pack: I excluded 1s-3s, admittedly biased against konami, on the pretense of excluding nonsense false positives, but even after that, konami is still the crossover king
 % Step authors are limited to 10 or more charts
@@ -462,10 +463,11 @@ In my analysis next section, I will use $\nflip = 9$
 % Toxic - jack+doublestep footed as sideswitch + xover stream instead
 % H'ble mention to sandstorm for jacks
 
-\begin{figure}[t]
+% charts
+\begin{table}[t]
 	\begin{center}
 		\small
-	\begin{tabular}{r|l|l|c}
+	\begin{tabular}{r|l|l|l}
 		\bf Ft. & \bf Name & \bf Pack & \bf \#XO \\
 		\hline
 		 6 & Autoload                 & ITG 3                 &  54 \\
@@ -485,11 +487,11 @@ In my analysis next section, I will use $\nflip = 9$
 	\end{tabular}
 	\end{center}
 	\caption{Charts with the most total crossovers (XOs).}
-\end{figure}
-\begin{figure}[t]
+\end{table}
+\begin{table}[t]
 	\begin{center}
 		\small
-	\begin{tabular}{r|l|l|c}
+	\begin{tabular}{r|l|l|l}
 		\bf Ft. & \bf Name & \bf Pack & \bf XO\% \\
 		\hline
 		 4 & DAM DIRIRAM              & DDR 3rdMIX            & 27.3 \\
@@ -510,14 +512,14 @@ In my analysis next section, I will use $\nflip = 9$
 	\end{tabular}
 	\end{center}
 	\caption{Charts with the highest percentage of XOs among total steps.}
-\end{figure}
-\begin{figure}[t]
+\end{table}
+\begin{table}[t]
 	\begin{center}
 		\small
-	\begin{tabular}{r|l|l|c}
+	\begin{tabular}{r|l|l|l}
 		\bf Ft. & \bf Name & \bf Pack & \bf \#FS \\
 		\hline
-		\multicolumn{4}{c}{\em no 5s- with $\ge$50 FSs} \\
+		%\multicolumn{4}{c}{\em no 5s- with $\ge$50 FSs} \\
 		 6 & Sweat Shop       & ITG Rebirth 2 Beta    &  56 \\
 		 7 & Silent Hill      & DDR 3rdMIX            &  29 \\
 		 8 & Pulse            & CuoReNeRo             &  41 \\
@@ -539,11 +541,11 @@ In my analysis next section, I will use $\nflip = 9$
 	\end{tabular}
 	\end{center}
 	\caption{Charts with the most total footswitches (FSs).}
-\end{figure}
-\begin{figure}[t]
+\end{table}
+\begin{table}[t]
 	\begin{center}
 		\small
-	\begin{tabular}{r|l|l|c}
+	\begin{tabular}{r|l|l|l}
 		\bf Ft. & \bf Name & \bf Pack & \bf FS\% \\
 		\hline
 		 3 & Sweat Shop       & ITG Rebirth 2 Beta    & 15.3 \\
@@ -564,18 +566,18 @@ In my analysis next section, I will use $\nflip = 9$
 	\end{tabular}
 	\end{center}
 	\caption{Charts with the highest percentage of FSs among total steps.}
-\end{figure}
-\begin{figure}[t]
+\end{table}
+\begin{table}[t]
 	\begin{center}
 		\small
-	\begin{tabular}{r|l|l|c}
+	\begin{tabular}{r|l|l|l}
 		\bf Ft. & \bf Name & \bf Pack & \bf \#XF \\
 		\hline
 		\multicolumn{4}{c}{\em no 8s- with $\ge$12 XFs} \\
 		 9 & Dr. Boom-Bombay   & fort rapids vii            & 18 \\
 		10 & Toxic             & Sexuality Violation 2      & 12 \\
 		11 & Heart Shooter     & VocaJawnz                  & 44 \\
-		12 & Beautiful Synergy & Keyboard Collaboration III & 14 \\
+		12 & Beautiful Synergy & Keyboard Collab. III & 14 \\
 		13 & Toxic             & Sexuality Violation 2      & 12 \\
 		14 & Fancy Footwork    & Cirque du Zeppelin         & 40 \\
 		15 & yoshikawa45 vs siesta45 & Rikame's Simfiles 4  & 20 \\
@@ -583,7 +585,221 @@ In my analysis next section, I will use $\nflip = 9$
 	\end{tabular}
 	\end{center}
 	\caption{Charts with the most crossover footswitches (XFs). (Here I chose 12 as the cut-off because below that are a bunch of false-positive nonsense charts from DDR. Sheesh, Konami.)}
-\end{figure}
+\end{table}
+
+% authors
+\begin{table}[t]
+	\begin{center}
+		\small
+	\begin{tabular}{l|r|r|l}
+		\bf Author & \bf Charts & \bf Total Steps & \bf FS\% \\
+		\hline
+		Konami        & 530 & 114623 & 8.03 \\
+		sssmsm        &  41 &  17219 & 6.55 \\
+		NEMORIGINAL   &  44 &  20165 & 5.36 \\
+		M. Emirzian   &  23 &   9307 & 5.16 \\
+		J. DeGarmo    &  16 &   4362 & 4.86 \\
+		D. Renzetti   &  18 &   7877 & 4.47 \\
+		R. McKanna    &  47 &  14855 & 4.23 \\
+		M. Puls       &  26 &   8379 & 4.18 \\
+		King of Light &  24 &   8817 & 4.13 \\
+		D. Bernardone & 217 &  76290 & 4.10 \\
+		D. D'Amato    & 107 &  36265 & 3.92 \\
+		bblum         &  32 &  32382 & 3.76 \\
+		\multicolumn{4}{c}{\normalsize\dots} \\
+		B. Vergara    &  13 &  15454 & 0.091 \\
+		Aoreo         &  21 &  27990 & 0.089 \\
+		Zaia          & 368 & 448460 & 0.080 \\
+		t0ni          &  85 & 128964 & 0.058 \\
+		Burn          &  27 &  60052 & 0.057 \\
+		Dirk          &  12 &  21996 & 0.055 \\
+		Happy Feet    &  30 &  57888 & 0.040 \\
+		@@            &  63 & 199530 & 0.026 \\
+		Arvin         &  79 & 108612 & 0.023 \\
+		Drazu         & 153 & 221460 & 0.021 \\
+		teejusb       &  11 &  11298 & 0.018 \\
+		Fraxtil       &  19 &  25612 & 0 \\
+	\end{tabular}
+	\end{center}
+	\caption{Chart authors with the highest/lowest XO\%.}
+\end{table}
+\begin{table}[t]
+	\begin{center}
+		\small
+	\begin{tabular}{l|r|r|l}
+		\bf Author & \bf Charts & \bf Total Steps & \bf FS\% \\
+		\hline
+		Konami        & 530 & 114623 & 2.29 \\
+		bblum         &  32 &  32382 & 1.29 \\
+		M. Puls       &  26 &   8379 & 1.16 \\
+		R. McKanna    &  47 &  14855 & 1.11 \\
+		mudkyp        &  63 &  42792 & 1.09 \\
+		S. Venkat     &  24 &  11084 & 0.96 \\
+		K. Ward       & 281 &  86475 & 0.89 \\
+		xRGTMx        &  19 &  11734 & 0.88 \\
+		sssmsm        &  41 &  17219 & 0.85 \\
+		D. Bernardone & 217 &  76290 & 0.83 \\
+		ATB           &  31 &  20673 & 0.82 \\
+		Happy Feet    &  30 &  57888 & 0.82 \\
+		\multicolumn{4}{c}{\normalsize\dots} \\
+		Hsarus        &  18 &  70162 & 0.070 \\
+		Drazu         & 153 & 221460 & 0.057 \\
+		@@            &  63 & 199530 & 0.037 \\
+		Revolver      &  11 &   8302 & 0.036 \\
+		T. Swag       &  13 &  22909 & 0.031 \\
+		Dirk          &  12 &  21996 & 0.023 \\
+		B. Vergara    &  13 &  15454 & 0.019 \\
+		warpdr!ve     &  16 &  19090 & 0.016 \\
+		Burn          &  27 &  60052 & 0.015 \\
+		teejusb       &  11 &  11298 & 0.009 \\
+		t0ni          &  85 & 128964 & 0.002 \\
+		S. Tofu       &  26 &  34609 & 0
+	\end{tabular}
+	\end{center}
+	\caption{Chart authors with the highest/lowest FS\%.}
+\end{table}
+\begin{table}[t]
+	\begin{center}
+		\small
+	\begin{tabular}{l|r|r|l}
+		\bf Author & \bf Charts & \bf Total Steps & \bf JK\% \\
+		\hline
+		King of Light &  24 &   8817 & 12.94 \\
+		R. McKanna    &  47 &  14855 & 9.95 \\
+		Konami        & 530 & 114623 & 9.63 \\
+		P. Shanklin   &  21 &   9834 & 8.91 \\
+		M. Puls       &  26 &   8379 & 8.90 \\
+		K. Ward       & 281 &  86475 & 8.80 \\
+		ATB           &  31 &  20673 & 8.46 \\
+		J. DeGarmo    &  16 &   4362 & 8.30 \\
+		D. Bernardone & 217 &  76290 & 7.98 \\
+		Renard        &  45 &  15035 & 7.94 \\
+		C. Foy        & 133 &  52418 & 7.72 \\
+		Yoko          &  10 &   4128 & 7.63 \\
+		\multicolumn{4}{c}{\normalsize\dots} \\
+		bblum         &  32 &  32382 & 1.56 \\
+		B. Vergara    &  13 &  15454 & 1.31 \\
+		Arvin         &  79 & 108612 & 1.30 \\
+		Drazu         & 153 & 221460 & 1.06 \\
+		Zaia          & 368 & 448460 & 0.86 \\
+		Aoreo         &  21 &  27990 & 0.78 \\
+		T. Swag       &  13 &  22909 & 0.70 \\
+		@@            &  63 & 199530 & 0.61 \\
+		warpdrive     &  16 &  19090 & 0.49 \\
+		Dirk          &  12 &  21996 & 0.35 \\
+		Burn          &  27 &  60052 & 0.28 \\
+		Hsarus        &  18 &  70162 & 0.27 \\
+	\end{tabular}
+	\end{center}
+	\caption{Chart authors with the highest/lowest JK\%.}
+\end{table}
+
+% packs
+\begin{table}[t]
+	\begin{center}
+		\small
+	\begin{tabular}{l|r|r|l}
+		\bf Pack & \bf Charts & \bf Total Steps & \bf XO\% \\
+		\hline
+		DDR 1st Mix to Extreme   &  530 & 114623 & 8.03 \\
+		r2112                    &   47 &  18377 & 4.50 \\
+		the best of r21freak     &  100 &  45156 & 4.22 \\
+		the best of r21freak ii  &   48 &  25024 & 4.16 \\
+		In The Groove 2          &  222 &  66113 & 4.05 \\
+		In The Groove Rebirth+   &  108 &  43758 & 3.99 \\
+		r21twins                 &   52 &  22347 & 3.89 \\
+		In The Groove 3          &  320 & 106363 & 3.61 \\
+		CuoReNeRo MeGaPacK       &  423 & 248625 & 3.45 \\
+		In The Groove            & 1408 & 491819 & 3.27 \\
+		r21freak Friendship Pack &   47 &  20363 & 3.13 \\
+		BemaniBeats 4            &   31 &  18464 & 3.02 \\
+		\multicolumn{4}{c}{\normalsize\dots} \\
+		Tachyon Epsilon          &  150 & 208830 & 0.064 \\
+		SPEEEDCOOOORE 4          &  101 & 123814 & 0.064 \\
+		TranceMania              &   80 & 121415 & 0.062 \\
+		Cirque du Lykan          &  129 & 160312 & 0.059 \\
+		Cirque du Zonda          &   45 &  74890 & 0.057 \\
+		Jimmy Jawns              &  109 & 170894 & 0.044 \\
+		Getty                    &   26 &  53528 & 0.043 \\
+		Tachyon Delta            &   32 &  36712 & 0.038 \\
+		Tachyon Gamma            &   32 &  36134 & 0.033 \\
+		Oh Henry! Mad Stamina    &   46 & 152326 & 0.028 \\
+		Causality Violation      &   10 &  19507 & 0.021 \\
+		Fast Track to Brutetown  &   29 &  46082 & 0.020 \\
+	\end{tabular}
+	\end{center}
+	\caption{Packs with the highest/lowest XO\%.}
+\end{table}
+\begin{table}[t]
+	\begin{center}
+		\small
+	\begin{tabular}{l|r|r|l}
+		\bf Pack & \bf Charts & \bf Total Steps & \bf FS\% \\
+		\hline
+		Subluminal               &   17 &  13418 & 4.70 \\
+		Aoreo's Ariginals 2      &   16 &  15222 & 2.42 \\
+		DDR 1st Mix to Extreme   &  530 & 114623 & 2.29 \\
+		Aoreo's Ariginals        &   31 &  26418 & 2.26 \\
+		rocky mount xi           &  113 &  79986 & 0.97 \\
+		In The Groove 2          &  222 &  66113 & 0.93 \\
+		FA and Chill             &   35 &  22045 & 0.86 \\
+		Getty                    &   26 &  53528 & 0.85 \\
+		Undertale                &   19 &  14722 & 0.84 \\
+		r2112                    &   47 &  18377 & 0.82 \\
+		Fort Rapids VI           &   75 &  75563 & 0.77 \\
+		Mute Sims 8              &   72 &  47140 & 0.71 \\
+		\multicolumn{4}{c}{\normalsize\dots} \\
+		SPEEEDCOOOORE 4          &  101 & 123814 & 0.093 \\
+		Stamina Showcase         &   38 & 126146 & 0.088 \\
+		VocaJawnz II             &  128 & 183153 & 0.084 \\
+		Cirque du Zeppelin       &  109 & 102991 & 0.082 \\
+		SPEEEDCOOOORE 3          &   66 &  69236 & 0.071 \\
+		Causality Violation      &   10 &  19507 & 0.051 \\
+		TranceNation             &   41 & 123940 & 0.047 \\
+		Oh Henry! Mad Stamina    &   46 & 152326 & 0.046 \\
+		Tachyon Epsilon          &  150 & 208830 & 0.040 \\
+		Noisiastreamz            &   20 &  41917 & 0.019 \\
+		TranceMania 2            &   40 &  64109 & 0.003 \\
+		TranceMania              &   80 & 121415 & 0.001 \\
+	\end{tabular}
+	\end{center}
+	\caption{Packs with the highest/lowest FS\%.}
+\end{table}
+\begin{table}[t]
+	\begin{center}
+		\small
+	\begin{tabular}{l|r|r|l}
+		\bf Pack & \bf Charts & \bf Total Steps & \bf JK\% \\
+		\hline
+		DDR 1st Mix to Extreme   &  530 & 114623 & 9.63 \\
+		r2112                    &   47 &  18377 & 8.80 \\
+		In The Groove 2          &  222 &  66113 & 8.64 \\
+		Gensokyo Holiday         &   87 &  51652 & 7.87 \\
+		r21Freak's Friendship Pack 2 &   32 &  15649 & 7.71 \\
+		Omnifarious              &   10 &   5594 & 7.53 \\
+		r21twins                 &   52 &  22347 & 7.18 \\
+		Piece of Cake 7          &   20 &  11554 & 6.97 \\
+		In The Groove            & 1408 & 491819 & 6.97 \\
+		In The Groove Rebirth+   &  108 &  43758 & 6.97 \\
+		TLOES Chapter 1          &   85 &  42201 & 6.89 \\
+		ITG Rebirth 2 Beta       &  262 &  99078 & 6.79 \\
+		\multicolumn{4}{c}{\normalsize\dots} \\
+		TranceMania 2            &   40 &  64109 & 1.03 \\
+		Causality Violation      &   10 &  19507 & 0.98 \\
+		VocaJawnz II             &  128 & 183153 & 0.98 \\
+		Tachyon Epsilon          &  150 & 208830 & 0.94 \\
+		Tachyon Delta            &   32 &  36712 & 0.87 \\
+		Cirque du Lykan          &  129 & 160312 & 0.87 \\
+		Cirque du Veyron         &   31 &  51545 & 0.79 \\
+		Cirque du Zeppelin       &  109 & 102991 & 0.77 \\
+		Oh Henry! Mad Stamina    &   46 & 152326 & 0.67 \\
+		Stamina Showcase         &   38 & 126146 & 0.56 \\
+		Cirque du Zonda          &   45 &  74890 & 0.47 \\
+		TranceNation             &   41 & 123940 & 0.25 \\
+	\end{tabular}
+	\end{center}
+	\caption{Packs with the highest/lowest JK\%.}
+\end{table}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
