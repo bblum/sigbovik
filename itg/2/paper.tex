@@ -375,19 +375,19 @@ On inspection, these charts should be stepped with no crossovers, but were evalu
 \begin{figure}[t]
 	\begin{center}
 	\begin{tabular}{c}
-		\includegraphics[width=0.16\textwidth]{paradise-lost-false-positive.png}
+		\includegraphics[width=0.18\textwidth]{paradise-lost-false-positive.png}
 		\\
 		(a) Paradise Lost \\
 		(16, Cirque du Lykan)
 	\end{tabular}
 	%\begin{tabular}{c}
-	%	\includegraphics[width=0.16\textwidth]{false-positive-toromi-hearts.png}
+	%	\includegraphics[width=0.18\textwidth]{false-positive-toromi-hearts.png}
 	%	\\
 	%	(a) Toromi Hearts 2 \\
 	%	(18, Cirque du Zonda)
 	%\end{tabular}
 	\begin{tabular}{c}
-		\includegraphics[width=0.16\textwidth]{hearbeat-rollstream-doublestep.png}
+		\includegraphics[width=0.18\textwidth]{hearbeat-rollstream-doublestep.png}
 		\\
 		(b) Heartbeat \\
 		(13, TranceNation)
@@ -400,20 +400,17 @@ On inspection, these charts should be stepped with no crossovers, but were evalu
 \newcommand\Stream{\ensuremath{\mathcal{S}}}
 \newcommand\Doublestep{\ensuremath{\mathcal{DS}}}
 \newcommand\nflip{\ensuremath{n_{\mathfrak{flip}}}}
-\newcommand\percentmatch{\ensuremath{\%_{\mathfrak{match}}}}
+\newcommand\percentflip{\ensuremath{\%_{\mathfrak{flip}}}}
 \begin{algorithm}[h!]
 	\SetKwInOut{Input}{Input}
 	\SetKwInOut{Output}{Invariant}
-	\Input{\Stream, a step sequence}
+	\Input{\Stream, a step sequence $s_0 \dots s_n$}
 	\Output{$\forall s_i, s_j \in \Stream, j=i+1 \rightarrow \mathsf{\neg StreamBoundary}(s_i,s_j)$}
 	\Input{\nflip, heuristic minimum length} %of flipped stream to doublestep into}
-	\Input{$\percentmatch$, heuristic percentage, initially 0}
+	\Input{$\percentflip$, heuristic percentage, initially 100}
 	\For{$i \in \mathsf{length}(\Stream) \wedge \neg {\sf defined}(i_{\Doublestep})$}{
-		%$\mathcal{S}' \leftarrow \{ s_j | s_j \in \Stream \wedge j \ge i \}$ \\ %i \le j < i + \nflip \})$ \\
 		$\Stream' \leftarrow \{ s_k | s_k \in \mathsf{LRs}(\{ s_j | s_j \in \Stream \wedge j \ge i \}) \wedge k \le \nflip \}$ \\
-		%$\mathcal{X} \leftarrow \mathsf{CrossoverSteps}(\{ s_j | s_j \in \Stream \wedge i \le j < i + \nflip \})$ \\
-		%$\mathcal{M} \leftarrow \mathsf{MatchingSteps} (\{ s_j | s_j \in \Stream \wedge i \le j < i + \nflip \})$
-		\If{$|\Stream'| = \nflip \wedge |\mathsf{Matching}(\Stream')| \le \percentmatch \times (|\mathsf{Crossovers}(\Stream')| + |\mathsf{Matching}(\Stream')|)$}{
+		\If{$|\Stream'| = \nflip$ $\wedge$ $|\mathsf{Crossovers}(\Stream')| \ge \percentflip \times |\Stream'|$}{
 			$i_{\Doublestep} \leftarrow i$
 		}
 	}
