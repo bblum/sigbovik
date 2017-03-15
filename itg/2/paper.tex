@@ -45,6 +45,9 @@
 \usepackage[usenames,dvipsnames]{xcolor}
 \usepackage[utopia]{mathdesign}
 \usepackage{natbib}
+\usepackage[mathcal]{euscript}
+\usepackage[linesnumbered,ruled]{algorithm2e}
+
 \renewcommand{\UrlBreaks}{\do\/\do\a\do\b\do\c\do\d\do\e\do\f\do\g\do\h\do\i\do\j\do\k\do\l\do\m\do\n\do\o\do\p\do\q\do\r\do\s\do\t\do\u\do\v\do\w\do\x\do\y\do\z}
 
 % ____________________________________________________________
@@ -253,18 +256,18 @@ Anyway, remember that all-candle switch stream in (c). We'll see it again soon.
 \section{Analyzing Crossoveriness}
 
 The major flaw of the turniness algorithm \cite{turniness}
-is that it didn't care whether a stream started with the left or right foot;
+was that it didn't care whether a stream started with the left or right foot;
 it simply exploited the symmetry of Table~\ref{tab:facing} to find turniness regardless of footing.
 Hence, it could not distinguish technical footing patterns which could affect the way a human would play the chart.
-\cite{turniness} often played charts inhumanly, facing backwards and/or stepping 270s for most of a song.
+It often played charts inhumanly, facing backwards and/or stepping 270s for most of a song.
 
-So, my contribution this year is an algorithm which plays charts more like a human,
+So, my contribution this year is an algorithm which plays more naturally,
 and which consequently can report on a chart's technical patterns beyond simple turniness.
 The algorithm realizes three principles of ITG:
 \begin{enumerate}
 	\item Alternate feet as much as possible.
 	\item Step crossed-over as little as possible.
-	\item Jumps allow the player to reset her footing.
+	\item Jumps or jacks allow the player to reset her footing.
 \end{enumerate}
 
 Figure~\ref{fig:pseudocode} describes the algorithm in pseudocode.
@@ -357,6 +360,87 @@ You've got the idea by now, right?
 
 \section{Forced Doublesteps}
 
+After painstakingly translating the pseudocode from Figure~\ref{fig:pseudocode} into a real implementation,
+I found it vulnerable to false positives when a single double-step could force a long section of stream to be stepped backwards.
+As an extreme example, consider the pattern $LRLRLRLR-D-LRLRLRLR$.
+Because no jumps or jacks allow the footing to be reset, either the first or last 4 pairs of $LR$s must be stepped crossed-over.
+
+Figure~\ref{fig:force-doublestep} shows two examples from real-world charts:
+in (a), the player must not alternate feet across the measure break,
+while in (b), two $L$ arrows are replaced with rolls for an artistic visual accent, which must be stepped twice each.
+On inspection, these charts should be stepped with no crossovers, but were evaluated otherwise %as having very high XO\%
+%(anywhere from 10.6\% to 27.9\%).
+(730 XOs (27.9\%) and 173 XOs (9.6\%), respectively).
+
+\begin{figure}[t]
+	\begin{center}
+	\begin{tabular}{c}
+		\includegraphics[width=0.16\textwidth]{paradise-lost-false-positive.png}
+		\\
+		(a) Paradise Lost \\
+		(16, Cirque du Lykan)
+	\end{tabular}
+	%\begin{tabular}{c}
+	%	\includegraphics[width=0.16\textwidth]{false-positive-toromi-hearts.png}
+	%	\\
+	%	(a) Toromi Hearts 2 \\
+	%	(18, Cirque du Zonda)
+	%\end{tabular}
+	\begin{tabular}{c}
+		\includegraphics[width=0.16\textwidth]{hearbeat-rollstream-doublestep.png}
+		\\
+		(b) Heartbeat \\
+		(13, TranceNation)
+	\end{tabular}
+	\end{center}
+	\caption{The doublesteps in some streamy charts must be identified, and the stream split, lest ``too much'' of the following stream appear completely crossed-over.}
+	\label{fig:force-doublestep}
+\end{figure}
+
+\newcommand\Stream{\ensuremath{\mathcal{S}}}
+\newcommand\Doublestep{\ensuremath{\mathcal{DS}}}
+\newcommand\nflip{\ensuremath{n_{\mathfrak{flip}}}}
+\newcommand\percentmatch{\ensuremath{\%_{\mathfrak{match}}}}
+\begin{algorithm}[h!]
+	\SetKwInOut{Input}{Input}
+	\SetKwInOut{Output}{Invariant}
+	\Input{\Stream, a step sequence}
+	\Output{$\forall s_i, s_j \in \Stream, j=i+1 \rightarrow \mathsf{\neg StreamBoundary}(s_i,s_j)$}
+	\Input{\nflip, heuristic minimum length} %of flipped stream to doublestep into}
+	\Input{$\percentmatch$, heuristic percentage, initially 0}
+	\For{$i \in \mathsf{length}(\Stream) \wedge \neg {\sf defined}(i_{\Doublestep})$}{
+		%$\mathcal{S}' \leftarrow \{ s_j | s_j \in \Stream \wedge j \ge i \}$ \\ %i \le j < i + \nflip \})$ \\
+		$\Stream' \leftarrow \{ s_k | s_k \in \mathsf{LRs}(\{ s_j | s_j \in \Stream \wedge j \ge i \}) \wedge k \le \nflip \}$ \\
+		%$\mathcal{X} \leftarrow \mathsf{CrossoverSteps}(\{ s_j | s_j \in \Stream \wedge i \le j < i + \nflip \})$ \\
+		%$\mathcal{M} \leftarrow \mathsf{MatchingSteps} (\{ s_j | s_j \in \Stream \wedge i \le j < i + \nflip \})$
+		\If{$|\Stream'| = \nflip \wedge |\mathsf{Matching}(\Stream')| \le \percentmatch \times (|\mathsf{Crossovers}(\Stream')| + |\mathsf{Matching}(\Stream')|)$}{
+			$i_{\Doublestep} \leftarrow i$
+		}
+	}
+	\eIf{{\sf defined}($i_{\Doublestep})$}{
+		\If{$i_{\Doublestep} = 0$}{
+			% gotta write "tail stream" as complicatedly as possible
+			$i_{\Doublestep} \leftarrow \mathsf{FindUnflippedSection}(\{ s_i | s_i \in \Stream \wedge i \ne 0 \})$
+			%\mathsf{tail}(\Stream))$
+		}
+		{\sf HeuristicallyDoublestep}($\{ s_i | s_i \in \Stream \wedge i < i_{\Doublestep} \}$)
+		{\sf HeuristicallyDoublestep}($\{ s_i | s_i \in \Stream \wedge i \ge i_{\Doublestep} \}$)
+	}{
+		{\sf CommitStream}(\Stream)
+	}
+	\caption{{\sf HeuristicallyDoublestep}(\Stream)}
+	\label{alg:heuristic}
+\end{algorithm}
+
+To handle such cases,
+I extended the algorithm with a heuristic to identify when a stream becomes ``too crossed-over'' for ``too long'',
+and to force a doublestep by splitting the stream to flip it back.
+Algorithm~\ref{alg:heuristic} shows the implementation.
+I will not summarize how it works due to space limitations, but the description should be intuitive enough.
+The heuristic evaluated Figure~\ref{fig:force-doublestep}'s charts as having 0 crossovers and 1 and 21 doublesteps, respectively.
+In my analysis next section, I will use $\nflip = 9$
+(determined by inspection of a few favourite charts, which should be scientifically rigorous enough for anyone).
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Experimental Results}
@@ -404,7 +488,7 @@ You've got the idea by now, right?
 		12 & Winnipeg is Fucking Over & best of r21freak ii   & \em 122 & \bf 14.3 \\
 		13 & The Sampling Paradise    & The Paradise Sampler  & \em 139 & \bf 15.6 \\
 		14 & Slow Down                & Sexuality Violation 2 & \bf 160 & \bf 13.3 \\
-		\multicolumn{5}{c}{\em no 15s-20s with $\ge$10\% XO} \\
+		\multicolumn{5}{c}{\em no 15s-20s with $\ge$10\% XOs} \\
 		21 & Teenage Dream            & Sexuality Violation 2 & \bf 280 & \bf 11.8 \\
 	\end{tabular}
 	\end{center}
@@ -472,13 +556,13 @@ You've got the idea by now, right?
 		\multicolumn{5}{c}{\em no 14s+ with $\ge$12 XFs} \\
 	\end{tabular}
 	\end{center}
-	\caption{Charts with the most crossover footswitches (XFs). (Here I chose 12 as the cut-off because below that are a bunch of false-positives from DDR.)}
+	\caption{Charts with the most crossover footswitches (XFs). (Here I chose 12 as the cut-off because below that are a bunch of false-positive nonsense charts from DDR. Sheesh, Konami.)}
 \end{figure}
 
 \section{Conclusion}
 
 Please accept our paper.
-We worked hard on it.
+I worked hard on it.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
