@@ -2,7 +2,8 @@
 #include <stdbool.h>
 #include <assert.h>
 
-#define analysis_main main
+#define synthesis_main main
+#define FOOTSWITCHES
 
 /******************************************************************************
  * Common helpers
@@ -28,30 +29,6 @@ enum facing {
 };
 
 enum arrow { U, D, L, R, NUM_ARROWS };
-
-enum facing whichway(enum arrow left_foot, enum arrow right_foot) {
-	// Foot switches: future work!
-	assert(left_foot != right_foot);
-	static enum facing way_table[NUM_ARROWS][NUM_ARROWS] = {
-		[U][D] = F_R,
-		[U][L] = F_DR, // xover
-		[U][R] = F_UR,
-		//[U][U] = F_U, // footswitch
-		[L][U] = F_UL,
-		[L][D] = F_UR,
-		[L][R] = F_U,
-		//[L][L] = F_L, // xover footswitch
-		[D][U] = F_L,
-		[D][L] = F_DL, // xover
-		[D][R] = F_UL,
-		//[D][D] = F_U, // footswitch (to be theoretically beautiful, this would be F_D, a backwards switch, but who the hell does that?)
-		[R][L] = F_D, // lateral
-		[R][U] = F_DL, // xover
-		[R][D] = F_DR, // xover
-		//[R][R] = F_R, // xover footswitch
-	};
-	return way_table[left_foot][right_foot];
-}
 
 // For any two facings possible with consecutive itg steps (ie, only 1 foot
 // moves), shouldn't return more than 2.
@@ -91,6 +68,41 @@ unsigned int turn_distance(enum facing before, enum facing after)
 	return turn_table[before][after];
 }
 
+enum facing whichway(enum arrow left_foot, enum arrow right_foot, enum facing last_facing) {
+	// Foot switches: future work!
+#ifndef FOOTSWITCHES
+	assert(left_foot != right_foot);
+#endif
+	static enum facing way_table[NUM_ARROWS][NUM_ARROWS] = {
+		[U][D] = F_R,
+		[U][L] = F_DR, // xover
+		[U][R] = F_UR,
+		[L][U] = F_UL,
+		[L][D] = F_UR,
+		[L][R] = F_U,
+		[D][U] = F_L,
+		[D][L] = F_DL, // xover
+		[D][R] = F_UL,
+		[R][L] = F_D, // lateral
+		[R][U] = F_DL, // xover
+		[R][D] = F_DR, // xover
+#ifdef FOOTSWITCHES
+		[U][U] = F_U, // footswitch
+		[L][L] = F_L, // xover footswitch
+		[R][R] = F_R, // xover footswitch
+		[D][D] = F_U, // footswitch (to be theoretically beautiful, this would be F_D, a backwards switch, but who the hell does that?)
+#endif
+	};
+	enum facing result = way_table[left_foot][right_foot];
+#ifdef FOOTSWITCHES
+	if (left_foot == right_foot && turn_distance(last_facing, result) > 2) {
+		result = NUM_FACINGS - result - 1; // flips up to down, right to left, etc
+		assert(turn_distance(last_facing, result) < 2);
+	}
+#endif
+	return result;
+}
+
 /******************************************************************************
  * Analysis
  ******************************************************************************/
@@ -126,7 +138,7 @@ bool get_note(char *buf, enum arrow *note)
 void analysis_main()
 {
 	char buf[256];
-	enum facing last_facing;
+	enum facing last_facing = F_U;
 	enum arrow last_note;
 	unsigned int notes = 0;
 	unsigned int turniness = 0;
@@ -136,22 +148,24 @@ void analysis_main()
 		// XXX: Ignores jumps, hands, &c.
 		if (get_note(buf, &note)) {
 			if (notes != 0) {
+#ifndef FOOTSWITCHES
 				// Check for double-step. Foot switches are future work!
 				if (note == last_note) {
 					continue;
 				}
+#endif
 				// XXX: Assumes no doublesteps.
 				// NB. Assumes song always starts on left foot.
 				// But tbh, it doesn't affect the turniness calculation
 				// if we think you're backwards the entire song!
 				// XXX: Fails to parse the Boten Anna roll-stream pattern.
 				enum facing this_facing = notes % 2 == 0 ?
-					whichway(note, last_note) :
-					whichway(last_note, note);
+					whichway(note, last_note, last_facing) : // TODO
+					whichway(last_note, note, last_facing);
 				if (notes > 1) {
 					// subsequent notes not first or second ones
 					unsigned int distance = turn_distance(last_facing, this_facing);
-					assert(distance <= 2);
+					//assert(distance <= 2);
 					turniness += distance;
 				}
 				last_facing = this_facing;
@@ -160,6 +174,7 @@ void analysis_main()
 			notes++;
 		}
 	}
+	notes -= 2;
 	printf("%u turniness (x10000) (%u turns / %u notes)\n", (turniness * 10000 / notes), turniness, notes);
 }
 
@@ -217,9 +232,11 @@ unsigned int search(enum arrow *chart, unsigned int index, unsigned int turnines
 		// no previous facing; just do all possible 2-step starts
 		for (enum arrow l = 0; l < NUM_ARROWS; l++) {
 			for (enum arrow r = 0; r < NUM_ARROWS; r++) {
+#ifndef FOOTSWITCHES
 				if (r == l) continue;
 				// avoid illegal starting positions
 				if (r == L || l == R) continue;
+#endif
 				// other possible approach
 				// if (rule >= NO_LATERALS && whichway(l,r) == F_D) continue;
 				// if (rule >= NO_XOVERS && (whichway(l,r) == F_DL || whichway(l,r) == F_DR)) continue;
@@ -236,7 +253,12 @@ unsigned int search(enum arrow *chart, unsigned int index, unsigned int turnines
 	} else {
 		// general case
 		for (enum arrow next = 0; next < NUM_ARROWS; next++) {
+#ifdef FOOTSWITCHES
+			// TODO: generalized it
+			if (next == chart[index-1] && next == chart[index-2]) continue; // footswitches are present work
+#else
 			if (next == chart[index-1]) continue; // footswitches are future work
+#endif
 			// which foot?
 			enum facing new_facing;
 			enum facing last_facing;
@@ -244,16 +266,16 @@ unsigned int search(enum arrow *chart, unsigned int index, unsigned int turnines
 			enum facing three_facings_ago;
 			if (index % 2 == 0) {
 				// About to place a left foot step at chart[index].
-				new_facing        =                    whichway(next,           chart[index-1]);
-				last_facing       =                    whichway(chart[index-2], chart[index-1]);
-				two_facings_ago   = index <= 2 ? F_N : whichway(chart[index-2], chart[index-3]);
-				three_facings_ago = index <= 3 ? F_N : whichway(chart[index-4], chart[index-3]);
+				three_facings_ago = index <= 3 ? F_N : whichway(chart[index-4], chart[index-3], F_U);
+				two_facings_ago   = index <= 2 ? F_N : whichway(chart[index-2], chart[index-3], three_facings_ago);
+				last_facing       =                    whichway(chart[index-2], chart[index-1], two_facings_ago);
+				new_facing        =                    whichway(next,           chart[index-1], last_facing);
 			} else {
 				// Right foot step at chart[index].
-				new_facing        =                    whichway(chart[index-1], next);
-				last_facing       =                    whichway(chart[index-1], chart[index-2]);
-				two_facings_ago   = index <= 2 ? F_N : whichway(chart[index-3], chart[index-2]);
-				three_facings_ago = index <= 3 ? F_N : whichway(chart[index-3], chart[index-4]);
+				three_facings_ago = index <= 3 ? F_N : whichway(chart[index-3], chart[index-4], F_U);
+				two_facings_ago   = index <= 2 ? F_N : whichway(chart[index-3], chart[index-2], three_facings_ago);
+				last_facing       =                    whichway(chart[index-1], chart[index-2], two_facings_ago);
+				new_facing        =                    whichway(chart[index-1], next,           last_facing);
 			}
 			// Consider the sequence of facings. Does the search rule allow it?
 			if (rule >= NO_XOVERS) {
