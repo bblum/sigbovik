@@ -182,7 +182,7 @@ Chart authors will often, but not always, include a ``mine cue'' (shown in the f
 It is tempting to assign the facings $L$, $U$, $U$, and $R$ respectively to the $LL$, $DD$, $UU$, and $RR$ footswitches.
 However, Figure~\ref{fig:fs}(c) shows that if a footswitch begins with a crossover on $U$, the facing should be reversed:
 the $RR$ footing should face $L$, and $LL$ should face $R$.
-``Backwards footswitches'' with $D$ facing are also theoretically possible,
+``Spin-switches'' with $D$ facing are also theoretically possible,
 arising from patterns such as $LURDDL$ or $LDRUUL$, although I know of no real-world chart which does this (hmm, tempting...).
 
 Before I realized that, I modified the turniness algorithm \cite{turniness} to face footswitches as above, %the bad way mentioned above,
@@ -434,7 +434,7 @@ I extended the algorithm with a heuristic to identify when a stream becomes ``to
 and to force a doublestep by splitting the stream to flip it back.
 Algorithm~\ref{alg:heuristic} shows the implementation.
 I will not summarize how it works due to space limitations, but the description should be intuitive enough.
-The heuristic evaluated Figure~\ref{fig:force-doublestep}'s charts as having 0 crossovers and 1 and 21 doublesteps, respectively.
+The heuristic evaluated Figure~\ref{fig:force-doublestep}'s charts as having 0 crossovers each and 1 and 21 doublesteps, respectively.
 In my analysis next section, I will use $\nflip = 9$
 (determined by inspection of a few favourite charts, which should be scientifically rigorous enough for anyone).
 
@@ -448,22 +448,48 @@ In my analysis next section, I will use $\nflip = 9$
 % TODO: Make a special mention of sandstorm and put a pict of mario man
 % TODO: put the above in an honourable mention subsection, and also mention the slow train and sidefoots
 
+% Stuff to talk about.
+% Dataset size now >10k
+% I reran turniness on fancy footwork and it actually got turnier (double check dis), b/c of all the candles
+
+% By author/by pack: I excluded 1s-3s, admittedly biased against konami, on the pretense of excluding nonsense false positives, but even after that, konami is still the crossover king
+% Step authors are limited to 10 or more charts
+
+% Miscellaneous charts I want to exhibit:
+% Conflict forced doublesteps
+% Heart shooter 'sidefoots'
+% Boom Bombay - triple xover jack footed as sideswitch
+% Toxic - jack+doublestep footed as sideswitch + xover stream instead
+% H'ble mention to sandstorm for jacks
+
 \begin{figure}[t]
 	\begin{center}
 		\small
-	\begin{tabular}{r|l|l|c|c}
-		\bf Ft. & \bf Name & \bf Pack & \bf \#XO & \bf XO\% \\
+	\begin{tabular}{r|l|l|c}
+		\bf Ft. & \bf Name & \bf Pack & \bf \#XO \\
 		\hline
-		\multicolumn{5}{c}{\em no 8s- with $\ge$100 XOs} \\
-		 9 & MAX Forever              & CuoReNeRo MeGaPacK    & \bf 107 & \em 8.7 \\
-		10 & J-PARA SUPER MEGAMIX     & CuoReNeRo MeGaPacK    & \bf 141 & \em 3.9 \\
-		11 & Somebody That I Used To Know & Best of Gazebo    & \bf 114 & \em 11.9 \\
-		12 & Credens Justitiam        & Stuff B Likes         & \bf 136 & \em 12.4 \\
-		13 & Banshee Strikes          & VocaJawnz             & \bf 152 & \em 10.2 \\
-		14 & Slow Down                & Sexuality Violation 2 & \bf 160 & \bf 13.3 \\
-		15 & MAX Forever              & CuoReNeRo MeGaPacK    & \bf 101 & \em 4.2 \\
-		\multicolumn{5}{c}{\em no 16s-20s with $\ge$100 XOs} \\
-		21 & Teenage Dream            & Sexuality Violation 2 & \bf 280 & \bf 11.8 \\
+		\multicolumn{4}{c}{\em no 8s- with $\ge$100 XOs} \\
+		 9 & MAX Forever              & CuoReNeRo & 107 \\
+		10 & J-PARA SUPER MEGAMIX     & CuoReNeRo & 141 \\
+		11 & Somebody I Used To Know    & Best of Gazebo    & 114 \\
+		12 & Credens Justitiam        & Stuff B Likes         & 136 \\
+		13 & Banshee Strikes          & VocaJawnz             & 152 \\
+		14 & Slow Down                & Sexuality Violation 2 & 160 \\
+		15 & MAX Forever              & CuoReNeRo & 101 \\
+		\multicolumn{4}{c}{\em no 16s-20s with $\ge$100 XOs} \\
+		21 & Teenage Dream            & Sexuality Violation 2 & 280 \\
+		%\bf Ft. & \bf Name & \bf Pack & \bf \#XO & \bf XO\% \\
+		%\hline
+		%\multicolumn{5}{c}{\em no 8s- with $\ge$100 XOs} \\
+		% 9 & MAX Forever              & CuoReNeRo MeGaPacK    & \bf 107 & \em 8.7 \\
+		%10 & J-PARA SUPER MEGAMIX     & CuoReNeRo MeGaPacK    & \bf 141 & \em 3.9 \\
+		%11 & Somebody That I Used To Know & Best of Gazebo    & \bf 114 & \em 11.9 \\
+		%12 & Credens Justitiam        & Stuff B Likes         & \bf 136 & \em 12.4 \\
+		%13 & Banshee Strikes          & VocaJawnz             & \bf 152 & \em 10.2 \\
+		%14 & Slow Down                & Sexuality Violation 2 & \bf 160 & \bf 13.3 \\
+		%15 & MAX Forever              & CuoReNeRo MeGaPacK    & \bf 101 & \em 4.2 \\
+		%\multicolumn{5}{c}{\em no 16s-20s with $\ge$100 XOs} \\
+		%21 & Teenage Dream            & Sexuality Violation 2 & \bf 280 & \bf 11.8 \\
 	\end{tabular}
 	\end{center}
 	\caption{Charts with the most total crossovers (XOs).}
@@ -471,43 +497,71 @@ In my analysis next section, I will use $\nflip = 9$
 \begin{figure}[t]
 	\begin{center}
 		\small
-	\begin{tabular}{r|l|l|c|c}
-		\bf Ft. & \bf Name & \bf Pack & \bf \#XO & \bf XO\% \\
+	\begin{tabular}{r|l|l|c}
+		\bf Ft. & \bf Name & \bf Pack & \bf XO\% \\
 		\hline
-		 4 & DAM DIRIRAM              & DDR 3rdMIX            & \em  30 & \bf 27.3 \\
-		 5 & STRICTLY BUSINESS        & DDR 1st               & \em  33 & \bf 21.4 \\
-		 6 & STRICTLY BUSINESS        & DDR 1st               & \em  38 & \bf 20.9 \\
-		 7 & MOBO$\star$MOGA          & DDR EXTREME           & \em  37 & \bf 17.3 \\
-		 8 & PARANOiA                 & DDR 1st               & \em  58 & \bf 19.6 \\
-		 9 & Dazzlin Darlin           & r21twins              & \em  76 & \bf 22.0 \\
-		10 & Enchanted Journey        & ITG Rebirth           & \em  78 & \bf 19.3 \\
-		11 & Lune Noir                & r21freak Friendship   & \em  58 & \bf 13.4 \\
-		12 & Winnipeg is Fucking Over & best of r21freak ii   & \em 122 & \bf 14.3 \\
-		13 & The Sampling Paradise    & The Paradise Sampler  & \em 139 & \bf 15.6 \\
-		14 & Slow Down                & Sexuality Violation 2 & \bf 160 & \bf 13.3 \\
-		\multicolumn{5}{c}{\em no 15s-20s with $\ge$10\% XOs} \\
-		21 & Teenage Dream            & Sexuality Violation 2 & \bf 280 & \bf 11.8 \\
+		 4 & DAM DIRIRAM              & DDR 3rdMIX            & 27.3 \\
+		 5 & STRICTLY BUSINESS        & DDR 1st               & 21.4 \\
+		 6 & STRICTLY BUSINESS        & DDR 1st               & 20.9 \\
+		 7 & MOBO$\star$MOGA          & DDR EXTREME           & 17.3 \\
+		 8 & PARANOiA                 & DDR 1st               & 19.6 \\
+		 9 & Dazzlin Darlin           & r21twins              & 22.0 \\
+		10 & Enchanted Journey        & ITG Rebirth           & 19.3 \\
+		11 & Lune Noir                & r21freak Friendship   & 13.4 \\
+		12 & W'peg is Fucking Over    & best of r21freak ii   & 14.3 \\
+		13 & The Sampling Paradise    & The Paradise Sampler  & 15.6 \\
+		14 & Slow Down                & Sexuality Violation 2 & 13.3 \\
+		\multicolumn{4}{c}{\em no 15s-20s with $\ge$10\% XOs} \\
+		21 & Teenage Dream            & Sexuality Violation 2 & 11.8 \\
+		%\bf Ft. & \bf Name & \bf Pack & \bf \#XO & \bf XO\% \\
+		%\hline
+		% 4 & DAM DIRIRAM              & DDR 3rdMIX            & \em  30 & \bf 27.3 \\
+		% 5 & STRICTLY BUSINESS        & DDR 1st               & \em  33 & \bf 21.4 \\
+		% 6 & STRICTLY BUSINESS        & DDR 1st               & \em  38 & \bf 20.9 \\
+		% 7 & MOBO$\star$MOGA          & DDR EXTREME           & \em  37 & \bf 17.3 \\
+		% 8 & PARANOiA                 & DDR 1st               & \em  58 & \bf 19.6 \\
+		% 9 & Dazzlin Darlin           & r21twins              & \em  76 & \bf 22.0 \\
+		%10 & Enchanted Journey        & ITG Rebirth           & \em  78 & \bf 19.3 \\
+		%11 & Lune Noir                & r21freak Friendship   & \em  58 & \bf 13.4 \\
+		%12 & Winnipeg is Fucking Over & best of r21freak ii   & \em 122 & \bf 14.3 \\
+		%13 & The Sampling Paradise    & The Paradise Sampler  & \em 139 & \bf 15.6 \\
+		%14 & Slow Down                & Sexuality Violation 2 & \bf 160 & \bf 13.3 \\
+		%\multicolumn{5}{c}{\em no 15s-20s with $\ge$10\% XOs} \\
+		%21 & Teenage Dream            & Sexuality Violation 2 & \bf 280 & \bf 11.8 \\
 	\end{tabular}
 	\end{center}
-	\caption{Charts with the highest percentage of crossovers among total steps.}
+	\caption{Charts with the highest percentage of XOs among total steps.}
 \end{figure}
 \begin{figure}[t]
 	\begin{center}
 		\small
-	\begin{tabular}{r|l|l|c|c}
-		\bf Ft. & \bf Name & \bf Pack & \bf \#FS & \bf FS\% \\
+	\begin{tabular}{r|l|l|c}
+		\bf Ft. & \bf Name & \bf Pack & \bf \#FS \\
 		\hline
-		\multicolumn{5}{c}{\em no 5s- with $\ge$50 FSs} \\
-		 6 & Sweat Shop       & ITG Rebirth 2 Beta    & \bf  56 & \bf 18.2 \\
-		\multicolumn{5}{c}{\em no 7s-9s with $\ge$50 FSs} \\
-		10 & Eat 'Em Up!      & Mute Sims 5           & \bf  54 & \em  9.0 \\
-		11 & Nemeton          & The Legend of Zim 4   & \bf  97 & \em 10.3 \\
-		12 & Nemeton          & Subluminal            & \bf 140 & \bf 14.8 \\
-		13 & Love Is Eternity & Subluminal            & \bf 140 & \bf 16.8 \\
-		14 & Switch           & Getty                 & \bf 347 & \bf 15.7 \\
-		15 & Danse Macabre    & Aoreo's Ariginals     & \bf 201 & \em 12.2 \\
-		16 & Weird Science    & Stamina Showcase      & \bf  61 & \em  1.8 \\
-		\multicolumn{5}{c}{\em no 17s+ with $\ge$50 FSs} \\
+		\multicolumn{4}{c}{\em no 5s- with $\ge$50 FSs} \\
+		 6 & Sweat Shop       & ITG Rebirth 2 Beta    &  56 \\
+		\multicolumn{4}{c}{\em no 7s-9s with $\ge$50 FSs} \\
+		10 & Eat 'Em Up!      & Mute Sims 5           &  54 \\
+		11 & Nemeton          & The Legend of Zim 4   &  97 \\
+		12 & Nemeton          & Subluminal            & 140 \\
+		13 & Love Is Eternity & Subluminal            & 140 \\
+		14 & Switch           & Getty                 & 347 \\
+		15 & Danse Macabre    & Aoreo's Ariginals     & 201 \\
+		16 & Weird Science    & Stamina Showcase      &  61 \\
+		\multicolumn{4}{c}{\em no 17s+ with $\ge$50 FSs} \\
+		%\bf Ft. & \bf Name & \bf Pack & \bf \#FS & \bf FS\% \\
+		%\hline
+		%\multicolumn{5}{c}{\em no 5s- with $\ge$50 FSs} \\
+		% 6 & Sweat Shop       & ITG Rebirth 2 Beta    & \bf  56 & \bf 18.2 \\
+		%\multicolumn{5}{c}{\em no 7s-9s with $\ge$50 FSs} \\
+		%10 & Eat 'Em Up!      & Mute Sims 5           & \bf  54 & \em  9.0 \\
+		%11 & Nemeton          & The Legend of Zim 4   & \bf  97 & \em 10.3 \\
+		%12 & Nemeton          & Subluminal            & \bf 140 & \bf 14.8 \\
+		%13 & Love Is Eternity & Subluminal            & \bf 140 & \bf 16.8 \\
+		%14 & Switch           & Getty                 & \bf 347 & \bf 15.7 \\
+		%15 & Danse Macabre    & Aoreo's Ariginals     & \bf 201 & \em 12.2 \\
+		%16 & Weird Science    & Stamina Showcase      & \bf  61 & \em  1.8 \\
+		%\multicolumn{5}{c}{\em no 17s+ with $\ge$50 FSs} \\
 	\end{tabular}
 	\end{center}
 	\caption{Charts with the most total footswitches (FSs).}
@@ -515,50 +569,84 @@ In my analysis next section, I will use $\nflip = 9$
 \begin{figure}[t]
 	\begin{center}
 		\small
-	\begin{tabular}{r|l|l|c|c}
-		\bf Ft. & \bf Name & \bf Pack & \bf \#FS & \bf FS\% \\
+	\begin{tabular}{r|l|l|c}
+		\bf Ft. & \bf Name & \bf Pack & \bf FS\% \\
 		\hline
-		%\multicolumn{5}{c}{\em no <6s with >50 FSs} \\
-		 3 & Sweat Shop       & ITG Rebirth 2 Beta    & \em  26 & \bf 15.3 \\
-		 4 & MAKE IT BETTER   & DDR 2ndMIX            & \em  26 & \bf 20.0 \\
-		\multicolumn{5}{c}{\em no 5s with $\ge$10\% FS} \\
-		 6 & Sweat Shop       & ITG Rebirth 2 Beta    & \bf  56 & \bf 18.2 \\
-		 7 & 5.1.1            & DDR MAX               & \em  13 & \bf 12.9 \\
-		\multicolumn{5}{c}{\em no 8s with $\ge$10\% FS} \\
-		 9 & PARANOiA KCET    & DDR 2ndMIX            & \em  33 & \bf 10.2 \\
-		10 & Delhi Ill        & Mute Sims 6           & \em  40 & \bf 11.6 \\
-		11 & Sweat Shop       & ITG Rebirth 2 Beta    & \em  75 & \bf 11.8 \\
-		12 & Nemeton          & Subluminal            & \bf 140 & \bf 14.8 \\
-		13 & Love Is Eternity & Subluminal            & \bf 140 & \bf 16.8 \\
-		14 & Switch           & Getty                 & \bf 347 & \bf 15.7 \\
-		15 & Flames of the Sky & fort rapids vii      & \em 172 & \bf 16.5 \\
-		\multicolumn{5}{c}{\em no 16s+ with $\ge$10\% FS} \\
+		 3 & Sweat Shop       & ITG Rebirth 2 Beta    & 15.3 \\
+		 4 & MAKE IT BETTER   & DDR 2ndMIX            & 20.0 \\
+		\multicolumn{4}{c}{\em no 5s with $\ge$10\% FS} \\
+		 6 & Sweat Shop       & ITG Rebirth 2 Beta    & 18.2 \\
+		 7 & 5.1.1            & DDR MAX               & 12.9 \\
+		\multicolumn{4}{c}{\em no 8s with $\ge$10\% FS} \\
+		 9 & PARANOiA KCET    & DDR 2ndMIX            & 10.2 \\
+		10 & Delhi Ill        & Mute Sims 6           & 11.6 \\
+		11 & Sweat Shop       & ITG Rebirth 2 Beta    & 11.8 \\
+		12 & Nemeton          & Subluminal            & 14.8 \\
+		13 & Love Is Eternity & Subluminal            & 16.8 \\
+		14 & Switch           & Getty                 & 15.7 \\
+		15 & Flames of the Sky & fort rapids vii      & 16.5 \\
+		\multicolumn{4}{c}{\em no 16s+ with $\ge$10\% FS} \\
+		%\bf Ft. & \bf Name & \bf Pack & \bf \#FS & \bf FS\% \\
+		%\hline
+		% 3 & Sweat Shop       & ITG Rebirth 2 Beta    & \em  26 & \bf 15.3 \\
+		% 4 & MAKE IT BETTER   & DDR 2ndMIX            & \em  26 & \bf 20.0 \\
+		%\multicolumn{5}{c}{\em no 5s with $\ge$10\% FS} \\
+		% 6 & Sweat Shop       & ITG Rebirth 2 Beta    & \bf  56 & \bf 18.2 \\
+		% 7 & 5.1.1            & DDR MAX               & \em  13 & \bf 12.9 \\
+		%\multicolumn{5}{c}{\em no 8s with $\ge$10\% FS} \\
+		% 9 & PARANOiA KCET    & DDR 2ndMIX            & \em  33 & \bf 10.2 \\
+		%10 & Delhi Ill        & Mute Sims 6           & \em  40 & \bf 11.6 \\
+		%11 & Sweat Shop       & ITG Rebirth 2 Beta    & \em  75 & \bf 11.8 \\
+		%12 & Nemeton          & Subluminal            & \bf 140 & \bf 14.8 \\
+		%13 & Love Is Eternity & Subluminal            & \bf 140 & \bf 16.8 \\
+		%14 & Switch           & Getty                 & \bf 347 & \bf 15.7 \\
+		%15 & Flames of the Sky & fort rapids vii      & \em 172 & \bf 16.5 \\
+		%\multicolumn{5}{c}{\em no 16s+ with $\ge$10\% FS} \\
 	\end{tabular}
 	\end{center}
-	\caption{Charts with the highest percentage of footswitches among total steps.}
+	\caption{Charts with the highest percentage of FSs among total steps.}
 \end{figure}
 \begin{figure}[t]
 	\begin{center}
 		\small
-	\begin{tabular}{r|l|l|c|c}
-		\bf Ft. & \bf Name & \bf Pack & \bf \#XF & \bf XF\% \\
+	\begin{tabular}{r|l|l|c}
+		\bf Ft. & \bf Name & \bf Pack & \bf \#XF \\
 		\hline
-		\multicolumn{5}{c}{\em no 8s- with $\ge$12 XFs} \\
-		 9 & Dr. Boom-Bombay   & fort rapids vii            & \bf 18 & 4.0 \\
-		10 & Toxic             & Sexuality Violation 2      & \bf 12 & 1.5 \\
-		11 & Heart Shooter     & VocaJawnz                  & \bf 44 & 5.1 \\
-		12 & Beautiful Synergy & Keyboard Collaboration III & \bf 14 & 3.2 \\
-		13 & Toxic             & Sexuality Violation 2      & \bf 12 & 1.2 \\
-		14 & Fancy Footwork    & Cirque du Zeppelin         & \bf 40 & 4.2 \\
-		\multicolumn{5}{c}{\em no 14s+ with $\ge$12 XFs} \\
+		\multicolumn{4}{c}{\em no 8s- with $\ge$12 XFs} \\
+		 9 & Dr. Boom-Bombay   & fort rapids vii            & 18 \\
+		10 & Toxic             & Sexuality Violation 2      & 12 \\
+		11 & Heart Shooter     & VocaJawnz                  & 44 \\
+		12 & Beautiful Synergy & Keyboard Collaboration III & 14 \\
+		13 & Toxic             & Sexuality Violation 2      & 12 \\
+		14 & Fancy Footwork    & Cirque du Zeppelin         & 40 \\
+		% 9 & Dr. Boom-Bombay   & fort rapids vii            & \bf 18 & 4.0 \\
+		%10 & Toxic             & Sexuality Violation 2      & \bf 12 & 1.5 \\
+		%11 & Heart Shooter     & VocaJawnz                  & \bf 44 & 5.1 \\
+		%12 & Beautiful Synergy & Keyboard Collaboration III & \bf 14 & 3.2 \\
+		%13 & Toxic             & Sexuality Violation 2      & \bf 12 & 1.2 \\
+		%14 & Fancy Footwork    & Cirque du Zeppelin         & \bf 40 & 4.2 \\
+		\multicolumn{4}{c}{\em no 15s+ with $\ge$12 XFs} \\
 	\end{tabular}
 	\end{center}
 	\caption{Charts with the most crossover footswitches (XFs). (Here I chose 12 as the cut-off because below that are a bunch of false-positive nonsense charts from DDR. Sheesh, Konami.)}
 \end{figure}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Never Work}
+
+Let's be honest: this isn't gonna be a trilogy.
+
+With that out of the way, here are some things that would be cool to implement in a fantasy universe with infinite free time.
+
+% TODO
+% forced doublesteps via holds
+% - bracketjump footswitches - matador from valex 8
+% understanding mine cues for doublesteps
+
 \section{Conclusion}
 
-Please accept our paper.
+Please accept my paper.
 I worked hard on it.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

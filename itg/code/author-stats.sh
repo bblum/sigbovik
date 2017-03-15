@@ -23,6 +23,7 @@ jacks=`echo "$stats" | sed 's/^[^\t]*\t[^\t]*\t[^\t]*\t//' | sed 's/\t.*//' | tr
 doubles=`echo "$stats" | sed 's/^[^\t]*\t[^\t]*\t[^\t]*\t[^\t]*\t//' | sed 's/\t.*//' | tr '\n' '+' | sed 's/$/0/'`
 sidefoots=`echo "$stats" | sed 's/^[^\t]*\t[^\t]*\t[^\t]*\t[^\t]*\t[^\t]*\t//' | sed 's/\t.*//' | tr '\n' '+' | sed 's/$/0/'`
 
+charts=`echo "$stats" | wc -l`
 steps=`echo "$steps" | bc`
 xovers=`echo "$xovers" | bc`
 switches=`echo "$switches" | bc`
@@ -30,4 +31,4 @@ jacks=`echo "$jacks" | bc`
 doubles=`echo "$doubles" | bc`
 sidefoots=`echo "$sidefoots" | bc`
 
-echo -e "$author\t$steps\t$xovers\t$switches\t$jacks\t$doubles\t$sidefoots"
+echo -e "$author\t$charts\t$steps\t$xovers\t$switches\t$jacks\t$doubles\t$sidefoots"
