@@ -1,10 +1,11 @@
 J. Berkowitz
 Konami
 R. Uchima
+Rikame
 K. Ward
 mute
-Zaia
 Mad Matt
+Zaia
 Gazebo
 D. Bernardone
 M. Simmons
@@ -20,8 +21,8 @@ C. Foy
 J. Frederick
 D. D'Amato
 t0ni
-M. Puls
 Rynker
+M. Puls
 CondorTalon
 MIDI
 Freyja
@@ -30,8 +31,8 @@ T. Moore
 mudkyp
 @@
 (-[Jayce]-)
-R. McKanna
 BlueChaos
+R. McKanna
 NEMORIGINAL
 Renard
 D. Runberg
@@ -58,23 +59,24 @@ J. DeGarmo
 P. Mason
 Aoreo
 Fraxtil
-xRGTMx
 D. Renzetti
+xRGTMx
+M. Calfin
 Hsarus
 C. Emirzian
 X. Ythar
 Insane Steve
 warpdr!ve
 R. Woods
-M. Calfin
 G. Marchan
 Blazing
+T. Swag
 B. Vergara
 Yoko
-T. Swag
 Mandodo
 JOE2
 Dirk
+TheBoxX
 Telperion
 teejusb
 Revolver
