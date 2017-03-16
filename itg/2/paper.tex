@@ -183,7 +183,9 @@ It is tempting to assign the facings $L$, $U$, $U$, and $R$ respectively to the 
 However, Figure~\ref{fig:fs}(c) shows that if a footswitch begins with a crossover on $U$, the facing should be reversed:
 the $RR$ footing should face $L$, and $LL$ should face $R$.
 ``Spin-switches'' with $D$ facing are also theoretically possible,
-arising from patterns such as $LURDDL$ or $LDRUUL$, although I know of no real-world chart which does this (hmm, tempting...).
+arising from patterns such as $LURDDL$ or $LDRUUL$,
+%although I know of no real-world chart which does this (hmm, tempting...).
+or similarly, ``270-switches'', as shown in Figure~\ref{fig:real-world-turniness}(a).
 
 Before I realized that, I modified the turniness algorithm \cite{turniness} to face footswitches as above, %the bad way mentioned above,
 %to be faced $L$ for $LL$ and so on, as above,
@@ -201,6 +203,7 @@ I extended the algorithm to provide either the assigned facing, from above, or i
 chosen at runtime by whichever is closer to the presequent facing.
 This restores the maximum overall chart turniness to $\mathcal{T}=2$,
 a new example of which is shown in Figure~\ref{fig:fs-turniness}(c).
+Figure~\ref{fig:real-world-turniness}(b) also shows a real-world chart exhibiting this pattern.
 
 However, note that individual steps may still have $\mathcal{T}=3$,
 %because after a footswitch's facing is determined, the next step may still ... ?
@@ -218,7 +221,7 @@ but {\em sustained} average $\mathcal{T}>2$ remains impossible.
 Another approach could assign such a footswitch the opposite footing of the previous facing,
 regardless of the arrow itself;
 so in this case the $LL$ would face $UL$, and each step would have exactly $\mathcal{T}=2$.
-Anyway, remember that all-candle switch stream in (c). We'll see it again soon.
+%Anyway, remember that all-candle switch stream in (c). We'll see it again soon.
 
 \begin{figure}[t]
 	\begin{center}
@@ -247,6 +250,25 @@ Anyway, remember that all-candle switch stream in (c). We'll see it again soon.
 	\label{fig:fs-turniness}
 \end{figure}
 
+\begin{figure}[t]
+	\begin{center}
+	\begin{tabular}{c}
+		\includegraphics[width=0.16\textwidth]{web33-dd-switch-270.png}
+		\\
+		(a) Web33,260.8 \\
+		(12, Rikame 5)
+	\end{tabular}
+	\begin{tabular}{c}
+		\includegraphics[width=0.16\textwidth]{fuego-candle-fs.png}
+		\\
+		(b) Fuego \\
+		(12, Best of Gazebo)
+	\end{tabular}
+	\end{center}
+	\caption{Real-world examples of turny footswitches.}
+	\label{fig:real-world-turniness}
+\end{figure}
+
 
 % dont forget
 % http://dancedancerevolutionddr.wikia.com/wiki/Afronova_walk
@@ -254,6 +276,63 @@ Anyway, remember that all-candle switch stream in (c). We'll see it again soon.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Analyzing Crossoveriness}
+
+\newcommand\hilight[2]{\color{#1}#2\color{black}}
+\definecolor{pink}{RGB}{128,0,192}
+\definecolor{orange}{RGB}{192,96,0}
+\definecolor{olivegreen}{RGB}{0,127,32}
+\definecolor{brickred}{RGB}{192,0,0}
+\definecolor{commentblue}{RGB}{0,128,192}
+
+\begin{figure*}[ht]
+\begin{tabular}{l}
+\texttt{\hilight{orange}{data}~\hilight{olivegreen}{Step}~= \hilight{brickred}{L}~| \hilight{brickred}{D}~| \hilight{brickred}{U}~| \hilight{brickred}{R}~| \hilight{brickred}{Jump}~\hilight{orange}{deriving}~\hilight{olivegreen}{Eq}} \\
+\texttt{} \\
+\texttt{\hilight{orange}{data}~\hilight{olivegreen}{AnalysisState}~= \hilight{brickred}{S}~\{ steps :: \hilight{olivegreen}{Int}, xovers :: \hilight{olivegreen}{Int}, switches :: \hilight{olivegreen}{Int}, jacks :: \hilight{olivegreen}{Int},} \\
+\texttt{~~~~~~~~~~~~~~~~~~~~~~~~ lastStep :: \hilight{olivegreen}{Maybe}~\hilight{olivegreen}{Step}, doubleStep :: \hilight{olivegreen}{Bool}, lastFlip :: \hilight{olivegreen}{Bool},} \\
+\texttt{~~~~~~~~~~~~~~~~~~~~~~~~ lastFoot :: \hilight{olivegreen}{Bool}, stepsLR :: [\hilight{olivegreen}{Bool}] \}} \\
+\texttt{} \\
+\texttt{\hilight{pink}{commitStream}~:: \hilight{olivegreen}{AnalysisState}~-> \hilight{olivegreen}{AnalysisState}} \\
+\texttt{\hilight{pink}{commitStream}~s = s \{ xovers~~ = xovers~~ s + \hilight{orange}{if}~f \hilight{orange}{then}~ns - nx \hilight{orange}{else}~nx, } \\
+\texttt{~~~~~~~~~~~~~~~~~~~~ switches = switches s + \hilight{orange}{fromEnum}~(f == lastFlip s \&\& doubleStep s), } \\
+\texttt{~~~~~~~~~~~~~~~~~~~~ jacks~~~~= jacks~~~~s + \hilight{orange}{fromEnum}~(f /= lastFlip s \&\& doubleStep s), } \\
+\texttt{~~~~~~~~~~~~~~~~~~~~ lastFlip = f, stepsLR = \hilight{brickred}{[]}~\}} \\
+\texttt{~~~~\hilight{orange}{where}~ns = \hilight{orange}{length}~\$~stepsLR s} \\
+\texttt{~~~~~~~~~~nx = \hilight{orange}{length}~\$ \hilight{orange}{filter not}~\$ stepsLR s} \\
+%\texttt{~~~~~~~~~~\hilight{commentblue}{-{}- if more than half the L/R steps in this stream were crossed over,}} \\
+%\texttt{~~~~~~~~~~\hilight{commentblue}{-{}- then we got the footing backwards and need to flip the stream.}} \\
+%\texttt{~~~~~~~~~~\hilight{commentblue}{-{}- as a tiebreaker, flip if the chart is already more jacky than}} \\
+%\texttt{~~~~~~~~~~\hilight{commentblue}{-{}- footswitchy, i.e., if past streams flipped more often than not.}} \\
+\texttt{~~~~~~~~~~\hilight{commentblue}{-{}- reverse the stream's footing if more L/R steps were crossed over than not.}} \\
+\texttt{~~~~~~~~~~f = nx * 2 > ns || nx * 2 == ns \&\& ((switches s > jacks s) == lastFlip s)} \\
+\texttt{} \\
+\texttt{\hilight{pink}{analyzeStep}~:: \hilight{olivegreen}{AnalysisState}~-> \hilight{olivegreen}{Step}~-> \hilight{olivegreen}{AnalysisState}} \\
+\texttt{\hilight{pink}{analyzeStep}~s step} \\
+%\texttt{~~~~\hilight{commentblue}{-{}- a jump resets the footing, so the next step can be stepped with either}} \\
+%\texttt{~~~~\hilight{commentblue}{-{}- foot. commit the stream so far to treat it separately from what follows.}} \\
+%\texttt{~~~~\hilight{commentblue}{-{}- bracket-jumps are, of course, future work.}} \\
+\texttt{~~~~| step == \hilight{brickred}{Jump}~= (\hilight{pink}{commitStream}~s) \{ lastStep = \hilight{brickred}{Nothing}, doubleStep = \hilight{brickred}{False}~\}} \\
+%\texttt{~~~~\hilight{commentblue}{-{}- two steps on the same arrow might be a jack, or might be a footswitch.}} \\
+%\texttt{~~~~\hilight{commentblue}{-{}- to figure out which, commit the stream so far, and begin a new stream}} \\
+%\texttt{~~~~\hilight{commentblue}{-{}- whose footing will retroactively determine how to foot this step.}} \\
+%\texttt{~~~~\hilight{commentblue}{-{}- also, unlike jumps, this step gets counted as part of the next stream.}} \\
+\texttt{~~~~| lastStep s == \hilight{brickred}{Just}~step = stream (\hilight{pink}{commitStream}~s) \{ doubleStep = \hilight{brickred}{True}~\}} \\
+%\texttt{~~~~\hilight{commentblue}{-{}- a normal streamy step.}} \\
+\texttt{~~~~| \hilight{orange}{otherwise}~= stream s} \\
+\texttt{~~~~\hilight{orange}{where}~foot = \hilight{orange}{not}~\$ lastFoot s} \\
+\texttt{~~~~~~~~~~\hilight{commentblue}{-{}- record whether we stepped on a matching or crossed-over L/R arrow.}} \\
+\texttt{~~~~~~~~~~addStep ft \hilight{brickred}{L}~steps = steps ++ [ft]} \\
+\texttt{~~~~~~~~~~addStep ft \hilight{brickred}{R}~steps = steps ++ [\hilight{orange}{not}~ft]} \\
+\texttt{~~~~~~~~~~addStep ft \_ steps = steps \hilight{commentblue}{-{}- U/D don't help to determine L/R footing.}} \\
+\texttt{~~~~~~~~~~stream s = s \{ steps = steps s + \hilight{brickred}{1}, lastStep = \hilight{brickred}{Just}~step, lastFoot = foot,} \\
+\texttt{~~~~~~~~~~~~~~~~~~~~~~~~ stepsLR = addStep foot step \$ stepsLR s \} } \\
+\texttt{} \\
+\texttt{\hilight{pink}{analyze}~:: [\hilight{olivegreen}{Step}] -> \hilight{olivegreen}{AnalysisState}} \\
+\texttt{\hilight{pink}{analyze}~= \hilight{pink}{commitStream}~. \hilight{orange}{foldl}~\hilight{pink}{analyzeStep}~(\hilight{brickred}{S 0 0 0 0}~\hilight{brickred}{Nothing}~\hilight{brickred}{False}~\hilight{brickred}{False}~\hilight{brickred}{False}~\hilight{brickred}{[]}) } \\
+\end{tabular}
+	\caption{Pseudocode description of the crossoveriness and footswitchiness algorithm.}
+\label{fig:pseudocode}
+\end{figure*}
 
 The major flaw of the turniness algorithm \cite{turniness}
 was that it didn't care whether a stream started with the left or right foot;
@@ -280,64 +359,6 @@ To summarize it in prose:
 		If the latter is greater, re-step the stream with opposite feet from before (this kills the crossovers).
 	\item After flipping each stream, if necessary, count the total crossovers in the whole chart.
 \end{itemize}
-
-\newcommand\hilight[2]{\color{#1}#2\color{black}}
-\definecolor{pink}{RGB}{128,0,192}
-\definecolor{orange}{RGB}{192,96,0}
-\definecolor{olivegreen}{RGB}{0,127,32}
-\definecolor{brickred}{RGB}{192,0,0}
-\definecolor{commentblue}{RGB}{0,128,192}
-
-\begin{figure*}[p]
-\begin{center}
-\begin{tabular}{l}
-	\texttt{\hilight{orange}{data}~\hilight{olivegreen}{Step}~= \hilight{brickred}{L}~| \hilight{brickred}{D}~| \hilight{brickred}{U}~| \hilight{brickred}{R}~| \hilight{brickred}{Jump}~\hilight{orange}{deriving}~\hilight{olivegreen}{Eq}} \\
-\texttt{} \\
-\texttt{\hilight{orange}{data}~\hilight{olivegreen}{AnalysisState}~= \hilight{brickred}{S}~\{ steps :: \hilight{olivegreen}{Int}, xovers :: \hilight{olivegreen}{Int}, switches :: \hilight{olivegreen}{Int}, jacks :: \hilight{olivegreen}{Int},} \\
-\texttt{~~~~~~~~~~~~~~~~~~~~~~~~ lastStep :: \hilight{olivegreen}{Maybe}~\hilight{olivegreen}{Step}, doubleStep :: \hilight{olivegreen}{Bool}, lastFlip :: \hilight{olivegreen}{Bool},} \\
-\texttt{~~~~~~~~~~~~~~~~~~~~~~~~ lastFoot :: \hilight{olivegreen}{Bool}, stepsLR :: [\hilight{olivegreen}{Bool}] \}} \\
-\texttt{} \\
-\texttt{\hilight{pink}{commitStream}~:: \hilight{olivegreen}{AnalysisState}~-> \hilight{olivegreen}{AnalysisState}} \\
-\texttt{\hilight{pink}{commitStream}~s = s \{ xovers~~ = xovers~~ s + \hilight{orange}{if}~f \hilight{orange}{then}~ns - nx \hilight{orange}{else}~nx, } \\
-\texttt{~~~~~~~~~~~~~~~~~~~~ switches = switches s + \hilight{orange}{fromEnum}~(f == lastFlip s \&\& doubleStep s), } \\
-\texttt{~~~~~~~~~~~~~~~~~~~~ jacks~~~~= jacks~~~~s + \hilight{orange}{fromEnum}~(f /= lastFlip s \&\& doubleStep s), } \\
-	\texttt{~~~~~~~~~~~~~~~~~~~~ lastFlip = f, stepsLR = \hilight{brickred}{[]}~\}} \\
-\texttt{~~~~\hilight{orange}{where}~ns = \hilight{orange}{length}~\$~stepsLR s} \\
-\texttt{~~~~~~~~~~nx = \hilight{orange}{length}~\$ \hilight{orange}{filter not}~\$ stepsLR s} \\
-\texttt{~~~~~~~~~~\hilight{commentblue}{-{}- if more than half the L/R steps in this stream were crossed over,}} \\
-\texttt{~~~~~~~~~~\hilight{commentblue}{-{}- then we got the footing backwards and need to flip the stream.}} \\
-\texttt{~~~~~~~~~~\hilight{commentblue}{-{}- as a tiebreaker, flip if the chart is already more jacky than}} \\
-\texttt{~~~~~~~~~~\hilight{commentblue}{-{}- footswitchy, i.e., if past streams flipped more often than not.}} \\
-\texttt{~~~~~~~~~~f = nx * 2 > ns || nx * 2 == ns \&\& ((switches s > jacks s) == lastFlip s)} \\
-\texttt{} \\
-\texttt{\hilight{pink}{analyzeStep}~:: \hilight{olivegreen}{AnalysisState}~-> \hilight{olivegreen}{Step}~-> \hilight{olivegreen}{AnalysisState}} \\
-\texttt{\hilight{pink}{analyzeStep}~s step} \\
-\texttt{~~~~\hilight{commentblue}{-{}- a jump resets the footing, so the next step can be stepped with either}} \\
-\texttt{~~~~\hilight{commentblue}{-{}- foot. commit the stream so far to treat it separately from what follows.}} \\
-\texttt{~~~~\hilight{commentblue}{-{}- bracket-jumps are, of course, future work.}} \\
-\texttt{~~~~| step == \hilight{brickred}{Jump}~= (\hilight{pink}{commitStream}~s) \{ lastStep = \hilight{brickred}{Nothing}, doubleStep = \hilight{brickred}{False}~\}} \\
-\texttt{~~~~\hilight{commentblue}{-{}- two steps on the same arrow might be a jack, or might be a footswitch.}} \\
-\texttt{~~~~\hilight{commentblue}{-{}- to figure out which, commit the stream so far, and begin a new stream}} \\
-\texttt{~~~~\hilight{commentblue}{-{}- whose footing will retroactively determine how to foot this step.}} \\
-\texttt{~~~~\hilight{commentblue}{-{}- also, unlike jumps, this step gets counted as part of the next stream.}} \\
-\texttt{~~~~| lastStep s == \hilight{brickred}{Just}~step = stream (\hilight{pink}{commitStream}~s) \{ doubleStep = \hilight{brickred}{True}~\}} \\
-\texttt{~~~~\hilight{commentblue}{-{}- a normal streamy step.}} \\
-	\texttt{~~~~| \hilight{orange}{otherwise}~= stream s} \\
-\texttt{~~~~\hilight{orange}{where}~foot = \hilight{orange}{not}~\$ lastFoot s} \\
-\texttt{~~~~~~~~~~\hilight{commentblue}{-{}- record whether we stepped on a matching or crossed-over L/R arrow.}} \\
-\texttt{~~~~~~~~~~addStep ft \hilight{brickred}{L}~steps = steps ++ [ft]} \\
-\texttt{~~~~~~~~~~addStep ft \hilight{brickred}{R}~steps = steps ++ [\hilight{orange}{not}~ft]} \\
-\texttt{~~~~~~~~~~addStep ft \_ steps = steps \hilight{commentblue}{-{}- U/D don't help to determine L/R footing.}} \\
-\texttt{~~~~~~~~~~stream s = s \{ steps = steps s + \hilight{brickred}{1}, lastStep = \hilight{brickred}{Just}~step, lastFoot = foot,} \\
-\texttt{~~~~~~~~~~~~~~~~~~~~~~~~ stepsLR = addStep foot step \$ stepsLR s \} } \\
-\texttt{} \\
-\texttt{\hilight{pink}{analyze}~:: [\hilight{olivegreen}{Step}] -> \hilight{olivegreen}{AnalysisState}} \\
-	\texttt{\hilight{pink}{analyze}~= \hilight{pink}{commitStream}~. \hilight{orange}{foldl}~\hilight{pink}{analyzeStep}~(\hilight{brickred}{S 0 0 0 0}~\hilight{brickred}{Nothing}~\hilight{brickred}{False}~\hilight{brickred}{False}~\hilight{brickred}{False}~\hilight{brickred}{[]}) } \\
-\end{tabular}
-\end{center}
-	\caption{Pseudocode description of the crossoveriness and footswitchiness algorithm.}
-\label{fig:pseudocode}
-\end{figure*}
 
 \section{Analyzing Footswitchiness}
 
@@ -375,19 +396,13 @@ On inspection, these charts should be stepped with no crossovers, but were evalu
 \begin{figure}[t]
 	\begin{center}
 	\begin{tabular}{c}
-		\includegraphics[width=0.18\textwidth]{paradise-lost-false-positive.png}
+		\includegraphics[width=0.16\textwidth]{paradise-lost-false-positive.png}
 		\\
 		(a) Paradise Lost \\
 		(16, Cirque du Lykan)
 	\end{tabular}
-	%\begin{tabular}{c}
-	%	\includegraphics[width=0.18\textwidth]{false-positive-toromi-hearts.png}
-	%	\\
-	%	(a) Toromi Hearts 2 \\
-	%	(18, Cirque du Zonda)
-	%\end{tabular}
 	\begin{tabular}{c}
-		\includegraphics[width=0.18\textwidth]{hearbeat-rollstream-doublestep.png}
+		\includegraphics[width=0.16\textwidth]{hearbeat-rollstream-doublestep.png}
 		\\
 		(b) Heartbeat \\
 		(13, TranceNation)
@@ -401,7 +416,7 @@ On inspection, these charts should be stepped with no crossovers, but were evalu
 \newcommand\Doublestep{\ensuremath{\mathcal{DS}}}
 \newcommand\nflip{\ensuremath{n_{\mathfrak{flip}}}}
 \newcommand\percentflip{\ensuremath{\%_{\mathfrak{flip}}}}
-\begin{algorithm}[h!]
+\begin{algorithm}[h]
 	\SetKwInOut{Input}{Input}
 	\SetKwInOut{Output}{Invariant}
 	\Input{\Stream, a step sequence $s_0 \dots s_n$}
@@ -440,28 +455,43 @@ In my analysis next section, I will use $\nflip = 9$
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Experimental Results}
+\section{Evaluation}
 
-% TODO: Put a * on charts where you're going to put a pict of mario man
-% TODO: Put a dagger on footswitch charts where the footing is a clever reinterpretation, rather than intended
+Our experimental corpus has grown considerably since last year, and now comprises 11,666 stepcharts.
+I ran the crossoveriness/etcetera algorithm on all of them,
+and counted the total steps (not including jumps), crossovers, footswitches, jacks, forced doublesteps, and crossover switches for each.
+I also grouped the charts by author and by song pack to calculate each author's/pack's overall crossoveriness/etc.
+You can view the entire dataset at \url{http://tinyurl.com/crossoveriest}.
 
-% TODO: Make a special mention of sandstorm and put a pict of mario man
-% TODO: put the above in an honourable mention subsection, and also mention the slow train and sidefoots
+Tables
+\ref{tab:chart-xo},
+\ref{tab:chart-xop},
+\ref{tab:chart-fs},
+\ref{tab:chart-fsp},
+\ref{tab:chart-xf},
+\ref{tab:author-xo},
+\ref{tab:author-fs},
+\ref{tab:author-jk},
+\ref{tab:pack-xo},
+\ref{tab:pack-fs},
+and
+\ref{tab:pack-jk}
+summarize the dataset as ``leaderboards'' for each category.
+They present the data the same way as last year \cite{turniness},
+so I won't explain it again.
+Suffice to say that ITG enthusiasts should use their personal chart style preferences to navigate these tables and find song or pack recommendations or feel proud of themselves or whatever.
 
-% Stuff to talk about.
-% Dataset size now >10k
-% I reran turniness on fancy footwork and it actually got turnier (double check dis), b/c of all the candles
-% 9-15 is clearly the sweet spot for techni jawnz
+In the by-author analysis, I excluded authors with fewer than 10 charts, like last time.
+Also, in by-author and by-pack, I excluded 1-, 2-, and 3-foot charts,
+on the pretense that they often ignore the alternating feet assumption
+(though I also admit this biases the analysis against DDR/Konami).
+%(though I also admit some bias in wanting to unseat DDR/Konami as the crossover king).
+Nevertheless, DDR charts generally ruled the single-digits,
+even in footswitchiness,
+showing perhaps more technical depth than I gave them credit for.
+%Also, congratulations to Fraxtil and S. Tofu, who managed to write not a single crossover or footswitch, respectively.
 
-% By author/by pack: I excluded 1s-3s, admittedly biased against konami, on the pretense of excluding nonsense false positives, but even after that, konami is still the crossover king
-% Step authors are limited to 10 or more charts
-
-% Miscellaneous charts I want to exhibit:
-% Conflict forced doublesteps
-% Heart shooter 'sidefoots'
-% Boom Bombay - triple xover jack footed as sideswitch
-% Toxic - jack+doublestep footed as sideswitch + xover stream instead
-% H'ble mention to sandstorm for jacks
+By the way, the theoretical maxima for XO\%, FS\%, and JK\% are 50-$\epsilon$, 100-$\epsilon$, and 100-$\epsilon$, respectively \cite{epsilon}.
 
 % charts
 \begin{table}[t]
@@ -471,10 +501,10 @@ In my analysis next section, I will use $\nflip = 9$
 		\bf Ft. & \bf Name & \bf Pack & \bf \#XO \\
 		\hline
 		 6 & Autoload                 & ITG 3                 &  54 \\
-		 7 & Tetris                   & CuoReNeRo             &  58 \\
-		 8 & Pulse                    & CuoReNeRo             &  94 \\
-		 9 & MAX Forever              & CuoReNeRo             & 107 \\
-		10 & J-PARA SUPER MEGAMIX     & CuoReNeRo             & 141 \\
+		 7 & Tetris                   & CuoReNeRo M'PacK      &  58 \\
+		 8 & Pulse                    & CuoReNeRo M'PacK      &  94 \\
+		 9 & MAX Forever              & CuoReNeRo M'PacK      & 107 \\
+		10 & J-PARA SUPER MEGAMIX     & CuoReNeRo M'PacK      & 141 \\
 		11 & Somebody I Used To Know  & Best of Gazebo        & 114 \\
 		12 & Credens Justitiam        & Stuff B Likes         & 136 \\
 		13 & Banshee Strikes          & VocaJawnz             & 152 \\
@@ -487,6 +517,7 @@ In my analysis next section, I will use $\nflip = 9$
 	\end{tabular}
 	\end{center}
 	\caption{Charts with the most total crossovers (XOs).}
+	\label{tab:chart-xo}
 \end{table}
 \begin{table}[t]
 	\begin{center}
@@ -506,12 +537,13 @@ In my analysis next section, I will use $\nflip = 9$
 		13 & The Sampling Paradise    & The Paradise Sampler  & 15.6 \\
 		14 & Slow Down                & Sexuality Violation 2 & 13.3 \\
 		15 & yoshikawa45 vs siesta45  & Rikame's Simfiles 4   & 10.8 \\
-		\multicolumn{4}{c}{\em no 16s-19s with $\ge$10\% XOs} \\
+		\multicolumn{4}{c}{\em no 16s-19s with $\ge$10\% XO} \\
 		20 & Rainbow Dimension        & Rikame's Simfiles 2   & 10.7 \\
 		21 & Teenage Dream            & Sexuality Violation 2 & 11.8 \\
 	\end{tabular}
 	\end{center}
 	\caption{Charts with the highest percentage of XOs among total steps.}
+	\label{tab:chart-xop}
 \end{table}
 \begin{table}[t]
 	\begin{center}
@@ -522,7 +554,7 @@ In my analysis next section, I will use $\nflip = 9$
 		%\multicolumn{4}{c}{\em no 5s- with $\ge$50 FSs} \\
 		 6 & Sweat Shop       & ITG Rebirth 2 Beta    &  56 \\
 		 7 & Silent Hill      & DDR 3rdMIX            &  29 \\
-		 8 & Pulse            & CuoReNeRo             &  41 \\
+		 8 & Pulse            & CuoReNeRo M'PacK      &  41 \\
 		 9 & Dr. Boom-Bombay  & fort rapids vii       &  34 \\
 		10 & Eat 'Em Up!      & Mute Sims 5           &  54 \\
 		11 & Nemeton          & The Legend of Zim 4   &  97 \\
@@ -541,6 +573,7 @@ In my analysis next section, I will use $\nflip = 9$
 	\end{tabular}
 	\end{center}
 	\caption{Charts with the most total footswitches (FSs).}
+	\label{tab:chart-fs}
 \end{table}
 \begin{table}[t]
 	\begin{center}
@@ -565,9 +598,10 @@ In my analysis next section, I will use $\nflip = 9$
 		\multicolumn{4}{c}{\em no 17s+ with $\ge$5\% FS} \\
 	\end{tabular}
 	\end{center}
-	\caption{Charts with the highest percentage of FSs among total steps.}
+	\caption{Charts with the highest percentage of FSs.} %among total steps.}
+	\label{tab:chart-fsp}
 \end{table}
-\begin{table}[t]
+\begin{table}[h!]
 	\begin{center}
 		\small
 	\begin{tabular}{r|l|l|l}
@@ -577,18 +611,20 @@ In my analysis next section, I will use $\nflip = 9$
 		 9 & Dr. Boom-Bombay   & fort rapids vii            & 18 \\
 		10 & Toxic             & Sexuality Violation 2      & 12 \\
 		11 & Heart Shooter     & VocaJawnz                  & 44 \\
-		12 & Beautiful Synergy & Keyboard Collab. III & 14 \\
+		12 & Web 33,260.8      & Rikame's Simfiles 5        & 16 \\
 		13 & Toxic             & Sexuality Violation 2      & 12 \\
 		14 & Fancy Footwork    & Cirque du Zeppelin         & 40 \\
 		15 & yoshikawa45 vs siesta45 & Rikame's Simfiles 4  & 20 \\
 		\multicolumn{4}{c}{\em no 15s+ with $\ge$12 XFs} \\
 	\end{tabular}
 	\end{center}
-	\caption{Charts with the most crossover footswitches (XFs). (Here I chose 12 as the cut-off because below that are a bunch of false-positive nonsense charts from DDR. Sheesh, Konami.)}
+	\caption{Charts with the most crossover footswitches (XFs). (Here I chose 12 as the cut-off to exclude a bunch of ambiguously-patterned charts from DDR.)}
+	%because below that are a bunch of false-positive nonsense charts from DDR. Sheesh, Konami.)}
+	\label{tab:chart-xf}
 \end{table}
 
 % authors
-\begin{table}[t]
+\begin{table}[p]
 	\begin{center}
 		\small
 	\begin{tabular}{l|r|r|l}
@@ -622,8 +658,9 @@ In my analysis next section, I will use $\nflip = 9$
 	\end{tabular}
 	\end{center}
 	\caption{Chart authors with the highest/lowest XO\%.}
+	\label{tab:author-xo}
 \end{table}
-\begin{table}[t]
+\begin{table}[p]
 	\begin{center}
 		\small
 	\begin{tabular}{l|r|r|l}
@@ -657,8 +694,9 @@ In my analysis next section, I will use $\nflip = 9$
 	\end{tabular}
 	\end{center}
 	\caption{Chart authors with the highest/lowest FS\%.}
+	\label{tab:author-fs}
 \end{table}
-\begin{table}[t]
+\begin{table}[p]
 	\begin{center}
 		\small
 	\begin{tabular}{l|r|r|l}
@@ -692,10 +730,11 @@ In my analysis next section, I will use $\nflip = 9$
 	\end{tabular}
 	\end{center}
 	\caption{Chart authors with the highest/lowest JK\%.}
+	\label{tab:author-jk}
 \end{table}
 
 % packs
-\begin{table}[t]
+\begin{table}[p]
 	\begin{center}
 		\small
 	\begin{tabular}{l|r|r|l}
@@ -729,8 +768,9 @@ In my analysis next section, I will use $\nflip = 9$
 	\end{tabular}
 	\end{center}
 	\caption{Packs with the highest/lowest XO\%.}
+	\label{tab:pack-xo}
 \end{table}
-\begin{table}[t]
+\begin{table}[p]
 	\begin{center}
 		\small
 	\begin{tabular}{l|r|r|l}
@@ -764,8 +804,9 @@ In my analysis next section, I will use $\nflip = 9$
 	\end{tabular}
 	\end{center}
 	\caption{Packs with the highest/lowest FS\%.}
+	\label{tab:pack-fs}
 \end{table}
-\begin{table}[t]
+\begin{table}[p]
 	\begin{center}
 		\small
 	\begin{tabular}{l|r|r|l}
@@ -799,20 +840,138 @@ In my analysis next section, I will use $\nflip = 9$
 	\end{tabular}
 	\end{center}
 	\caption{Packs with the highest/lowest JK\%.}
+	\label{tab:pack-jk}
 \end{table}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\section{Discussion}
+
+To verify the algorithm's accuracy,
+I manually inspected a random (read: not random) sample of the charts at or near the top of the various leaderboards
+(read: I played a lot of Stepmania).
+I also consulted a leading expert in the field of automated ITG chart analysis (read: myself),
+who reported that the algorithm is infinitely more accurate than the prior state-of-the-art.
+
+Honestly though, it works really well.
+Last year's algorithm was often finicky and prone to all sorts of false-positives,
+while this one plays ITG in a recognizably human way (almost) without fail.
+It was a joy to use.
+%Certain rare patterns could still confuse it, while on others...
+
+{\bf Surprises.}
+On occasion, the algorithm surprised me by stepping with crossover footswitches which,
+at first glance, I would probably jack or double-step.
+However, these always proved to be perfectly valid alternative footings,
+in some cases requiring considerable look-ahead.
+In Figure~\ref{fig:surprise-sideswitch}(a),
+the chart repeats $L$ (later $R$) thrice,
+beginning with the right (later, left) foot.
+While a human player would jack these repeated arrows,
+the crossoveriness algorithm performs a double-footswitch,
+effectively reducing the total crossover steps by 1 each time.
+In Figure~\ref{fig:surprise-sideswitch}(b),
+a mine cues the player to double-step with her right foot,
+but the crossoveriness algorithm can begin this section already crossed-over,
+owing to an earlier $L$ jack on which it could switch feet.
+
+\begin{figure}[t]
+	\begin{center}
+	\begin{tabular}{c}
+		\includegraphics[width=0.16\textwidth]{boom-bombay-double-sideswitch-instead-of-jack.png}
+		\\
+		(a) Dr. Boom-Bombay \\
+		(9, fort rapids vii)
+	\end{tabular}
+	\begin{tabular}{c}
+		\includegraphics[width=0.16\textwidth]{toxic-xoverfs-avoid-doublestep.png}
+		\\
+		(b) Toxic \\
+		(10/13, Sex'y Violation 2)
+	\end{tabular}
+	\end{center}
+	\caption{Sometimes the algorithm was smarter than me.}
+	\label{fig:surprise-sideswitch}
+\end{figure}
+
+{\bf Honourable Mentions.}
+I omitted a table for the jackiest charts,
+on account of most of them being either trivial beginner charts or extra-long megamixes.
+One deserves a special mention:
+Sandstorm (Jimmy Jawnz 2), shown in Figure~\ref{fig:hble-mention}(a),
+has more than twice as many total jacks as the next jackiest chart,
+clocking in at 1049 (78.5\%) with its 15 and 992 (69.6\%) with its 17.
+And looking at that chart, can't you just hear Sandstorm playing in your head already?
+
+I also wanted to highlight the chart with the most crossover switches,
+shown in Figure~\ref{fig:hble-mention}(b),
+mostly because the skittle notes should add some nice variety of colour to the paper
+(with apologies to the dead-tree SIGBOVIK audience reading in greyscale).
+Figure~\ref{fig:hble-mention}(c), with 2nd place in crossover switches following (b),
+comes with an edit chart titled ``no sidefoots'',
+and to be perfectly honest I just kept saying the word ``sidefoots'' to myself and giggling a lot while writing this paper.
+
+\begin{figure*}[t]
+	\begin{center}
+	\begin{tabular}{c}
+		\includegraphics[width=0.16\textwidth]{sandstorm-jacks.png}
+		\\
+		(a) Sandstorm \\
+		(15/17, J. Jawnz II)
+	\end{tabular}
+	\begin{tabular}{c}
+		\includegraphics[width=0.16\textwidth]{heart-shooter-xover-fs.png}
+		\\
+		(b) Heart Shooter \\
+		(11, VocaJawnz)
+	\end{tabular}
+	\begin{tabular}{c}
+		\includegraphics[width=0.16\textwidth]{slow-train-sidefoots.png}
+		\\
+		(c) '76 (Slow Train) \\
+		(11, Mute Sims X)
+	\end{tabular}
+	\begin{tabular}{c}
+		\includegraphics[width=0.16\textwidth]{conflict-cued-doublesteps.png}
+		\\
+		(d) Conflict \\
+		(12, Stephcharts)
+	\end{tabular}
+	\begin{tabular}{c}
+		\includegraphics[width=0.16\textwidth]{matador-bracket-switch.png}
+		\\
+		(e) Matador \\
+		(11, Valex 8)
+	\end{tabular}
+	\end{center}
+	\caption{Miscellaneous interesting charts I discovered while browsing the giant spreadsheet.}
+	\label{fig:hble-mention}
+\end{figure*}
+
+{\bf Sweet spot.}
+Finally, in case it wasn't obvious in the tables, I'll point out that 9-15 is clearly the sweet spot of difficulties for technical stepcharts.
+
 \section{Never Work}
 
-Let's be honest: this isn't gonna be a trilogy.
+Let's be honest: this isn't gonna be a paper trilogy.
+Okay, with that said, here are some things that would be cool to implement in a fantasy universe with infinite free time.
+(I have renamed this ``future'' work section accordingly.)
 
-With that out of the way, here are some things that would be cool to implement in a fantasy universe with infinite free time.
+There are a few remaining cases the algorithm doesn't yet understand:
+\begin{itemize}
+	\item Doublesteps forced either by mine cues or by holds;
+	\item Crossover and/or bracket jumps, not usually forced but often way less turny than the alternative;
+	\item Forced footings across stream boundaries arising from bracket jumps or jump-footswitches.
+\end{itemize}
+For example, Figure~\ref{fig:hble-mention}(d) shows many sequential doublesteps, each forced by a mine cue,
+but which the algorithm interprets as spins because the flipped stream length falls below \nflip.
+Figure~\ref{fig:hble-mention}(e) shows an example of jump-footswitches
+which the algorithm fails to count because it ignores the footing of jumps.
 
-% TODO
-% forced doublesteps via holds
-% - bracketjump footswitches - matador from valex 8
-% understanding mine cues for doublesteps
+These patterns would all have to be identified heuristically.
+Apart from that being more work than I wanted to do,
+I also feel that adding too many heuristics to SIGBOVIK research
+compromises the simple and innocent beauty of an implementation unbound by the demands of mainstream conferences.
 
 \section{Conclusion}
 
