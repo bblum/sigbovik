@@ -1,0 +1,198 @@
+%-----------------------------------------------------------------------------
+%
+%               Template for sigplanconf LaTeX Class
+%
+% Name:         sigplanconf-template.tex
+%
+% Purpose:      A template for sigplanconf.cls, which is a LaTeX 2e class
+%               file for SIGPLAN conference proceedings.
+%
+% Guide:        Refer to "Author's Guide to the ACM SIGPLAN Class,"
+%               sigplanconf-guide.pdf
+%
+% Author:       Paul C. Anagnostopoulos
+%               Windfall Software
+%               978 371-2316
+%               paul@windfall.com
+%
+% Created:      15 February 2005
+%
+%-----------------------------------------------------------------------------
+
+
+%\documentclass[preprint]{sigplanconf}
+\documentclass[10pt]{sigplanconf}
+
+% The following \documentclass options may be useful:
+%
+% 10pt          To set in 10-point type instead of 9-point.
+% 11pt          To set in 11-point type instead of 9-point.
+% authoryear    To obtain author/year citation style instead of numeric.
+
+\usepackage{yfonts}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+%\usepackage{mathpartir}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{graphics}
+\usepackage{graphicx}
+\usepackage{wasysym}
+\usepackage{harmony}
+\usepackage{marvosym}
+\usepackage{multirow}
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage[utopia]{mathdesign}
+\usepackage{natbib}
+\usepackage[mathcal]{euscript}
+\usepackage[linesnumbered,ruled]{algorithm2e}
+
+\renewcommand{\UrlBreaks}{\do\/\do\a\do\b\do\c\do\d\do\e\do\f\do\g\do\h\do\i\do\j\do\k\do\l\do\m\do\n\do\o\do\p\do\q\do\r\do\s\do\t\do\u\do\v\do\w\do\x\do\y\do\z}
+
+% ____________________________________________________________
+% Listings Package Configuration
+% \usepackage[scaled]{beramono}
+
+%\renewcommand*\ttdefault{txtt}
+\usepackage[T1]{fontenc}
+
+% This Deep Tex Voodoo is from
+%   <http://www.latex-community.org/forum/viewtopic.php?f=5&t=2072>
+% It's purpose is to make \lstinline normal size, without affecting
+% \lstinputlisting.  It seems to work but I have no idea how or why,
+% and I rather hope never to learn.
+%\makeatletter
+%\lst@AddToHook{TextStyle}{\let\lst@basicstyle\ttfamily\normalsize}
+%\makeatother
+
+\begin{document}
+
+\conferenceinfo{SIGBOVIK '17}{Pittsburgh, PA, USA}
+\copyrightyear{2017}
+\copyrightdata{}
+
+\titlebanner{banner above paper title}        % These are ignored unless
+\preprintfooter{short description of paper}   % 'preprint' option specified.
+
+\title{
+Transactional Memory Concurrency Verification with Landslide
+%That `Boring' Stuff Was Part of the Title, BTW. \\
+%So was that. And that, and this too. \\
+%You got it all, right? \\
+%Or Just, ``More Boring Crap about ITG'', for Short. \\
+%Oh, That Was Also Part of the Title.
+}
+% \subtitle{\em The Randomly-Scoped Lambda Calculus}
+% \subtitle{Subtitle Text, if any}
+
+\authorinfo{Ben Blum}{}{bblum@cs.cmu.edu}
+
+\maketitle
+
+\begin{abstract}
+Hardware transactional memory is a recently-introduced concurrent programming paradigm
+%backed by a set of new instructions on recent x86 CPUs,
+which allows programmers to elide locks for performance in low-contention workloads.
+However,
+%using this feature
+it
+comes at a cost in implementation complexity:
+%programmers must support their
+fast-path code must be accompanied by backup paths to handle transaction failure.
+
+We extend Landslide, a popular stateless model checker,
+with a concurrency model for transactional memory
+and evaluate it on several real-world transactional
+benchmarks and data structure implementations.
+\end{abstract}
+
+\category{D.1.3}{Programming Techniques}{Concurrent Programming}
+\category{D.2.4}{Software Engineering}{Software/Program Verification}
+
+\keywords
+landslide terminal, baggage claim, ground transportation, ticketing
+
+
+\section{Introduction}
+Transactional Synchronization Extensions (TSX) \cite{transactional-memory}
+is an instruction set extension for x86 CPUs which adds hardware-based transactional memory.
+The processor uses its existing cache coherence algorithm to
+check for memory conflicts with other threads while temporarily staging a sequence of memory accesses.
+If no other CPU accesses the same memory during the transaction,
+the access sequence is committed to main memory atomically (with respect to visibility to other CPUs).
+Otherwise, the operations are discarded and the transaction returns a failure code.
+
+This feature can be used to replace conventional locking in performance-critical concurrent programs.
+When a concurrent workload largely accesses thread-local data,
+or disjoint sections of a shared data structure,
+the contention rate between threads is low,
+and transactions will often succeed.
+Compared to programs which use conventional locks,
+which use bus-locking atomic accesses even in the fastest code path,
+TSX provides substantial performance improvements in such programs \cite{htm-experience, htm-performance, htm-mario}.
+However, the possibility of transaction failure introduces additional implementation complexity:
+programmers must also provide a backup plan
+to safely resolve contention between threads,
+usually involving conventional synchronization.
+These backup paths must coordinate not only with other backup paths
+but also with other fast paths which another thread may begin after the original transaction failed,
+which even in the simplest transactions requires complex synchronization sequences
+\cite{htm-mario}.
+This introduces an additional dimension of nondeterminism into an already concurrent program,
+and moreover, because transaction failure is expected to be rare,
+% だからこそ
+obscure interleavings between failure paths are difficult to expose during testing.
+
+This motivates the use of stateless model checking (MC) \cite{verisoft}
+to comprehensively verify these transactional programs,
+fast paths failure paths and all.
+MC aims to force the system to execute all possible thread interleavings under a given test case,
+exhaustively checking for bugs or verifying their absence in the corresponding state space.
+Many such model checkers exist, of varying flavours of interleaving granularity, memory analysis, and types of programs checked
+\cite{chess,dbug-ssv,spin,inspect,r4}.
+This work builds upon Landslide \cite{landslide,quicksand},
+a simulator-based checker which checks both user- and kernel-level programs at the granularity of individual memory accesses.
+Our contributions are as follows:
+
+\begin{enumerate}
+	\item We extend Landslide's concurrency model to include transaction failure as an additional source of nondeterminism;
+	\item We provide a proof sketch that our implementation matches HTM's execution semantics,
+	\item We evaluate the extended Landslide on several transactional programs, analyzing both its bug-finding and verification performance.
+\end{enumerate}
+
+The paper is organized as follows.
+Section \ref{sec:intro} introduces the problem domain and motivates our research.
+The rest of the sections state the rest of the paper.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Background}
+
+TSX was supported on consumer hardware for the first time on Intel's Haswell architecture \cite{htm-haswell},
+which provides the {\tt xbegin}, {\tt xend}, and {\tt xabort} instructions for beginning, committing, and aborting
+transactions, respectively.
+
+Under software transactional memory (STM) \cite{stm-pldi06},
+memory conflicts with other threads and explicit aborts by the programmer are the only reason for transaction failure;
+hence, depending on program semantics, some transactions may be guaranteed to succeed.
+However, hardware implementations (HTM) may also fail transactions
+for several other reasons such as random system interrupts or exhausting the CPU's cache capacity.
+Because timer interrupts can in principle occur at any moment,
+and with arbitrary frequency (observable by the program, perhaps as a result of a heavily-loaded system),
+in this paper we will simplify the failure model by saying that HTM transactions can fail for any reason.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Conclusion}
+
+Please accept my paper.
+I worked hard on it.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\bibliographystyle{abbrv}
+\bibliography{citations}
+
+\end{document}
