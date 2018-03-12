@@ -174,6 +174,10 @@ The other sections state the rest of the paper.
 
 \section{Background}
 
+This section introduces the fundamental concepts and prior work
+in both hardware transactional memory and stateless model checking,
+which we propose to combine.
+
 {\bf Hardware transactional memory.}
 TSX was supported on consumer hardware for the first time by Intel's Haswell architecture \cite{htm-haswell},
 which extends the x86 instruction set to provide
@@ -389,8 +393,76 @@ are HTM's execution semantics, namely:
 		despite \tj being executed afterwards, and
 	\item all local and global state changes by \ti between lines $1$ and $2c$ are discarded when jumping to line $4$.
 \end{enumerate}
+% there shouldbe a better word than 'requires' here.. benefits from.. "the point of it is"..
+While use of TSX in production requires the performance advantage
+of temporarily staging such accesses in local CPU cache,
+model checking such programs need be concerned only with the program's {\em observable} behaviours.
+We claim that MCing the interleaving $\ti@1, \tj@1-3, \ti@4-7$
+is an equivalent verification as MCing the one above;
+in fact, this interleaving suffices to check
+all observable behaviours
+of all interleavings
+of all subsets of $\tj@1-3$
+with all subsets of $\ti@2a-2c$,
+whether they share a memory conflict or not.
+Stated formally:
+
+\renewcommand\proofname{Proof Sketch}
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}{Definition}
+
+\newcommand\tii{\ensuremath{\hilight{lavender}{\mathbf{Ti}}}\xspace}
+\newcommand\tjj{\ensuremath{\hilight{seafoam}{\mathbf{Tj}}}\xspace}
+\newcommand\tkk{\ensuremath{\hilight{salmon}{\mathbf{Tk}}}\xspace}
+
+\begin{theorem}[Equivalence of Aborts]
+	\label{thm:equiv}
+	Let:%
+	\footnote{Arbitrary code may not be structured to distinguish these as nicely as in our examples;
+	e.g., more code may exist in the success branch after {\tt \_xend()};
+	such would be considered part of $\omega$ here.}
+	\begin{itemize}
+		\item $\tii@\alpha$ be an HTM begin operation,
+		\item $\tii@\beta_1\dots\tii@\beta_n$ be the transaction body (with $\beta_n$ the HTM end call),
+		\item $\tii@\phi_1\dots\tii@\phi_m$ be the failure path, and
+		\item $\tii@\omega_1\dots\tii@\omega_l$ be the subsequent code executed unconditionally.
+	\end{itemize}
+	Then, for any interleaving prefix
+	\[
+		\tii@\alpha,\tii@\beta_1\dots\tii@\beta_b,\tjj@\gamma_1\dots\tjj@\gamma_j,\tkk@\kappa_1\dots\tkk@\kappa_k
+	\]
+	with $b<n$, $j \ne i$, $k \ne i$, etc., either:
+	\begin{enumerate}
+		\item $\tii@\alpha,\tii@\beta_1\dots\tii@\beta_b\dots\tii@\beta_n,\tjj@\gamma_1\dots\tjj@\gamma_j,$ \\
+			$\tkk@\kappa_1\dots\tkk@\kappa_k$
+			(independent case), or
+		\item $\tii@\alpha,\tjj@\gamma_1\dots\tjj@\gamma_j,\tkk@\kappa_1\dots\tkk@\kappa_k,\tii@\phi_1\dots$
+			(conflicting case)
+	\end{enumerate}
+	is observationally equivalent.
+\end{theorem}
+
+\begin{proof}
+	asdfasdf
+\end{proof}
 
 \subsection{Modeling Transaction Atomicity}
+
+Next, we address the memory accesses within transactions with regard to data-race analysis.
+From Theorem~\ref{thm:equiv} we have that the body of all transactions may be executed atomically within the MC environment.
+While they may interleave within other non-transactional sequences,
+no other operations (whether transactional or not) will interrupt them.
+We claim this level of atomicity is equivalent to that provided by a global lock,
+and hence abstracting it as such in Landslide's data-race analysis is sound.
+
+\begin{theorem}[Transactions are a Global Lock]
+	asdfasdfaf
+\end{theorem}
+
+\begin{proof}
+	asdfasdf
+\end{proof}
 
 \subsection{Implementation}
 
@@ -412,9 +484,11 @@ and {\tt htm2} demonstrates Figure~\ref{fig:htm-fixed}'s fix.
 \section{Limitations}
 \label{sec:warpzone}
 
+This section discusses opportunities for future work.
+
 {\bf Transaction failure codes.}
 When a transaction fails, {\tt \_xbegin()} returns a failure code
-denoting the reason (or combination of reasons) therefor \cite{htm-gcc}.
+denoting the reason, or combination thereof, therefor \cite{htm-gcc}.
 If a program then cases on that failure code to select between different backup paths,
 model checking it by simply injecting a single type of failure may be unsound.
 For example, a program executing a transaction which is guaranteed to never conflict with any other threads,
