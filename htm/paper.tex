@@ -392,6 +392,17 @@ are HTM's execution semantics, namely:
 
 \subsection{Modeling Transaction Atomicity}
 
+\subsection{Implementation}
+
+Our implementation of HTM has been incorporated by the Landslide maintainers upstream.
+The repository is available open-source at \url{https://github.com/bblum/landslide}.
+Programs should be ported to the Pebbles userland \cite{thrlib,kspec},
+their use of compiler HTM intrinsics should be replaced with the Landslide stubs provided in {\tt 410user/inc/htm.h},
+and HTM nondeterminism can then be enabled with the {\tt -X} command-line flag.
+Several example tests are also provided:
+{\tt htm1} demonstrates the bug in Figure~\ref{fig:htm-example},
+and {\tt htm2} demonstrates Figure~\ref{fig:htm-fixed}'s fix.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Evaluation}
@@ -401,8 +412,34 @@ are HTM's execution semantics, namely:
 \section{Limitations}
 \label{sec:warpzone}
 
+{\bf Transaction failure codes.}
+When a transaction fails, {\tt \_xbegin()} returns a failure code
+denoting the reason (or combination of reasons) therefor \cite{htm-gcc}.
+If a program then cases on that failure code to select between different backup paths,
+model checking it by simply injecting a single type of failure may be unsound.
+For example, a program executing a transaction which is guaranteed to never conflict with any other threads,
+and hence never abort without {\tt \_XABORT\_RETRY},
+could legally {\tt assert(false);} in its failure path,
+while our approach in Section~\ref{sec:design} would erroneously trigger that assertion and report a bug.
+Likewise, the transactional data structures from \cite{htm-mario}
+abstract away any spurious {\tt \_XABORT\_RETRY} aborts behind a retry loop;
+a MC unwise to that idiom would call it an infinite loop bug.
+
+Our HTM implementation in Landslide includes an experimental feature
+to track the set of abort codes possible for each transaction.
+It harnesses DPOR's existing memory analysis to identify when {\tt \_XABORT\_CONFLICT} is possible,
+and instruments {\tt \_xabort()} calls to record any user-supplied codes.
+This comes at a cost of even more state space explosion,
+increasing the exponent at each {\tt \_xbegin()} preemption point
+by (usually) 1 plus however many distinct {\tt \_xabort()} codes the program uses.
+Future work could use static or dynamic flow analysis to
+identify which transactions actually branch on their failure codes
+to prune equivalent backup paths;
+for now, this feature is disabled by default but accessible via the {\tt -A} command-line option
+to Landslide (in addition to {\tt -X}).
+
 {\bf Relaxed memory orderings.}
-Our formalization of thread interleavings in Section~\ref{sec:design} does not account for read/write reorderings
+Section~\ref{sec:design}'s formalization of thread interleavings does not account for read/write reorderings
 possible on relaxed memory consistency architectures \cite{memory-consistency-models}.
 In fact,
 even after \cite{htm-mario}'s proposed fix,
@@ -423,12 +460,10 @@ Because Landslide's concurrency model includes only instruction-level thread non
 not per-CPU memory buffer reorderings,
 our current HTM implementation in Landslide cannot find this bug.
 In fact, it erroneously verifies the corresponding test {\tt htm2} in 7 CPU-minutes,
-with 294 distinct interleavings in total.
+with 294 distinct interleavings in total,
+none of which include the above-listed sequence.
 Recent work extended DPOR to incorporate TSO and PSO memory nondeterminism \cite{tsopso};
 if incorporated into Landslide, we could find or verify the absence of such bugs.
-
-% TODO should this come 1st or 2nd
-{\bf Transaction failure codes.}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
