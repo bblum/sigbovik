@@ -43,7 +43,7 @@
 \usepackage{marvosym}
 \usepackage{multirow}
 \usepackage[usenames,dvipsnames]{xcolor}
-\usepackage[utopia]{mathdesign}
+\usepackage[charter]{mathdesign}
 \usepackage{natbib}
 \usepackage[mathcal]{euscript}
 \usepackage[linesnumbered,ruled]{algorithm2e}
@@ -68,8 +68,8 @@
 
 \begin{document}
 
-\conferenceinfo{SIGBOVIK '17}{Pittsburgh, PA, USA}
-\copyrightyear{2017}
+\conferenceinfo{SIGBOVIK '18}{Pittsburgh, PA, USA}
+\copyrightyear{2018}
 \copyrightdata{}
 
 \titlebanner{banner above paper title}        % These are ignored unless
@@ -113,18 +113,19 @@ benchmarks and data structure implementations.
 \keywords
 landslide terminal, baggage claim, ground transportation, ticketing
 
-
 \section{Introduction}
+\label{sec:intro}
+
 Transactional Synchronization Extensions (TSX) \cite{transactional-memory}
 is an instruction set extension for x86 CPUs which adds hardware-based transactional memory.
 The processor uses its existing cache coherence algorithm to
-check for memory conflicts with other threads while temporarily staging a sequence of memory accesses.
+check for memory conflicts with other cores while temporarily staging a sequence of memory accesses.
 If no other CPU accesses the same memory during the transaction,
 the access sequence is committed to main memory atomically (with respect to visibility to other CPUs).
-Otherwise, the operations are discarded and the transaction returns a failure code.
+Otherwise, the accesses are discarded, the CPU's local state is reverted, and the transaction returns a failure code.
 
 This feature can be used to replace conventional locking in performance-critical concurrent programs.
-When a concurrent workload largely accesses thread-local data,
+When a concurrent workload accesses largely thread-local data,
 or disjoint sections of a shared data structure,
 the contention rate between threads is low,
 and transactions will often succeed.
@@ -149,46 +150,248 @@ to comprehensively verify these transactional programs,
 fast paths failure paths and all.
 MC aims to force the system to execute all possible thread interleavings under a given test case,
 exhaustively checking for bugs or verifying their absence in the corresponding state space.
-Many such model checkers exist, of varying flavours of interleaving granularity, memory analysis, and types of programs checked
-\cite{chess,dbug-ssv,spin,inspect,r4}.
+Many such model checkers exist, varying in
+interleaving granularity, memory analysis, types of programs checked, and search ordering strategy
+\cite{chess,dbug-ssv,spin,inspect,r4,portend,samc,mcr,randomized-scheduler}.
 This work builds upon Landslide \cite{landslide,quicksand},
-a simulator-based checker which checks both user- and kernel-level programs at the granularity of individual memory accesses.
+a simulator-based tester which checks both user- and kernel-level programs
+and incorporates data-race analysis \cite{tsan,fasttrack} to find new preemption points
+at memory access granularity.
 Our contributions are as follows:
 
 \begin{enumerate}
 	\item We extend Landslide's concurrency model to include transaction failure as an additional source of nondeterminism;
-	\item We provide a proof sketch that our implementation matches HTM's execution semantics,
+	\item We provide a proof sketch that our implementation matches TSX's execution semantics,
 	\item We evaluate the extended Landslide on several transactional programs, analyzing both its bug-finding and verification performance.
 \end{enumerate}
 
 The paper is organized as follows.
 Section \ref{sec:intro} introduces the problem domain and motivates our research.
-The rest of the sections state the rest of the paper.
+The other sections state the rest of the paper.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Background}
 
-TSX was supported on consumer hardware for the first time on Intel's Haswell architecture \cite{htm-haswell},
-which provides the {\tt xbegin}, {\tt xend}, and {\tt xabort} instructions for beginning, committing, and aborting
+{\bf Hardware transactional memory.}
+TSX was supported on consumer hardware for the first time by Intel's Haswell architecture \cite{htm-haswell},
+which extends the x86 instruction set to provide
+{\tt xbegin}, {\tt xend}, and {\tt xabort} for beginning, committing, and aborting
 transactions, respectively.
+Higher-level programming languages or compilers may offer libraries or intrinsics to access these instructions;
+for C and C++ GCC provides intrinsics named {\tt \_xbegin()} and so on \cite{htm-gcc}.
+Figure~\ref{fig:htm-example} shows an example program using TSX to synchronize access to a shared counter,
+including a failure path which defaults to a conventional lock.
+This example actually has a bug, which we will discuss in the next section;
+the reader is encouraged to try to spot it before then.
+Several related works formally prove the correctness of transactional memory {\em implementations}
+\cite{specifying-verifying-tm,tm-correctness,tm-completeness,mc-tm-with-spin},
+but verifying the client programs written to use transactions remains an open problem.
+
+\begin{figure}[t]
+	\begin{center}
+		\begin{tabular}{ll}
+		%\texttt{void count() \{} \\
+		%\texttt{~~~~for (int i = 0; i < 1000; i++) \{} \\
+		1 & \texttt{if ((status = \_xbegin()) == SUCCESS) \{} \\
+		2 & \texttt{~~~~x++;} \\
+		3 & \texttt{~~~~\_xend();} \\
+		4 & \texttt{\} else \{} \\
+		5 & \texttt{~~~~mutex\_lock(\&m);} \\
+		6 & \texttt{~~~~x++;} \\
+		7 & \texttt{~~~~mutex\_unlock(\&m);} \\
+		8 & \texttt{\}} \\
+		%\texttt{~~~~\}} \\
+		%\texttt{\}} \\
+		\end{tabular}
+	\end{center}
+	\caption{Example transactional program.
+		%The example {\tt count} routine from Figure~\ref{fig:mutex}, rewritten to use HTM.
+		If the
+		%transaction in the
+		top branch aborts,
+		%whether from a memory conflict or random system interrupt,
+		%from the programmer's intention,
+		execution will revert to the return of {\tt \_xbegin()}
+		%{\tt status} will be assigned an error code
+		and control will drop into the {\tt else} branch.
+		The programmer can then use explicit synchronization
+		%, such as a mutex,
+		to resolve the conflict.}
+	\label{fig:htm-example}
+\end{figure}
+
+% TODO
 
 Under software transactional memory (STM) \cite{stm-pldi06},
-memory conflicts with other threads and explicit aborts by the programmer are the only reason for transaction failure;
+memory conflicts with other threads are the only reason for transaction failure
+(apart from programmer-supplied explicit aborts);
 hence, depending on program semantics, some transactions may be guaranteed to succeed.
 However, hardware implementations (HTM) may also fail transactions
 for several other reasons such as random system interrupts or exhausting the CPU's cache capacity.
 Because timer interrupts can in principle occur at any moment,
 and with arbitrary frequency (observable by the program, perhaps as a result of a heavily-loaded system),
 in this paper we will simplify the failure model by saying that HTM transactions can fail for any reason.
+We defer discussion of programs which distinguish the reason for aborts through the failure code to Section~\ref{sec:warpzone}.
 
+{\bf Stateless model checking.}
+Model checking (MC) \cite{verisoft} is a testing technique for systematically executing and verifying
+the possible thread interleavings of a concurrent program.
+The main research challenge is to cope with exponential explosion of the state space,
+which is $O(n^k)$ for a program with $n$ operations and $k$ threads.
+Some {\em stateful} MCs explicitly store and compare all visited states of the program being tested \cite{spin},
+which both keeps track of test coverage
+and allows identifying identical states to avoid testing redundant interleavings.
+%
+By contrast, {\em stateless} MC (henceforth abbreviated simply as MC)
+stores only the current sequence of execution events to avoid a prohibitive memory footprint.
+Reduction algorithms \cite{dpor,optimal-dpor,satcheck,mcr,mcr,tsopso}
+can then analyze the memory accesses in that sequence to identify
+interleavings observationally-equivalent under Mazurkiewicz trace theory \cite{mazurkiewicz} and hence safe to skip.
+The resulting state spaces are still exponentially-sized,
+but only in the number of conflicting operations rather than all operations.
+Of these, Landslide uses Dynamic Partial Order Reduction \cite{dpor} to prune its state spaces.
+
+MCs may instrument programs to introduce thread switches at varying granularity, which affects the number of operations $n$.
+%The number of operations depends on how finely-grained the MC instruments the program to introduce thread switches.
+Some target distributed systems, instrumenting only message-passing events \cite{modist};
+some run multithreaded programs natively, instrumenting only the pthread API for performance \cite{dbug-ssv};
+and some insert compiler instrumentation on statically-identified memory accesses \cite{chess,inspect}.
+Landslide traces every memory access through the use of a simulated environment \cite{bochs},
+which is important for identifying data races to use as new preemption points \cite{fasttrack,djit,quicksand},
+as well as for identifying when a memory conflict may cause transaction aborts.
+With regard to checking for bugs,
+the ``model'' the name refers to being checked may be
+an external formal specification,
+the program's own internal consistency checks,
+or a set of expected properties encoded in the tool itself.
+Landslide uses the latter two cases, checking for assertion failures
+as well as deadlocks, use-after-frees, and segfaults.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Design}
+
+Let $I = TN_1@L_1, TN_2@L_2, ... TN_n@L_n$,
+with $N_i$ a thread ID and $L_i$ a code line number,
+denote the execution sequence of a program as it runs according to the specified thread interleaving.%
+\footnote{This serialization of concurrent execution is told from the perspective of main memory
+and hence assumes sequential consistency.
+For discussion of relaxed memory models refer to Section~\ref{sec:warpzone}.}
+
+{\bf Example.}
+Consider again the program in Figure~\ref{fig:htm-example}.
+Note that the C-style {\tt x++} operations, when compiled into assembly,
+results in multiple memory accesses which can be interleaved with other threads.
+\[
+\begin{tabular}{ll}
+	$2a$ & \texttt{temp <- x;} \\
+	$2b$ & \texttt{temp <- temp + 1;} \\
+	$2c$ & \texttt{x <- temp;} \\
+\end{tabular}
+\]
+
+\newcommand\hilight[2]{\color{#1}#2\color{black}}
+\definecolor{orange}{RGB}{192,96,0}
+\definecolor{olivegreen}{RGB}{0,127,0}
+\definecolor{brickred}{RGB}{192,0,0}
+\definecolor{commentblue}{RGB}{0,0,192}
+%\definecolor{lavender}{RGB}{238,85,238}
+%\definecolor{seafoam}{RGB}{85,238,102}
+%\definecolor{salmon}{RGB}{238,102,85} % ee6655
+
+\definecolor{lavender}{RGB}{178,65,178} % * 3/4
+\definecolor{seafoam}{RGB}{65,178,76} % * 3/4
+\definecolor{salmon}{RGB}{208,89,74} % * 7/8
+
+\newcommand\ti{\ensuremath{\hilight{lavender}{\mathbf{T1}}}}
+\newcommand\tj{\ensuremath{\hilight{seafoam}{\mathbf{T2}}}}
+\newcommand\tk{\ensuremath{\hilight{salmon}{\mathbf{T3}}}}
+
+If these instructions from the {\tt x++} in the transaction are preempted,
+with another thread's access to {\tt x} interleaved in between,
+the transaction will abort.
+So, the interleaving
+\[
+	\ti@1, \ti@2a, \ti@2b, \tj@1, \tj@2, \tj@3, \ti@2c, \ti@3
+\]
+or, henceforth abbreviated for clarity:
+\[
+	\ti@1-2b, \tj@1-3, \ti@2c-3
+\]
+is not possible; rather, \ti will fall into the backup path:
+\[
+	\ti@1-2b, \tj@1-3, \ti@4-7
+\]
+However, the {\tt x++} operation from the failure path (correspondingly $6a$, $6b$, $6c$)
+can be thusly separated with conflicting accesses interleaved in between,
+since the mutex only protects the failure path against other failure paths,
+but not against the transaction itself.
+So (assuming {\tt x} is intended to be a precise counter rather than a sloppy one),
+%losing one of the increments to which constitutes a bug),
+we observe a bug in the following interleaving.%
+\footnote{Note also that this bug requires either at least 3 threads or at least 2 iterations between 2 threads to expose;
+this highlights MC's dependence on its test cases to produce meaningful state spaces in the first place.}
+\[
+	\ti@1-2b, \tj@1-3, \ti@4-6b, \tk@1-3, \ti@6c-7
+\]
+Prior work \cite{htm-mario} proposed the idiom shown in Figure~\ref{fig:htm-fixed}
+to exclude this family of interleavings,
+showing that correctly synchronizing even the simplest transactions may be surprisingly difficult or complex.
+%further motivating our research.
+
+\begin{figure}[t]
+	\begin{center}
+		\begin{tabular}{ll}
+		%\texttt{void count() \{} \\
+		%\texttt{~~~~for (int i = 0; i < 1000; i++) \{} \\
+		  & \texttt{prevent\_transactions = false;} \\
+		\\
+		0 & \texttt{while (prevent\_transactions) continue;} \\
+		1 & \texttt{if ((status = \_xbegin()) == SUCCESS) \{} \\
+		2 & \texttt{~~~~if (prevent\_transactions)} \\
+		3 & \texttt{~~~~~~~~\_xabort();} \\
+		4 & \texttt{~~~~x++;} \\
+		5 & \texttt{~~~~\_xend();} \\
+		6 & \texttt{\} else \{} \\
+		7 & \texttt{~~~~mutex\_lock(\&m);} \\
+		8 & \texttt{~~~~prevent\_transactions = true;} \\
+		9 & \texttt{~~~~x++;} \\
+		A & \texttt{~~~~prevent\_transactions = false;} \\
+		B & \texttt{~~~~mutex\_unlock(\&m);} \\
+		C & \texttt{\}} \\
+		%\texttt{~~~~\}} \\
+		%\texttt{\}} \\
+		\end{tabular}
+	\end{center}
+	\caption{Variant of the program in Figure~\ref{fig:htm-example},
+		with additional synchronization to protect the failure path from the transactional path.
+		(The optional line 0 serves to prevent a cascade of failure paths
+		for the sake of performance
+		by allowing threads to wait until transacting is safe again.)}
+	\label{fig:htm-fixed}
+\end{figure}
+
+{\bf Modeling transaction failure.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Evaluation}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Limitations}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Future Work}
+\label{sec:warpzone}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Conclusion}
 
-Please accept my paper.
-I worked hard on it.
+I hope I can get away with citing this in my thesis.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
