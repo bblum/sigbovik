@@ -45,6 +45,7 @@
 \usepackage[usenames,dvipsnames]{xcolor}
 \usepackage[charter]{mathdesign}
 \usepackage{natbib}
+\usepackage{xspace}
 \usepackage[mathcal]{euscript}
 \usepackage[linesnumbered,ruled]{algorithm2e}
 
@@ -221,8 +222,6 @@ but verifying the client programs written to use transactions remains an open pr
 	\label{fig:htm-example}
 \end{figure}
 
-% TODO
-
 Under software transactional memory (STM) \cite{stm-pldi06},
 memory conflicts with other threads are the only reason for transaction failure
 (apart from programmer-supplied explicit aborts);
@@ -250,7 +249,7 @@ can then analyze the memory accesses in that sequence to identify
 interleavings observationally-equivalent under Mazurkiewicz trace theory \cite{mazurkiewicz} and hence safe to skip.
 The resulting state spaces are still exponentially-sized,
 but only in the number of conflicting operations rather than all operations.
-Of these, Landslide uses Dynamic Partial Order Reduction \cite{dpor} to prune its state spaces.
+Of these, Landslide uses Dynamic Partial Order Reduction (DPOR) \cite{dpor} to prune its state spaces.
 
 MCs may instrument programs to introduce thread switches at varying granularity, which affects the number of operations $n$.
 %The number of operations depends on how finely-grained the MC instruments the program to introduce thread switches.
@@ -271,15 +270,23 @@ as well as deadlocks, use-after-frees, and segfaults.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Design}
+\label{sec:design}
 
-Let $I = TN_1@L_1, TN_2@L_2, ... TN_n@L_n$,
+This section presents our formalization of transactional memory in Landslide's framework of thread concurrency.
+We make two major simplifications:
+simulating transaction aborts as failure injections,
+and treating transaction atomicity as a global mutex during data-race analysis;
+and provide corresponding equivalence proofs.
+
+{\bf Notation.} Let $I = TN_1@L_1, TN_2@L_2, ... TN_n@L_n$,
 with $N_i$ a thread ID and $L_i$ a code line number,
 denote the execution sequence of a program as it runs according to the specified thread interleaving.%
 \footnote{This serialization of concurrent execution is told from the perspective of main memory
 and hence assumes sequential consistency.
 For discussion of relaxed memory models refer to Section~\ref{sec:warpzone}.}
 
-{\bf Example.}
+\subsection{Example}
+
 Consider again the program in Figure~\ref{fig:htm-example}.
 Note that the C-style {\tt x++} operations, when compiled into assembly,
 results in multiple memory accesses which can be interleaved with other threads.
@@ -304,9 +311,9 @@ results in multiple memory accesses which can be interleaved with other threads.
 \definecolor{seafoam}{RGB}{65,178,76} % * 3/4
 \definecolor{salmon}{RGB}{208,89,74} % * 7/8
 
-\newcommand\ti{\ensuremath{\hilight{lavender}{\mathbf{T1}}}}
-\newcommand\tj{\ensuremath{\hilight{seafoam}{\mathbf{T2}}}}
-\newcommand\tk{\ensuremath{\hilight{salmon}{\mathbf{T3}}}}
+\newcommand\ti{\ensuremath{\hilight{lavender}{\mathbf{T1}}}\xspace}
+\newcommand\tj{\ensuremath{\hilight{seafoam}{\mathbf{T2}}}\xspace}
+\newcommand\tk{\ensuremath{\hilight{salmon}{\mathbf{T3}}}\xspace}
 
 If these instructions from the {\tt x++} in the transaction are preempted,
 with another thread's access to {\tt x} interleaved in between,
@@ -324,7 +331,7 @@ is not possible; rather, \ti will fall into the backup path:
 	\ti@1-2b, \tj@1-3, \ti@4-7
 \]
 However, the {\tt x++} operation from the failure path (correspondingly $6a$, $6b$, $6c$)
-can be thusly separated with conflicting accesses interleaved in between,
+{\em can} be thusly separated with conflicting accesses interleaved in between,
 since the mutex only protects the failure path against other failure paths,
 but not against the transaction itself.
 So (assuming {\tt x} is intended to be a precise counter rather than a sloppy one),
@@ -366,13 +373,24 @@ showing that correctly synchronizing even the simplest transactions may be surpr
 	\end{center}
 	\caption{Variant of the program in Figure~\ref{fig:htm-example},
 		with additional synchronization to protect the failure path from the transactional path.
-		(The optional line 0 serves to prevent a cascade of failure paths
+		The optional line 0 serves to prevent a cascade of failure paths
 		for the sake of performance
-		by allowing threads to wait until transacting is safe again.)}
+		by allowing threads to wait until transacting is safe again.}
 	\label{fig:htm-fixed}
 \end{figure}
 
-{\bf Modeling transaction failure.}
+\subsection{Modeling Transaction Failure}
+
+Left unstated in interleavings such as $\ti@1-2c, \tj@1-3, \ti@4-7$%
+\footnote{For the sake of example I reorder \ti's write to {\tt x} before \tj's part here.}
+are HTM's execution semantics, namely:
+\begin{enumerate}
+	\item any modifications to shared state (such as $2c$) by \ti are not visible to \tj during its execution,
+		despite \tj being executed afterwards, and
+	\item all local and global state changes by \ti between lines $1$ and $2c$ are discarded when jumping to line $4$.
+\end{enumerate}
+
+\subsection{Modeling Transaction Atomicity}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -381,11 +399,36 @@ showing that correctly synchronizing even the simplest transactions may be surpr
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Limitations}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\section{Future Work}
 \label{sec:warpzone}
+
+{\bf Relaxed memory orderings.}
+Our formalization of thread interleavings in Section~\ref{sec:design} does not account for read/write reorderings
+possible on relaxed memory consistency architectures \cite{memory-consistency-models}.
+In fact,
+even after \cite{htm-mario}'s proposed fix,
+our running example program is still incorrect on Total Store Ordering (TSO) architectures such as x86.
+Despite stores being totally-ordered, x86 may still reorder stores after subsequent loads.
+Accordingly, an execution of $8,9a,9b,9c$ in Figure~\ref{fig:htm-fixed}
+may be locally visible to another thread as $9a,8,9b,9c$,
+and hence an apparent interleaving of
+\[
+	\ti@1,\tj@1-5,\ti@7,\mathbf{\ti@9a},\tk@1-5,\mathbf{\ti@8},\ti@9b-B
+\]
+is possible
+(reordered accesses highlighted in bold).
+An {\tt mfence} barrier is needed between lines 8 and 9 to solve this problem on TSO \cite{tsx-need-barrier}.
+On Partial Store Ordering (PSO) architectures, even more barriers may be necessary.
+
+Because Landslide's concurrency model includes only instruction-level thread nondeterminism,
+not per-CPU memory buffer reorderings,
+our current HTM implementation in Landslide cannot find this bug.
+In fact, it erroneously verifies the corresponding test {\tt htm2} in 7 CPU-minutes,
+with 294 distinct interleavings in total.
+Recent work extended DPOR to incorporate TSO and PSO memory nondeterminism \cite{tsopso};
+if incorporated into Landslide, we could find or verify the absence of such bugs.
+
+% TODO should this come 1st or 2nd
+{\bf Transaction failure codes.}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
