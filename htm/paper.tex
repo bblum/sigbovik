@@ -497,12 +497,29 @@ no other operations (whether transactional or not) will interrupt them.
 We claim this level of atomicity is equivalent to that provided by a global lock,
 and hence abstracting it as such in Landslide's data-race analysis is sound.
 
+Let $\tiiat{\mu},\tjjat{\nu}$ be a pair of memory accesses to the same address, at least one a write,
+in some transactional execution $I$ normalized under Lemma~\ref{lem:equiv}.
+Then let $\mathsf{lockify}_m(\tkkat{L})$ denote a function over instructions in $I$,
+which replaces $\tkkat{L}$ with $\tkkat{\mathsf{lock}(m)}$ if $L$ is a successful HTM begin,
+with a no-op if $L$ is a transaction abort,
+or with $\tkkat{\mathsf{unlock}(m)}$ if $L$ is an HTM end,
+or no replacement otherwise.
+Finally, let $I' = \exists m. \mathsf{lockify}_m(I)$,
+the execution with all successful transactions replaced by an abstract global lock.
+Lemma~\ref{lem:equiv} guarantees mutual exclusion of $m$.
+
 \begin{theorem}[Transactions are a Global Lock]
-	asdfasdfaf
+	$\tiiat{\mu},\tjjat{\nu}$ is a data race in $I$ iff it is a data race in $I'$.
 \end{theorem}
 
 \begin{proof}
-	asdfasdf
+We prove one case for each variant definiton for data races \cite{quicksand}.
+
+\begin{itemize}
+	\item {\bf Limited Happens-Before.}
+	\item {\bf Pure Happens-Before.}
+\end{itemize}
+
 \end{proof}
 
 \subsection{Implementation}
