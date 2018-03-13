@@ -427,6 +427,9 @@ Stated formally:
 \newcommand\tjjat[1]{\ensuremath{\hilight{seafoam} {\mathbf{Tj}@#1}}\xspace}
 \newcommand\tkkat[1]{\ensuremath{\hilight{salmon}  {\mathbf{Tk}@#1}}\xspace}
 
+\newcommand\llama[1]{\includegraphics[width=#1]{llama.pdf}}
+\newcommand\llitem{\item[\raisebox{-0.15em}{\llama{1.2em}}]}
+
 \begin{lemma}[Equivalence of Aborts]
 	\label{lem:equiv}
 	Let:%
@@ -434,10 +437,10 @@ Stated formally:
 	e.g., more code may exist in the success branch after {\tt \_xend()};
 	such would be considered part of $\omega$ here.}
 	\begin{itemize}
-		\item $\tiiat{\alpha}$ be an HTM begin operation,
-		\item $\tiiat{\beta_1}\dots\tiiat{\beta_n}$ be the transaction body (with $\beta_n$ the HTM end call),
-		\item $\tiiat{\phi_1}\dots\tiiat{\phi_m}$ be the failure path, and
-		\item $\tiiat{\omega_1}\dots\tiiat{\omega_l}$ be the subsequent code executed unconditionally.
+		\llitem $\tiiat{\alpha}$ be an HTM begin operation,
+		\llitem $\tiiat{\beta_1}\dots\tiiat{\beta_n}$ be the transaction body (with $\beta_n$ the HTM end call),
+		\llitem $\tiiat{\phi_1}\dots\tiiat{\phi_m}$ be the failure path, and
+		\llitem $\tiiat{\omega_1}\dots\tiiat{\omega_l}$ be the subsequent code executed unconditionally.
 	\end{itemize}
 	Then, for any interleaving prefix%
 	\footnote{Without loss of generality: for any number of other threads \tjj/\tkk,
@@ -516,8 +519,8 @@ Lemma~\ref{lem:equiv} guarantees mutual exclusion of $m$.
 We prove one case for each variant definiton for data races \cite{quicksand}.
 
 \begin{itemize}
-	\item {\bf Limited Happens-Before.}
-	\item {\bf Pure Happens-Before.}
+	\llitem {\bf Limited Happens-Before.}
+	\llitem {\bf Pure Happens-Before.}
 \end{itemize}
 
 \end{proof}
