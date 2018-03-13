@@ -154,7 +154,7 @@ exhaustively checking for bugs or verifying their absence in the corresponding s
 Many such model checkers exist, varying in
 interleaving granularity, memory analysis, types of programs checked, and search ordering strategy
 \cite{chess,dbug-ssv,spin,inspect,r4,portend,samc,mcr,randomized-scheduler}.
-This work builds upon Landslide \cite{landslide,quicksand},
+This work builds upon Landslide \cite{landslide,quicksand,landslide-phdthesis},
 a simulator-based tester which checks both user- and kernel-level programs
 and incorporates data-race analysis \cite{tsan,fasttrack} to find new preemption points
 at memory access granularity.
@@ -482,7 +482,7 @@ The second part of our claim follows naturally.
 \end{theorem}
 
 \begin{proof}
-	For every $I \in U$ with $\tiiat{\alpha},\tiiat{\beta_1}\dots\tiiat{\beta_b},$ $\tjjat{\dots},\tkkat{\dots},\tiiat{\beta_{b+1}}... \in I$,
+	For every $I \in U$ with $\tiiat{\alpha},\tiiat{\beta_1}\dots\tiiat{\beta_b},$ $\tjjat{\dots},\tkkat{\dots},\tiiat{\beta_{b+1}} \in I$,
 	apply Lemma~\ref{lem:equiv} to obtain an equivalent interleaving $I'$ satisfying the theorem condition.
 	The resulting $U'$ can then be MCed without simulating HTM rollbacks.
 \end{proof}
@@ -518,6 +518,28 @@ and {\tt htm2} demonstrates Figure~\ref{fig:htm-fixed}'s fix.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Evaluation}
+
+To the best of our knowledge, this is the first work to test transactional programs in a model-checking environment,
+%To the best of the author's knowledge, Landslide is the first MC to check transactional concurrency,
+so no other MC State-of-the-Art%
+\footnote{My DJ name.}
+exists to compare to in controlled experiments.
+Nevertheless, we pose the following evaluation questions.
+
+\begin{enumerate}
+	\item How quickly does Landslide find bugs in incorrect transactional programs of varying sizes?
+	\item How quickly does Landslide verify correct transactional programs of varying sizes?
+	\item Does Landslide find any previously-unknown bugs in real-world transactional code?
+\end{enumerate}
+
+Our evaluation suite comprises several hand-written unit tests,
+as well as \cite{htm-mario}'s microbenchmarks and transactional AVL tree and separate-chaining hashmap.
+All tests were run on an 8-core 2.7GHz Core i7 with 32 GB RAM.
+
+...We don't actually have any results here yet.
+We intended to update our submission before camera-ready,
+but if somehow this becomes the final conference version of the paper,
+please look to \cite{landslide-phdthesis}, coming soon.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
