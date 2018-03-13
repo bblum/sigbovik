@@ -437,10 +437,10 @@ Stated formally:
 	e.g., more code may exist in the success branch after {\tt \_xend()};
 	such would be considered part of $\omega$ here.}
 	\begin{itemize}
-		\llitem $\tiiat{\alpha}$ be an HTM begin operation,
-		\llitem $\tiiat{\beta_1}\dots\tiiat{\beta_n}$ be the transaction body (with $\beta_n$ the HTM end call),
-		\llitem $\tiiat{\phi_1}\dots\tiiat{\phi_m}$ be the failure path, and
-		\llitem $\tiiat{\omega_1}\dots\tiiat{\omega_l}$ be the subsequent code executed unconditionally.
+		\item $\tiiat{\alpha}$ be an HTM begin operation,
+		\item $\tiiat{\beta_1}\dots\tiiat{\beta_n}$ be the transaction body (with $\beta_n$ the HTM end call),
+		\item $\tiiat{\phi_1}\dots\tiiat{\phi_m}$ be the failure path, and
+		\item $\tiiat{\omega_1}\dots\tiiat{\omega_l}$ be the subsequent code executed unconditionally.
 	\end{itemize}
 	Then, for any interleaving prefix%
 	\footnote{Without loss of generality: for any number of other threads \tjj/\tkk,
@@ -508,7 +508,7 @@ with a no-op if $L$ is a transaction abort,
 or with $\tkkat{\mathsf{unlock}(m)}$ if $L$ is an HTM end,
 or no replacement otherwise.
 Finally, let $I' = \exists m. \mathsf{lockify}_m(I)$,
-the execution with all successful transactions replaced by an abstract global lock.
+the execution with the boundaries of all successful transactions replaced by an abstract global lock.
 Lemma~\ref{lem:equiv} guarantees mutual exclusion of $m$.
 
 \begin{theorem}[Transactions are a Global Lock]
@@ -516,13 +516,54 @@ Lemma~\ref{lem:equiv} guarantees mutual exclusion of $m$.
 \end{theorem}
 
 \begin{proof}
-We prove one case for each variant definiton for data races \cite{quicksand}.
+We prove one case for each variant definiton for data races supported in Landslide \cite{quicksand}.
+For each, we semiformally state what it means to race in an execution with synchronizing HTM instructions.
 
 \begin{itemize}
-	\llitem {\bf Limited Happens-Before.}
-	\llitem {\bf Pure Happens-Before.}
+	\item {\bf Limited Happens-Before.}
+		Under this definition, to be a data race in $I$ they must be reorderable at instruction granularity.
+		\begin{itemize}
+			\llitem $I \Rightarrow I'$:
+				If $\tiiat{\mu},\tjjat{\nu}$ race in $I$,
+				then they cannot both be in successful transactions,
+				or else placing \tiiat{\mu} within the boundaries of \tjjat{\nu}'s transaction
+				would cause the latter to abort, invalidating \tjjat{\nu}, or vice versa.
+				Hence they will not both hold $m$ in $I'$.
+				Otherwise their lock-sets and DPOR dependence relation remain unchanged.
+			\llitem $I' \Rightarrow I$:
+				If $\tiiat{\mu},\tjjat{\nu}$ race in $I'$,
+				both corresponding threads cannot hold $m$;
+				WLOG let $\tii$ not hold $m$ during $\tiiat{\mu}$.
+				Then in $I$, $\tiiat{\mu}$ is not in a transaction.
+				With the remainder of their lock-sets still disjoint,
+				and still not DPOR-dependent, $\tjjat{\nu}$ (or its containing transaction)
+				can then be reordered directly before or after $\tiiat{\mu}$.
+		\end{itemize}
+	\item {\bf Pure Happens-Before.}
+		WLOG fix $\tiiat{\mu} \prec \tjjat{\nu} \in I$.
+		Then under this definition, to be a data race in $I$ there must be no pair of synchronizing instructions
+		$\tiiat{\epsilon}$ and $\tjjat{\chi}$ such that
+		\[
+			\tiiat{\mu} \prec \tiiat{\epsilon} \prec \tjjat{\chi} \prec \tjjat{\nu}
+		\]
+		$\in I$ to update the vector clock epoch between \tiiat{\mu} and \tjjat{\nu}.
+		\begin{itemize}
+			\llitem $I \Rightarrow I'$:
+				If $\tiiat{\mu},\tjjat{\nu}$ race in $I$,
+				then they cannot both be in successful transactions,
+				or else Lemma~\ref{lem:equiv} normalization would provide
+				the corresponding HTM end and begin for $\tii$ and $\tjj$ respectively.
+				Hence there will be no unlock/lock pair on $m$ in $I'$ to satisfy the above sequence.
+			\llitem $I' \Rightarrow I$:
+				If $\tiiat{\mu},\tjjat{\nu}$ race in $I'$,
+				then they cannot both hold $m$,
+				or else $\mathsf{lockify}_m$ would provide the corresponding
+				unlock and lock for $\tii$ and $\tjj$ respectively.
+				Hence there will be no HTM end/begin pair in $I$ to satisfy the above sequence.
+		\end{itemize}
+		%In both cases $I$ and $I'$ otherwise have the same synchronizing instructions.
 \end{itemize}
-
+Hence, data-race analysis is sound with transactions abstracted as an abstract global lock.
 \end{proof}
 
 \subsection{Implementation}
