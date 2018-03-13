@@ -307,6 +307,7 @@ results in multiple memory accesses which can be interleaved with other threads.
 \definecolor{olivegreen}{RGB}{0,127,0}
 \definecolor{brickred}{RGB}{192,0,0}
 \definecolor{commentblue}{RGB}{0,0,192}
+\definecolor{black}{RGB}{0,0,0}
 %\definecolor{lavender}{RGB}{238,85,238}
 %\definecolor{seafoam}{RGB}{85,238,102}
 %\definecolor{salmon}{RGB}{238,102,85} % ee6655
@@ -315,24 +316,29 @@ results in multiple memory accesses which can be interleaved with other threads.
 \definecolor{seafoam}{RGB}{65,178,76} % * 3/4
 \definecolor{salmon}{RGB}{208,89,74} % * 7/8
 
+% T1 T2 T3 but latex doesn't allow #s in cmd names
 \newcommand\ti{\ensuremath{\hilight{lavender}{\mathbf{T1}}}\xspace}
 \newcommand\tj{\ensuremath{\hilight{seafoam}{\mathbf{T2}}}\xspace}
 \newcommand\tk{\ensuremath{\hilight{salmon}{\mathbf{T3}}}\xspace}
+
+\newcommand\tiat[1]{\ensuremath{\hilight{lavender}{\mathbf{T1}@#1}}\xspace}
+\newcommand\tjat[1]{\ensuremath{\hilight{seafoam}{\mathbf{T2}@#1}}\xspace}
+\newcommand\tkat[1]{\ensuremath{\hilight{salmon}{\mathbf{T3}@#1}}\xspace}
 
 If these instructions from the {\tt x++} in the transaction are preempted,
 with another thread's access to {\tt x} interleaved in between,
 the transaction will abort.
 So, the interleaving
 \[
-	\ti@1, \ti@2a, \ti@2b, \tj@1, \tj@2, \tj@3, \ti@2c, \ti@3
+	\tiat{1}, \tiat{2a}, \tiat{2b}, \tjat{1}, \tjat{2}, \tjat{3}, \tiat{2c}, \tiat{3}
 \]
 or, henceforth abbreviated for clarity:
 \[
-	\ti@1-2b, \tj@1-3, \ti@2c-3
+	\tiat{1-2b}, \tjat{1-3}, \tiat{2c-3}
 \]
 is not possible; rather, \ti will fall into the backup path:
 \[
-	\ti@1-2b, \tj@1-3, \ti@4-7
+	\tiat{1-2b}, \tjat{1-3}, \tiat{4-7}
 \]
 However, the {\tt x++} operation from the failure path (correspondingly $6a$, $6b$, $6c$)
 {\em can} be thusly separated with conflicting accesses interleaved in between,
@@ -344,7 +350,7 @@ we observe a bug in the following interleaving.%
 \footnote{Note also that this bug requires either at least 3 threads or at least 2 iterations between 2 threads to expose;
 this highlights MC's dependence on its test cases to produce meaningful state spaces in the first place.}
 \[
-	\ti@1-2b, \tj@1-3, \ti@4-6b, \tk@1-3, \ti@6c-7
+	\tiat{1-2b}, \tjat{1-3}, \tiat{4-6b}, \tkat{1-3}, \tiat{6c-7}
 \]
 Prior work \cite{htm-mario} proposed the idiom shown in Figure~\ref{fig:htm-fixed}
 to exclude this family of interleavings,
@@ -385,7 +391,7 @@ showing that correctly synchronizing even the simplest transactions may be surpr
 
 \subsection{Modeling Transaction Failure}
 
-Left unstated in interleavings such as $\ti@1-2c, \tj@1-3, \ti@4-7$%
+Left unstated in interleavings such as $\tiat{1-2c}, \tjat{1-3}, \tiat{4-7}$%
 \footnote{For the sake of example I reorder \ti's write to {\tt x} before \tj's part here.}
 are HTM's execution semantics, namely:
 \begin{enumerate}
@@ -397,13 +403,13 @@ are HTM's execution semantics, namely:
 While use of TSX in production requires the performance advantage
 of temporarily staging such accesses in local CPU cache,
 model checking such programs need be concerned only with the program's {\em observable} behaviours.
-We claim that MCing the interleaving $\ti@1, \tj@1-3, \ti@4-7$
+We claim that MCing the interleaving $\tiat{1}, \tjat{1-3}, \tiat{4-7}$
 is an equivalent verification as MCing the one above;
 in fact, this interleaving suffices to check
 all observable behaviours
 of all interleavings
-of all subsets of $\tj@1-3$
-with all subsets of $\ti@2a-2c$,
+of all subsets of $\tjat{1-3}$
+with all subsets of $\tiat{2a-2c}$,
 whether they share a memory conflict or not.
 Stated formally:
 
@@ -416,41 +422,75 @@ Stated formally:
 \newcommand\tjj{\ensuremath{\hilight{seafoam}{\mathbf{Tj}}}\xspace}
 \newcommand\tkk{\ensuremath{\hilight{salmon}{\mathbf{Tk}}}\xspace}
 
-\begin{theorem}[Equivalence of Aborts]
-	\label{thm:equiv}
+\newcommand\tiiat[1]{\ensuremath{\hilight{lavender}{\mathbf{Ti}@#1}}\xspace}
+\newcommand\tjjat[1]{\ensuremath{\hilight{seafoam} {\mathbf{Tj}@#1}}\xspace}
+\newcommand\tkkat[1]{\ensuremath{\hilight{salmon}  {\mathbf{Tk}@#1}}\xspace}
+
+\begin{lemma}[Equivalence of Aborts]
+	\label{lem:equiv}
 	Let:%
 	\footnote{Arbitrary code may not be structured to distinguish these as nicely as in our examples;
 	e.g., more code may exist in the success branch after {\tt \_xend()};
 	such would be considered part of $\omega$ here.}
 	\begin{itemize}
-		\item $\tii@\alpha$ be an HTM begin operation,
-		\item $\tii@\beta_1\dots\tii@\beta_n$ be the transaction body (with $\beta_n$ the HTM end call),
-		\item $\tii@\phi_1\dots\tii@\phi_m$ be the failure path, and
-		\item $\tii@\omega_1\dots\tii@\omega_l$ be the subsequent code executed unconditionally.
+		\item $\tiiat{\alpha}$ be an HTM begin operation,
+		\item $\tiiat{\beta_1}\dots\tiiat{\beta_n}$ be the transaction body (with $\beta_n$ the HTM end call),
+		\item $\tiiat{\phi_1}\dots\tiiat{\phi_m}$ be the failure path, and
+		\item $\tiiat{\omega_1}\dots\tiiat{\omega_l}$ be the subsequent code executed unconditionally.
 	\end{itemize}
-	Then, for any interleaving prefix
+	Then, for any interleaving prefix%
+	\footnote{Without loss of generality: for any number of other threads \tjj/\tkk,
+	and for any number of thread switches away from \tii during the transaction.}
 	\[
-		\tii@\alpha,\tii@\beta_1\dots\tii@\beta_b,\tjj@\gamma_1\dots\tjj@\gamma_j,\tkk@\kappa_1\dots\tkk@\kappa_k
+	\begin{tabular}{c}
+		$\tiiat{\alpha},\tiiat{\beta_1}\dots\tiiat{\beta_b},$\\
+		$\tjjat{\gamma_1}\dots\tjjat{\gamma_j},$ \\
+		$\tkkat{\kappa_1}\dots\tkkat{\kappa_k},$ \\
+		$\tiiat{\beta_{b+1}}$ % $\dots\tiiat{\beta_{n-1}}$ -- excluded bc might abort
+	\end{tabular}
 	\]
 	with $b<n$, $j \ne i$, $k \ne i$, etc., either:
 	\begin{enumerate}
-		\item $\tii@\alpha,\tii@\beta_1\dots\tii@\beta_b\dots\tii@\beta_n,\tjj@\gamma_1\dots\tjj@\gamma_j,$ \\
-			$\tkk@\kappa_1\dots\tkk@\kappa_k$
-			(independent case), or
-		\item $\tii@\alpha,\tjj@\gamma_1\dots\tjj@\gamma_j,\tkk@\kappa_1\dots\tkk@\kappa_k,\tii@\phi_1\dots$
-			(conflicting case)
+		\item $\tiiat{\alpha},\tjjat{\gamma_1}\dots\tjjat{\gamma_j},\tkkat{\kappa_1}\dots\tkkat{\kappa_k},\tiiat{\phi_1}\dots$
+			(conflicting case), or
+		\item $\tiiat{\alpha},\tiiat{\beta_1}\dots\tiiat{\beta_b}\dots\tiiat{\beta_n},\tjjat{\gamma_1}\dots\tjjat{\gamma_j},$ \\
+			$\tkkat{\kappa_1}\dots\tkkat{\kappa_k}$
+			(independent case)
 	\end{enumerate}
 	is observationally equivalent.
+\end{lemma}
+
+\begin{proof}
+	We case on whether the operations by \tjj and/or \tkk have any memory conflicts (read/write or write/write)
+	with $\tiiat{\beta_1}\dots\tiiat{\beta_n}$.
+	If so, then the hardware will abort \tii's transaction, discarding the effects of $\tiiat{\beta_1}\dots\tiiat{\beta_n}$
+	and jumping to $\tiiat{\phi_1}$,
+	satisfying case 1.
+	Otherwise, by DPOR's definition of transition dependence \cite{dpor,landslide-phdthesis},
+	$\tiiat{\beta_{b+1}}\dots\tiiat{\beta_n}$ is independent with the transitions of \tjj and \tkk,
+	may be successfully executed until transaction commit,
+	and reordering them produces an equivalent interleaving,
+	satisfying case 2.
+\end{proof}
+
+The second part of our claim follows naturally.
+
+\begin{theorem}[Atomicity of Transactions]
+	\label{thm:atom}
+	For any state space $U$ of a transactionally-concurrent program,
+	an equivalent state space exists in which all transactions are either executed atomically or aborted immediately.
 \end{theorem}
 
 \begin{proof}
-	asdfasdf
+	For every $I \in U$ with $\tiiat{\alpha},\tiiat{\beta_1}\dots\tiiat{\beta_b},$ $\tjjat{\dots},\tkkat{\dots},\tiiat{\beta_{b+1}}... \in I$,
+	apply Lemma~\ref{lem:equiv} to obtain an equivalent interleaving $I'$ satisfying the theorem condition.
+	The resulting $U'$ can then be MCed without simulating HTM rollbacks.
 \end{proof}
 
-\subsection{Modeling Transaction Atomicity}
+\subsection{Memory Access Analysis}
 
 Next, we address the memory accesses within transactions with regard to data-race analysis.
-From Theorem~\ref{thm:equiv} we have that the body of all transactions may be executed atomically within the MC environment.
+From Theorem~\ref{thm:atom} we have that the body of all transactions may be executed atomically within the MC environment.
 While they may interleave within other non-transactional sequences,
 no other operations (whether transactional or not) will interrupt them.
 We claim this level of atomicity is equivalent to that provided by a global lock,
@@ -523,10 +563,10 @@ Accordingly, an execution of $8,9a,9b,9c$ in Figure~\ref{fig:htm-fixed}
 may be locally visible to another thread as $9a,8,9b,9c$,
 and hence an apparent interleaving of
 \[
-	\ti@1,\tj@1-5,\ti@7,\mathbf{\ti@9a},\tk@1-5,\mathbf{\ti@8},\ti@9b-B
+	\tiat{1},\tjat{1-5},\tiat{7},\underline{\tiat{9a}},\tkat{1-5},\underline{\tiat{8}},\tiat{9b-B}
 \]
 is possible
-(reordered accesses highlighted in bold).
+(reordered accesses underlined for emphasis).
 An {\tt mfence} barrier is needed between lines 8 and 9 to solve this problem on TSO \cite{tsx-need-barrier}.
 On Partial Store Ordering (PSO) architectures, even more barriers may be necessary.
 
