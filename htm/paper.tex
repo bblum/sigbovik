@@ -270,6 +270,7 @@ the program's own internal consistency checks,
 or a set of expected properties encoded in the tool itself.
 Landslide uses the latter two cases, checking for assertion failures
 as well as deadlocks, use-after-frees, and segfaults.
+For this work we also detect use of {\tt xend} outside of a transaction as a bug.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -477,14 +478,14 @@ The second part of our claim follows naturally.
 
 \begin{theorem}[Atomicity of Transactions]
 	\label{thm:atom}
-	For any state space $U$ of a transactionally-concurrent program,
+	For any state space $S$ of a transactionally-concurrent program,
 	an equivalent state space exists in which all transactions are either executed atomically or aborted immediately.
 \end{theorem}
 
 \begin{proof}
-	For every $I \in U$ with $\tiiat{\alpha},\tiiat{\beta_1}\dots\tiiat{\beta_b},$ $\tjjat{\dots},\tkkat{\dots},\tiiat{\beta_{b+1}} \in I$,
+	For every $I \in S$ with $\tiiat{\alpha},\tiiat{\beta_1}\dots\tiiat{\beta_b},$ $\tjjat{\dots},\tkkat{\dots},\tiiat{\beta_{b+1}} \in I$,
 	apply Lemma~\ref{lem:equiv} to obtain an equivalent interleaving $I'$ satisfying the theorem condition.
-	The resulting $U'$ can then be MCed without simulating HTM rollbacks.
+	The resulting $S'$ can then be MCed without ever simulating HTM rollbacks.
 \end{proof}
 
 \subsection{Memory Access Analysis}
