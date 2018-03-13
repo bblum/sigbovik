@@ -521,7 +521,8 @@ For each, we semiformally state what it means to race in an execution with synch
 
 \begin{itemize}
 	\item {\bf Limited Happens-Before.}
-		Under this definition, to be a data race in $I$ they must be reorderable at instruction granularity.
+		Under this definition, to be a data race in $I$ they must be reorderable at instruction granularity
+		\cite{tsan,hybriddatarace}.
 		\begin{itemize}
 			\llitem $I \Rightarrow I'$:
 				If $\tiiat{\mu},\tjjat{\nu}$ race in $I$,
@@ -542,11 +543,11 @@ For each, we semiformally state what it means to race in an execution with synch
 	\item {\bf Pure Happens-Before.}
 		WLOG fix $\tiiat{\mu} \prec \tjjat{\nu} \in I$.
 		Then under this definition, to be a data race in $I$ there must be no pair of synchronizing instructions
-		$\tiiat{\epsilon}$ and $\tjjat{\chi}$ such that
+		$\tiiat{\epsilon}$ (a release edge) and $\tjjat{\chi}$ (an acquire edge) such that
 		\[
 			\tiiat{\mu} \prec \tiiat{\epsilon} \prec \tjjat{\chi} \prec \tjjat{\nu}
 		\]
-		$\in I$ to update the vector clock epoch between \tiiat{\mu} and \tjjat{\nu}.
+		$\in I$ to update the vector clock epoch between \tiiat{\mu} and \tjjat{\nu} \cite{djit,fasttrack}.
 		\begin{itemize}
 			\llitem $I \Rightarrow I'$:
 				If $\tiiat{\mu},\tjjat{\nu}$ race in $I$,
