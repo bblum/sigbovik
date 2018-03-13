@@ -313,7 +313,7 @@ results in multiple memory accesses which can be interleaved with other threads.
 %\definecolor{seafoam}{RGB}{85,238,102}
 %\definecolor{salmon}{RGB}{238,102,85} % ee6655
 
-\definecolor{lavender}{RGB}{178,65,178} % * 3/4
+\definecolor{lavender}{RGB}{102,65,208} % (?? i don't know what happened here anymore but it looks good)
 \definecolor{seafoam}{RGB}{65,178,76} % * 3/4
 \definecolor{salmon}{RGB}{208,89,74} % * 7/8
 
@@ -432,15 +432,15 @@ Stated formally:
 
 \begin{lemma}[Equivalence of Aborts]
 	\label{lem:equiv}
-	Let:%
-	\footnote{Arbitrary code may not be structured to distinguish these as nicely as in our examples;
-	e.g., more code may exist in the success branch after {\tt \_xend()};
-	such would be considered part of $\omega$ here.}
+	Let:
 	\begin{itemize}
 		\item $\tiiat{\alpha}$ be an HTM begin operation,
 		\item $\tiiat{\beta_1}\dots\tiiat{\beta_n}$ be the transaction body (with $\beta_n$ the HTM end call),
 		\item $\tiiat{\phi_1}\dots\tiiat{\phi_m}$ be the failure path, and
-		\item $\tiiat{\omega_1}\dots\tiiat{\omega_l}$ be the subsequent code executed unconditionally.
+		\item $\tiiat{\omega_1}\dots\tiiat{\omega_l}$ be the subsequent code executed unconditionally.%
+			\footnote{Arbitrary code may not be structured to distinguish these as nicely as in our examples;
+			e.g., more code may exist in the success branch after {\tt \_xend()};
+			such would be considered part of $\omega$ here.}
 	\end{itemize}
 	Then, for any interleaving prefix%
 	\footnote{Without loss of generality: for any number of other threads \tjj/\tkk,
@@ -545,9 +545,9 @@ For each, we semiformally state what it means to race in an execution with synch
 		Then under this definition, to be a data race in $I$ there must be no pair of synchronizing instructions
 		$\tiiat{\epsilon}$ (a release edge) and $\tjjat{\chi}$ (an acquire edge) such that
 		\[
-			\tiiat{\mu} \prec \tiiat{\epsilon} \prec \tjjat{\chi} \prec \tjjat{\nu}
+			\tiiat{\mu} \prec \tiiat{\epsilon} \prec \tjjat{\chi} \prec \tjjat{\nu} \in I
 		\]
-		$\in I$ to update the vector clock epoch between \tiiat{\mu} and \tjjat{\nu} \cite{djit,fasttrack}.
+		to update the vector clock epoch between \tiiat{\mu} and \tjjat{\nu} \cite{djit,fasttrack}.
 		\begin{itemize}
 			\llitem $I \Rightarrow I'$:
 				If $\tiiat{\mu},\tjjat{\nu}$ race in $I$,
@@ -564,7 +564,7 @@ For each, we semiformally state what it means to race in an execution with synch
 		\end{itemize}
 		%In both cases $I$ and $I'$ otherwise have the same synchronizing instructions.
 \end{itemize}
-Hence, data-race analysis is sound with transactions abstracted as an abstract global lock.
+Hence, data-race analysis is sound when transaction boundaries are replaced by an abstract global lock.
 \end{proof}
 
 \subsection{Implementation}
