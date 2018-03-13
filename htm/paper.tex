@@ -173,6 +173,7 @@ The other sections state the rest of the paper.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Background}
+\label{sec:background}
 
 This section introduces the fundamental concepts and prior work
 in both hardware transactional memory and stateless model checking,
@@ -461,7 +462,7 @@ Stated formally:
 			$\tkkat{\kappa_1}\dots\tkkat{\kappa_k}$
 			(independent case)
 	\end{enumerate}
-	is observationally equivalent.
+	exists and is observationally equivalent.
 \end{lemma}
 
 \begin{proof}
@@ -553,13 +554,13 @@ For each, we semiformally state what it means to race in an execution with synch
 				If $\tiiat{\mu},\tjjat{\nu}$ race in $I$,
 				then they cannot both be in successful transactions,
 				or else Lemma~\ref{lem:equiv} normalization would provide
-				the corresponding HTM end and begin for $\tii$ and $\tjj$ respectively.
+				the corresponding HTM end and begin for $\tiiat{\epsilon}$ and $\tjjat{\chi}$ respectively.
 				Hence there will be no unlock/lock pair on $m$ in $I'$ to satisfy the above sequence.
 			\llitem $I' \Rightarrow I$:
 				If $\tiiat{\mu},\tjjat{\nu}$ race in $I'$,
 				then they cannot both hold $m$,
 				or else $\mathsf{lockify}_m$ would provide the corresponding
-				unlock and lock for $\tii$ and $\tjj$ respectively.
+				unlock and lock for $\tiiat{\epsilon}$ and $\tjjat{\chi}$ respectively.
 				Hence there will be no HTM end/begin pair in $I$ to satisfy the above sequence.
 		\end{itemize}
 		%In both cases $I$ and $I'$ otherwise have the same synchronizing instructions.
@@ -593,16 +594,104 @@ Nevertheless, we pose the following evaluation questions.
 	\item How quickly does Landslide find bugs in incorrect transactional programs of varying sizes?
 	\item How quickly does Landslide verify correct transactional programs of varying sizes?
 	\item Does Landslide find any previously-unknown bugs in real-world transactional code?
+	\item By the way, should the evaluations of MC research papers quantify variance in their CPU-time performance?
 \end{enumerate}
 
 Our evaluation suite comprises several hand-written unit tests,
 as well as \cite{htm-mario}'s microbenchmarks and transactional AVL tree and separate-chaining hashmap.
 All tests were run on an 8-core 2.7GHz Core i7 with 32 GB RAM.
 
-...We don't actually have any results here yet.
-We intended to update our submission before camera-ready,
-but if somehow this becomes the final conference version of the paper,
-please look to \cite{landslide-phdthesis}, coming soon.
+\subsection{Bugs}
+
+\subsection{Verification}
+
+For verification tests, we configured Landslide %'s Iterative Deepening algorithm
+to optimize for completion time by prioritizing the maximal state space job and cancelling all others
+({\tt -M} command-line flag),
+a feature newly added since \cite{quicksand} and hence evaluated for the first time here.
+
+
+\subsection{Variance}
+
+Because many of the verification tests are long-running,
+and we are writing this too close to the deadline (who doesn't),
+we regret being unable to present every performance measurement above
+as an average of multiple samples with error bars.
+Nevertheless, we make some effort to address variance.
+
+We noticed significant slowdowns when varying several factors of our experimental environment.
+For example, multiple Landslides running at once on our test machine slow each other down,
+%(including multiple single state spaces in a single test when not using {\tt -M}),
+likely reuslting from kernel resource contention as Landslide uses {\tt fork()} to save simulation state,
+Table~\ref{tab:variants} shows the impact of running a single Landslide instance with {\tt -M} on
+{\tt counter(2,2)} (384 distinct interleavings)
+with various programs also running, despite never saturating our test system's 8 CPUs.
+
+\begin{table}[h]
+	\begin{center}
+	\begin{tabular}{l|c|c}
+		workload & cputime (s) & vs baseline \\
+		\hline
+		{\sf none	} & 14.95 $\pm$ 0.17	& 1	\\
+		{\sf vid-L	} & 15.13 $\pm$ 0.10	& 1.01x	\\
+		{\sf ff/c	} & 15.55 $\pm$ 0.16	& 1.04x	\\
+		{\sf ff/c+vid-S	} & 17.09 $\pm$ 0.34	& 1.14x	\\
+		{\sf ls		} & 19.11 $\pm$ 0.32	& 1.28x	\\
+		{\sf ff/c+ls	} & 19.66 $\pm$ 0.50	& 1.31x	\\
+	\end{tabular}
+	\end{center}
+	\caption{Performance variance on {\tt counter(2,2)} with other programs running on the test machine.
+		{\sf vid-L} is full-screen video (played locally with {\tt mplayer}),
+		{\sf ff/c} is Firefox and Chrome (idle, $\le$20 tabs),
+		{\sf vid-S} is full-screen video (streamed via Crunchyroll),
+		{\sf ls} is a 2nd instance of Landslide.
+		Average of 10 samples, $\pm$ is 1 stddev.
+	}
+	\label{tab:variants}
+\end{table}
+
+We also show
+in Table~\ref{tab:variants2}
+the impact of Landslide needing to automatically annotate a test being run for the first time,
+rather than reusing existing instrumentation,
+as well as the variance of Landslide in bug-finding mode (i.e., without {\tt -M}).
+%(2128 interleavings total).
+Surprisingly, the {\tt bugfind} distribution was bimodal,
+with 6 samples in a distribution of 106.14$\pm$1.22 and 4 in 142$\pm$1.67,
+suggesting two distinct scheduling patterns for its workqueue threads.
+Future work should figure out why.
+
+\begin{table}[h]
+	\begin{center}
+	\begin{tabular}{l|r|r}
+		landslide mode & total int's & cputime (s) \\
+		\hline
+		{\sf verif} ({\tt -M})		& 403 & 14.95 $\pm$ 0.17	\\
+		{\sf reinstrument}		& 403 & 24.72 $\pm$ 0.10	\\
+		{\sf bugfind} (no {\tt -M})	& 2128 & 120.53 $\pm$ 18.62	\\
+	\end{tabular}
+	\end{center}
+	\caption{Performance variance on {\tt counter(2,2)} in various modes.
+		Average of 10 samples, $\pm$ is 1 stddev.
+	}
+	\label{tab:variants2}
+\end{table}
+
+We conclude that MC performance evaluations must address
+variables in the experimental environment
+at least enough to ensure consistent performance between runs.
+So doing, multiple samples and error bars are then necessary
+only when using nondeterministic search ordering strategies
+such as Iterative Deepening.
+Otherwise, they should be shown only for a token small test
+to assure the reader the environment is consistent in the larger tests,
+(especially if the time tradeoff to measure them would sacrifice testing larger state spaces to begin with).
+% We also advise the busy researcher to torrent their anime rather than stream it. % lol can't put this in a paper
+
+In this evaluation, all other performance numbers were collected with
+with Firefox and Chrome as the only other machine load.
+(we gotta stay amused somehow).
+The numbers of interleavings in each state space are, of course, deterministic and do not vary across runs.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -626,8 +715,11 @@ a MC unwise to that idiom would call it an infinite loop bug.
 
 Our HTM implementation in Landslide includes an experimental feature
 to track the set of abort codes possible for each transaction.
-It harnesses DPOR's existing memory analysis to identify when {\tt \_XABORT\_CONFLICT} is possible,
-and instruments {\tt \_xabort()} calls to record any user-supplied codes.
+%According to the any-reason principle in Section~\ref{sec:background},
+{\tt \_XABORT\_RETRY} is always enabled;
+then,
+it harnesses DPOR's existing memory analysis to identify when {\tt \_XABORT\_CONFLICT} is possible,
+and instruments {\tt \_xabort()} calls to record any user-supplied codes for {\tt \_XABORT\_EXPLICIT}.
 This comes at a cost of even more state space explosion,
 increasing the exponent at each {\tt \_xbegin()} preemption point
 by (usually) 1 plus however many distinct {\tt \_xabort()} codes the program uses.
@@ -661,7 +753,7 @@ our current HTM implementation in Landslide cannot find this bug.
 In fact, it erroneously verifies the corresponding test {\tt htm2} in 7 CPU-minutes,
 with 294 distinct interleavings in total,
 none of which include the above-listed sequence.
-Recent work extended DPOR to incorporate TSO and PSO memory nondeterminism \cite{tsopso};
+Recent work extended DPOR to support TSO and PSO memory nondeterminism \cite{tsopso};
 if incorporated into Landslide, we could find or verify the absence of such bugs.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
