@@ -578,7 +578,8 @@ and HTM nondeterminism can then be enabled with the {\tt -X} command-line flag.
 We have also extended its Iterative Deepening implementation \cite{quicksand}
 with an option ({\tt -M}) to
 to optimize for completion time by prioritizing the maximal state space job and cancelling all others,
-which we will use in our evaluation following.
+while maintaining its soundness guarantee,
+which we will use in our evaluation.
 All test cases therein are also available in the repository linked above.
 %Several example tests are also provided:
 %{\tt htm1} demonstrates the bug in Figure~\ref{fig:htm-example},
@@ -616,13 +617,16 @@ All test cases therein are also available in the repository linked above.
 			& 2,3	& 280.05& 38.70	& 352	& 60.30	& 35.55	& 718	& 12748 \\
 			& 2,4	& 617.94& 81.50	& 834	& 108.58& 82.60	& 1820	& 97823 \\
 		\cline{2-9}
-			& 3,1	& 11.19	& 3.46	& 9	& 3.13	& 3.13	& 9	& 432 \\
-			& 3,2	& 12.41	& 3.76	& 19	& 3.33	& 3.33	& 19	& 5832 \\
-			& 3,3	& 15.77	& 4.58	& 41	& 3.95	& 3.95	& 41	& 77759 \\
-			& 3,4	& 24.82	& 6.85	& 89	& 5.20	& 5.20	& 89	& 1026431 \\
-		\cline{2-9}
-			& 4,1	& 702.33& 98.06	& 361	& 90.94	& 64.27	& 1607	& 138758 \\
-			& 4,2	&9738.43&1257.20& 3023	& 674.87& 650.58& 16511	& 13755188 \\
+			& 3,1	&1275.04& 163.42& 771	&{\em >30m}&{\em >30m}&{\em unk.}& 184984 \\
+			& 3,2	&{\em >30m}&{\em >30m}&{\em unk.}&{\em >30m}&{\em >30m}&{\em unk.}& 3099225 \\
+		% whoops, this was with the dumb lock ordering
+		%	& 3,1	& 11.19	& 3.46	& 9	& 3.13	& 3.13	& 9	& 432 \\
+		%	& 3,2	& 12.41	& 3.76	& 19	& 3.33	& 3.33	& 19	& 5832 \\
+		%	& 3,3	& 15.77	& 4.58	& 41	& 3.95	& 3.95	& 41	& 77759 \\
+		%	& 3,4	& 24.82	& 6.85	& 89	& 5.20	& 5.20	& 89	& 1026431 \\
+		%\cline{2-9}
+		%	& 4,1	& 702.33& 98.06	& 361	& 90.94	& 64.27	& 1607	& 138758 \\
+		%	& 4,2	&9738.43&1257.20& 3023	& 674.87& 650.58& 16511	& 13755188 \\
 	\end{tabular}
 	\end{center}
 	\caption{Landslide's bug-finding performance on various test configurations.
@@ -667,7 +671,7 @@ as follows.
 	\item Those data structure tests are coming soon. Please stay tuned.
 \end{itemize}
 
-The notation {\tt testname(K,N)} will denote a test configuration of $K$ threads, each running $N$ iterations of the test logic.
+The notation {\tt testname}$(K,N)$ will denote a test configuration of $K$ threads, each running $N$ iterations of the test logic.
 All tests were run on an 8-core 2.7GHz Core i7 with 32 GB RAM.
 
 \subsection{Bugs}
@@ -675,13 +679,14 @@ All tests were run on an 8-core 2.7GHz Core i7 with 32 GB RAM.
 Table~\ref{tab:buges}
 presents our bug-finding results.
 We configured Landslide to run the Quicksand algorithm \cite{quicksand}
-with a time limit of 30 minutes,%
-\footnote{This was necessary in {\tt swapbug}s (4,1) and (4,2) to trigger a switch to the buggy state space.}
+% this note obsolete since swapbug was fixed and ends at 3,2
+%\footnote{This was necessary in {\tt swapbug}s (4,1) and (4,2) to trigger a switch to the buggy state space.}
 shown left,
 as well as to prioritize the maximal state space as discussed above,
-shown right.
-We make the following observations/conclusions:
-\begin{enumerate}
+shown right,
+each with a time limit of 30 minutes.
+We make two observations/conclusions:
+\begin{itemize}
 	\item The multiplicative factor in bug-finding speed (2-4x, eyeballing) is generally smaller
 		than that of the total number of interleavings (10-100x)
 		as the test parameters increase.
@@ -689,12 +694,29 @@ We make the following observations/conclusions:
 		should they exist,
 		Landslide find bugs reasonably quickly in these transactional programs
 		despite prohibitive exponential explosion in total state space size.
-	\item Despite Quicksand's ability to optimize for finding bugs in overall smaller state spaces,
-		this does not correlate with better CPU-time or even better wall-clock time.
-		While possibly a consequence of the modest test size,
-		this suggests future work should extend the Quicksand algorithm
-		to prioritize by state space maximality as well as by state space estimate.
-\end{enumerate}
+	%\item Despite Quicksand's ability to optimize for finding bugs in overall smaller state spaces,
+	%	this does not correlate with better CPU-time or even better wall-clock time.
+	%	While possibly a consequence of the modest test size,
+	%	this suggests future work should extend the Quicksand algorithm
+	%	to prioritize by state space maximality as well as by state space estimate.
+	\item Quicksand's ability to find bugs in fewer distinct interleavings %overall smaller state spaces
+		does not necessarily correlate with better performance. %CPU- or even wall-clock time.
+		%Comparing to the break-even point in Quicksand's evaluation \cite{quicksand},
+		%most of these test configurations fall on the side favouring the single-state-space approach,
+		Most of our tests are too small for its approach to pay off,
+		with {\tt swapbug}(3,1) as its lone win.
+		While the prior work showed plenty more wins \cite{quicksand},
+		%an upper bound also exists:
+		%in {\tt swapbug}(3,2),
+		%not even the {\em minimal} state space was completed in time.
+		%this suggests
+		future MCs could prioritize state spaces using not just size estimation
+		but state space maximality as well
+		%but a hybrid approach also conisdering state space maximality and preemption bounds \cite{chess-icb},
+		to soften the trade-off
+		both for smaller tests and for verification
+\end{itemize}
+Speaking of which...
 
 \subsection{Verification}
 
@@ -706,16 +728,17 @@ This section is coming soon. Please stay tuned.
 Because many of the verification tests are long-running,
 and we are writing this too close to the submission deadline (who doesn't),
 we regret being unable to present every performance measurement above
-as an average of multiple samples with error bars.
-Nevertheless, we make some effort to address variance \cite{epsilon}.
+as an average of multiple samples with error bars \cite{epsilon}.
+Nevertheless, we make some effort to address variance.
 
 We noticed significant slowdowns when varying several factors of our experimental environment.
 For example, multiple Landslides running at once on our test machine slow each other down,
 %(including multiple single state spaces in a single test when not using {\tt -M}),
 likely arising from kernel resource contention as Landslide uses {\tt fork()} to save simulation state.
 Table~\ref{tab:variants} shows the impact of running a single Landslide instance with {\tt -M} on
-{\tt counter(2,2)} (384 distinct interleavings)
+{\tt counter}(2,2) (384 distinct interleavings)
 with various programs also running, despite never saturating our test system's 8 CPUs.
+% for i in `seq 1 10`; do ./landslide -X -v -p counter -M 2>&1 | grep 'total CPU time'; done
 
 \begin{table}[t]
 	\begin{center}
@@ -725,14 +748,18 @@ with various programs also running, despite never saturating our test system's 8
 		{\sf none	} & 14.95 $\pm$ 0.17	& 0.99-1.02x	& (baseline)	\\
 		{\sf vid-L	} & 15.13 $\pm$ 0.10	& 0.99-1.01x	& 1.01x	\\
 		{\sf ff/c	} & 15.55 $\pm$ 0.16	& 0.99-1.02x	& 1.04x	\\
+		{\sf sm5	} & 16.63 $\pm$ 0.07	& 0.99-1.01x	& 1.11x \\
 		{\sf ff/c+vid-S	} & 17.09 $\pm$ 0.34	& 0.98-1.05x	& 1.14x	\\
 		{\sf ls		} & 19.11 $\pm$ 0.32	& 0.97-1.03x	& 1.28x	\\
+		% simply love title screen
+		%{\sf sm5+sl}	& 19.18 $\pm$ 0.32	& 0.97-1.02x	& 1.28x \\
 		{\sf ff/c+ls	} & 19.66 $\pm$ 0.50	& 0.96-1.02x	& 1.31x	\\
 	\end{tabular}
 	\end{center}
-	\caption{Performance variance on {\tt counter(2,2)} with other programs running on the test machine.
+	\caption{Performance variance on {\tt counter}(2,2) with other programs running on the test machine.
 		{\sf vid-L} is full-screen video (played locally with {\tt mplayer}),
 		{\sf ff/c} is Firefox and Chrome (idle, $\le$20 tabs),
+		{\sf sm5} is StepMania 5.1 (during gameplay \cite{itg2}),
 		{\sf vid-S} is full-screen video (streamed via Crunchyroll),
 		{\sf ls} is a 2nd instance of Landslide.
 		Average of 10 samples, $\pm N$ is 1 stddev.
@@ -740,13 +767,12 @@ with various programs also running, despite never saturating our test system's 8
 	\label{tab:variants}
 \end{table}
 
-We also show
-in Table~\ref{tab:variants2}
+Table~\ref{tab:variants2} shows
 the impact of Landslide needing to automatically annotate a test being run for the first time,
 rather than reusing existing instrumentation,
-as well as the variance of Landslide in bug-finding mode (i.e., without {\tt -M}).
+as well as the variance of Quicksand mode (i.e., without {\tt -M}).
 %(2128 interleavings total).
-The {\sf bugfind} variance was surprisingly bimodal,
+The {\sf quicksand} variance was surprisingly bimodal,
 with 6 samples in a distribution of 106.14$\pm$1.22 and 4 in 142.11$\pm$1.67,
 suggesting two distinct scheduling patterns for its workqueue threads.
 Future work should figure out why.
@@ -758,29 +784,31 @@ Future work should figure out why.
 		\hline
 		{\sf verif} ({\tt -M})		& 403 & 14.95 $\pm$ 00.17	\\
 		{\sf reinstrument}		& 403 & 24.72 $\pm$ 00.10	\\
-		{\sf bugfind} (no {\tt -M})	& 2128 & 120.53 $\pm$ 18.62	\\
+		{\sf quicksand} (no {\tt -M})	& 2128 & 120.53 $\pm$ 18.62	\\
 	\end{tabular}
 	\end{center}
-	\caption{Performance variance on {\tt counter(2,2)} in various modes.
+	\caption{Performance variance on {\tt counter}(2,2) in various modes.
 		Average of 10 samples, $\pm N$ is 1 stddev.
 	}
 	\label{tab:variants2}
 \end{table}
 
 We conclude that MC performance evaluations must address
-variables in the experimental environment
-at least enough to ensure consistent performance between runs.
+experimental environment variables
+%at least enough
+to ensure consistent performance between runs.
+Considering recent news on cross-VM cache attacks \cite{meltdown,spectre},
+we also conjecture that cloud-based virtual machines cannot be trusted for low-variance performance measurements.
 So doing, multiple samples and error bars are then necessary
 only when using nondeterministic search ordering strategies
 such as Iterative Deepening.
-Otherwise, considering the maximum variance of 5\% in Table~\ref{tab:variants},
-%(2\% in reasonable loads),
-they should be shown only for a token small test
-to assure the reader the environment is consistent for the larger tests
+Otherwise, considering the low variance shown in Table~\ref{tab:variants},
+they need be shown only for a token small test
+to promise the reader the same consistency in the larger tests
 (especially if the time tradeoff to measure them would sacrifice testing larger state spaces to begin with).
 % We also advise the busy researcher to torrent their anime rather than stream it. % lol can't put this in a paper
 
-Outside of Table~\ref{tab:variants}, we collected all performance numbers
+Outside of Table~\ref{tab:variants}, we measured all performance numbers
 with Firefox and Chrome as the only other significant machine load.
 (we gotta stay amused somehow).
 The numbers of interleavings in each state space are, of course, deterministic and do not vary across runs.
