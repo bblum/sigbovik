@@ -608,6 +608,7 @@ All test cases therein are also available in the repository linked above.
 			& 3,4	& 227.49& 35.15	& 161	& 31.37	& 28.53	& 257	& 301989888 \\
 		\cline{2-9}
 			& 4,1	& 53.08	& 9.79	& 15	& 9.82	& 7.00	& 21	& 873813 \\
+			& 4,2	&117.07	& 19.09	& 33	& 11.54	& 8.55	& 49	& 100663296 \\
 		\hline
 		{\tt swapbug}
 			& 2,1	& 70.95	& 13.45	& 16	& 38.96	& 13.15	& 109	& 194 \\
@@ -621,16 +622,17 @@ All test cases therein are also available in the repository linked above.
 			& 3,4	& 24.82	& 6.85	& 89	& 5.20	& 5.20	& 89	& 1026431 \\
 		\cline{2-9}
 			& 4,1	& 702.33& 98.06	& 361	& 90.94	& 64.27	& 1607	& 138758 \\
-			& 4,2	&	&	&	& 674.87& 650.58& 16511	& 13755188 \\
+			& 4,2	&9738.43&1257.20& 3023	& 674.87& 650.58& 16511	& 13755188 \\
 	\end{tabular}
 	\end{center}
 	\caption{Landslide's bug-finding performance on various test configurations.
 		Quicksand's workqueue approach optimized for fast bug-finding
 		is compared against our maximum-state-space-prioritizing approach for fast verification.
 		For each, we list the CPU-time and wall-clock time (both in seconds)
-		elapsed until the bug was found,
-		plus the number of interleavings of the ultimately buggy state space.
-		Landslide's state space size estimation \cite{estimation},
+		elapsed, %until the bug was found,
+		plus the number of interleavings of the ultimately buggy state space tested,
+		before the bug was found.
+		Lastly, Landslide's state space size estimation \cite{estimation},
 		though approximate at best,
 		confers a sense of the exponential explosion.
 	}
@@ -640,7 +642,7 @@ All test cases therein are also available in the repository linked above.
 To the best of our knowledge, this is the first work to test transactional programs in a model-checking environment,
 %To the best of the author's knowledge, Landslide is the first MC to check transactional concurrency,
 so no other MC State-of-the-Art%
-\footnote{My DJ name.}
+\footnote{The author's DJ name.}
 exists to compare to in controlled experiments.
 Nevertheless, we pose the following evaluation questions.
 
@@ -661,6 +663,8 @@ as follows.
 	\item {\tt counter}: Microbenchmark version of {\tt htm2} which replaces the complex failure path with a simple {\tt xadd}.
 	\item {\tt swap}: Microbenchmark that swaps values in an array.
 	\item {\tt swapbug}: {\tt swap} modified to introduce a bug in the failure path (deadlock).
+		% TODO
+	\item Those data structure tests are coming soon. Please stay tuned.
 \end{itemize}
 
 The notation {\tt testname(K,N)} will denote a test configuration of $K$ threads, each running $N$ iterations of the test logic.
@@ -672,14 +676,14 @@ Table~\ref{tab:buges}
 presents our bug-finding results.
 We configured Landslide to run the Quicksand algorithm \cite{quicksand}
 with a time limit of 30 minutes,%
-\footnote{This was necessary for {\tt swapbug(4,1)} to trigger a switch to the buggy state space.}
+\footnote{This was necessary in {\tt swapbug}s (4,1) and (4,2) to trigger a switch to the buggy state space.}
 shown left,
 as well as to prioritize the maximal state space as discussed above,
 shown right.
 We make the following observations/conclusions:
 \begin{enumerate}
 	\item The multiplicative factor in bug-finding speed (2-4x, eyeballing) is generally smaller
-		than that of the total number of interleavings (10-30x)
+		than that of the total number of interleavings (10-100x)
 		as the test parameters increase.
 		In other words,
 		should they exist,
@@ -694,19 +698,21 @@ We make the following observations/conclusions:
 
 \subsection{Verification}
 
+% TODO
+This section is coming soon. Please stay tuned.
 
 \subsection{Variance}
 
 Because many of the verification tests are long-running,
-and we are writing this too close to the deadline (who doesn't),
+and we are writing this too close to the submission deadline (who doesn't),
 we regret being unable to present every performance measurement above
 as an average of multiple samples with error bars.
-Nevertheless, we make some effort to address variance.
+Nevertheless, we make some effort to address variance \cite{epsilon}.
 
 We noticed significant slowdowns when varying several factors of our experimental environment.
 For example, multiple Landslides running at once on our test machine slow each other down,
 %(including multiple single state spaces in a single test when not using {\tt -M}),
-likely reuslting from kernel resource contention as Landslide uses {\tt fork()} to save simulation state.
+likely arising from kernel resource contention as Landslide uses {\tt fork()} to save simulation state.
 Table~\ref{tab:variants} shows the impact of running a single Landslide instance with {\tt -M} on
 {\tt counter(2,2)} (384 distinct interleavings)
 with various programs also running, despite never saturating our test system's 8 CPUs.
@@ -714,7 +720,7 @@ with various programs also running, despite never saturating our test system's 8
 \begin{table}[t]
 	\begin{center}
 	\begin{tabular}{l|c|c|c}
-		workload & cputime (s) & vs self avg & vs baseline \\
+		load & cputime (s) & vs self avg & vs baseline \\
 		\hline
 		{\sf none	} & 14.95 $\pm$ 0.17	& 0.99-1.02x	& (baseline)	\\
 		{\sf vid-L	} & 15.13 $\pm$ 0.10	& 0.99-1.01x	& 1.01x	\\
@@ -729,7 +735,7 @@ with various programs also running, despite never saturating our test system's 8
 		{\sf ff/c} is Firefox and Chrome (idle, $\le$20 tabs),
 		{\sf vid-S} is full-screen video (streamed via Crunchyroll),
 		{\sf ls} is a 2nd instance of Landslide.
-		Average of 10 samples, $\pm$ is 1 stddev.
+		Average of 10 samples, $\pm N$ is 1 stddev.
 	}
 	\label{tab:variants}
 \end{table}
@@ -740,8 +746,8 @@ the impact of Landslide needing to automatically annotate a test being run for t
 rather than reusing existing instrumentation,
 as well as the variance of Landslide in bug-finding mode (i.e., without {\tt -M}).
 %(2128 interleavings total).
-Surprisingly, the {\tt bugfind} distribution was bimodal,
-with 6 samples in a distribution of 106.14$\pm$1.22 and 4 in 142$\pm$1.67,
+The {\sf bugfind} variance was surprisingly bimodal,
+with 6 samples in a distribution of 106.14$\pm$1.22 and 4 in 142.11$\pm$1.67,
 suggesting two distinct scheduling patterns for its workqueue threads.
 Future work should figure out why.
 
@@ -756,7 +762,7 @@ Future work should figure out why.
 	\end{tabular}
 	\end{center}
 	\caption{Performance variance on {\tt counter(2,2)} in various modes.
-		Average of 10 samples, $\pm$ is 1 stddev.
+		Average of 10 samples, $\pm N$ is 1 stddev.
 	}
 	\label{tab:variants2}
 \end{table}
