@@ -194,18 +194,46 @@ Several related works formally prove the correctness of transactional memory {\e
 \cite{specifying-verifying-tm,tm-correctness,tm-completeness,mc-tm-with-spin},
 but verifying the client programs written to use transactions remains an open problem.
 
+\newcommand\hilight[2]{\color{#1}#2\color{black}}
+\definecolor{orange}{RGB}{192,96,0}
+\definecolor{olivegreen}{RGB}{0,127,0}
+\definecolor{brickred}{RGB}{192,0,0}
+\definecolor{commentblue}{RGB}{0,0,192}
+\definecolor{black}{RGB}{0,0,0}
+%\definecolor{lavender}{RGB}{238,85,238}
+%\definecolor{seafoam}{RGB}{85,238,102}
+%\definecolor{salmon}{RGB}{238,102,85} % ee6655
+
+% threads
+\definecolor{lavender}{RGB}{102,65,208} % (?? i don't know what happened here anymore but it looks good)
+\definecolor{seafoam}{RGB}{65,178,76} % * 3/4
+\definecolor{salmon}{RGB}{208,89,74} % * 7/8
+
+% eval data
+\definecolor{darkcyan}{RGB}{0,128,128}
+\definecolor{lime}{RGB}{48,128,0}
+\definecolor{darklavender}{RGB}{68,44,138}
+\definecolor{brownish}{RGB}{128,96,0}
+\definecolor{pinkish}{RGB}{128,34,102} % ff4488
+
+% syntax hilighting
+\definecolor{brown}{RGB}{170,85,0}
+\newcommand\flow[1]{\hilight{brown}{#1}\xspace}
+\newcommand\const[1]{\hilight{brickred}{#1}\xspace}
+\newcommand\call[1]{\hilight{pinkish}{#1}}
+
 \begin{figure}[t]
 	\begin{center}
 		\begin{tabular}{ll}
 		%\texttt{void count() \{} \\
 		%\texttt{~~~~for (int i = 0; i < 1000; i++) \{} \\
-		1 & \texttt{if ((status = \_xbegin()) == SUCCESS) \{} \\
+		1 & \texttt{\flow{if} ((status = \call{\_xbegin}()) == \const{SUCCESS}) \{} \\
 		2 & \texttt{~~~~x++;} \\
-		3 & \texttt{~~~~\_xend();} \\
-		4 & \texttt{\} else \{} \\
-		5 & \texttt{~~~~mutex\_lock(\&m);} \\
+		3 & \texttt{~~~~\call{\_xend}();} \\
+		4 & \texttt{\} \flow{else} \{} \\
+		5 & \texttt{~~~~\call{mutex\_lock}(\&m);} \\
 		6 & \texttt{~~~~x++;} \\
-		7 & \texttt{~~~~mutex\_unlock(\&m);} \\
+		7 & \texttt{~~~~\call{mutex\_unlock}(\&m);} \\
 		8 & \texttt{\}} \\
 		%\texttt{~~~~\}} \\
 		%\texttt{\}} \\
@@ -304,20 +332,6 @@ results in multiple memory accesses which can be interleaved with other threads.
 \end{tabular}
 \]
 
-\newcommand\hilight[2]{\color{#1}#2\color{black}}
-\definecolor{orange}{RGB}{192,96,0}
-\definecolor{olivegreen}{RGB}{0,127,0}
-\definecolor{brickred}{RGB}{192,0,0}
-\definecolor{commentblue}{RGB}{0,0,192}
-\definecolor{black}{RGB}{0,0,0}
-%\definecolor{lavender}{RGB}{238,85,238}
-%\definecolor{seafoam}{RGB}{85,238,102}
-%\definecolor{salmon}{RGB}{238,102,85} % ee6655
-
-\definecolor{lavender}{RGB}{102,65,208} % (?? i don't know what happened here anymore but it looks good)
-\definecolor{seafoam}{RGB}{65,178,76} % * 3/4
-\definecolor{salmon}{RGB}{208,89,74} % * 7/8
-
 % T1 T2 T3 but latex doesn't allow #s in cmd names
 \newcommand\ti{\ensuremath{\hilight{lavender}{\mathbf{T1}}}\xspace}
 \newcommand\tj{\ensuremath{\hilight{seafoam}{\mathbf{T2}}}\xspace}
@@ -364,20 +378,20 @@ showing that correctly synchronizing even the simplest transactions may be surpr
 		\begin{tabular}{ll}
 		%\texttt{void count() \{} \\
 		%\texttt{~~~~for (int i = 0; i < 1000; i++) \{} \\
-		  & \texttt{prevent\_transactions = false;} \\
+		  & \texttt{prevent\_transactions = \const{false};} \\
 		\\
-		0 & \texttt{while (prevent\_transactions) continue;} \\
-		1 & \texttt{if ((status = \_xbegin()) == SUCCESS) \{} \\
-		2 & \texttt{~~~~if (prevent\_transactions)} \\
-		3 & \texttt{~~~~~~~~\_xabort();} \\
+		0 & \texttt{\flow{while} (prevent\_transactions) \flow{continue};} \\
+		1 & \texttt{\flow{if} ((status = \call{\_xbegin}()) == \const{SUCCESS}) \{} \\
+		2 & \texttt{~~~~\flow{if} (prevent\_transactions)} \\
+		3 & \texttt{~~~~~~~~\call{\_xabort}();} \\
 		4 & \texttt{~~~~x++;} \\
-		5 & \texttt{~~~~\_xend();} \\
-		6 & \texttt{\} else \{} \\
-		7 & \texttt{~~~~mutex\_lock(\&m);} \\
-		8 & \texttt{~~~~prevent\_transactions = true;} \\
+		5 & \texttt{~~~~\call{\_xend}();} \\
+		6 & \texttt{\} \flow{else} \{} \\
+		7 & \texttt{~~~~\call{mutex\_lock}(\&m);} \\
+		8 & \texttt{~~~~prevent\_transactions = \const{true};} \\
 		9 & \texttt{~~~~x++;} \\
-		A & \texttt{~~~~prevent\_transactions = false;} \\
-		B & \texttt{~~~~mutex\_unlock(\&m);} \\
+		A & \texttt{~~~~prevent\_transactions = \const{false};} \\
+		B & \texttt{~~~~\call{mutex\_unlock}(\&m);} \\
 		C & \texttt{\}} \\
 		%\texttt{~~~~\}} \\
 		%\texttt{\}} \\
@@ -589,11 +603,6 @@ All test cases therein are also available in the repository linked above.
 
 \section{Evaluation}
 
-\definecolor{darkcyan}{RGB}{0,128,128}
-\definecolor{lime}{RGB}{48,128,0}
-\definecolor{pinkish}{RGB}{128,34,102} % ff4488
-\definecolor{brownish}{RGB}{128,96,0}
-\definecolor{darklavender}{RGB}{68,44,138}
 \newcommand\ETA[1]{\hilight{brownish}{{\em #1}}\xspace}
 \newcommand\cpu[1]{\hilight{darkcyan}{{#1}}\xspace}
 \newcommand\wtm[1]{\hilight{lime}{{#1}}\xspace}
@@ -768,16 +777,16 @@ We draw three main conclusions from this data.
 		\begin{tabular}{l}
 		%\texttt{void count() \{} \\
 		%\texttt{~~~~for (int i = 0; i < 1000; i++) \{} \\
-		\texttt{while (\_retry);} \\
-		\texttt{if (\_xbegin() == SUCCESS) \{} \\
-		\texttt{~~~~tie(\_root,inserted) = \_insert(\_root,n); } \\
-		\texttt{~~~~\_xend();} \\
-		\texttt{\} else \{} \\
-		\texttt{~~~~pthread\_mutex\_lock(\&\_tree\_lock);} \\
-		\texttt{~~~~\_retry = true;} \\
-		\texttt{~~~~tie(\_root,inserted) = \_insert(\_root,n); } \\
-		\texttt{~~~~\_retry = false;} \\
-		\texttt{~~~~pthread\_mutex\_unlock(\&\_tree\_lock);} \\
+		\texttt{\flow{while} (\_retry);} \\
+		\texttt{\flow{if} (\call{\_xbegin}() == \const{SUCCESS}) \{} \\
+		\texttt{~~~~\hilight{brickred}{tie}(\_root,inserted) = \call{\_insert}(\_root,n); } \\
+		\texttt{~~~~\call{\_xend}();} \\
+		\texttt{\} \flow{else} \{} \\
+		\texttt{~~~~\call{pthread\_mutex\_lock}(\&\_tree\_lock);} \\
+		\texttt{~~~~\_retry = \const{true};} \\
+		\texttt{~~~~\hilight{brickred}{tie}(\_root,inserted) = \call{\_insert}(\_root,n); } \\
+		\texttt{~~~~\_retry = \const{false};} \\
+		\texttt{~~~~\call{pthread\_mutex\_unlock}(\&\_tree\_lock);} \\
 		\texttt{\}} \\
 		\end{tabular}
 	%\end{center}
