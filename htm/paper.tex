@@ -934,34 +934,6 @@ Table~\ref{tab:variants} shows the impact of running a single Landslide instance
 with various programs also running, despite never saturating our test system's 8 CPUs.
 % for i in `seq 1 10`; do ./landslide -X -v -p counter -M 2>&1 | grep 'total CPU time'; done
 
-\newcommand\vsx[1]{\hilight{darklavender}{#1}\xspace}
-\begin{table}[t]
-	\begin{center}
-	\begin{tabular}{l|c|c|c}
-		\bf load & \cpu{\bf cpu (s)} & \vsx{\bf vs self avg} & \vsx{\bf vs baseline} \\
-		\hline
-		{\sf none	} & \cpu{14.95 $\pm$ 0.17} & \vsx{0.99-1.02x}	& \vsx{(baseline)}	\\
-		{\sf vid-L	} & \cpu{15.13 $\pm$ 0.10} & \vsx{0.99-1.01x}	& \vsx{1.01x}	\\
-		{\sf ff/c	} & \cpu{15.55 $\pm$ 0.16} & \vsx{0.99-1.02x}	& \vsx{1.04x}	\\
-		{\sf sm5	} & \cpu{16.63 $\pm$ 0.07} & \vsx{0.99-1.01x}	& \vsx{1.11x} \\
-		{\sf ff/c+vid-S	} & \cpu{17.09 $\pm$ 0.34} & \vsx{0.98-1.05x}	& \vsx{1.14x}	\\
-		{\sf ls		} & \cpu{19.11 $\pm$ 0.32} & \vsx{0.97-1.03x}	& \vsx{1.28x}	\\
-		% simply love title screen
-		%{\sf sm5+sl}	& 19.18 $\pm$ 0.32	& \vsx{0.97-1.02x   } & \vsx{1.28x} \\
-		{\sf ff/c+ls	} & \cpu{19.66 $\pm$ 0.50} & \vsx{0.96-1.02x}	& \vsx{1.31x}	\\
-	\end{tabular}
-	\end{center}
-	\caption{Performance variance on {\tt counter}(2,2) with other programs running on the test machine.
-		{\sf vid-L} is full-screen video (played locally with {\tt mplayer}),
-		{\sf ff/c} is Firefox and Chrome (idle, $\le$20 tabs),
-		{\sf sm5} is StepMania 5.1 (during gameplay \cite{itg2}),
-		{\sf vid-S} is full-screen video (streamed via Crunchyroll),
-		{\sf ls} is a 2nd instance of Landslide.
-		Average of 10 samples, $\pm N$ is 1 stddev.
-	}
-	\label{tab:variants}
-\end{table}
-
 Table~\ref{tab:variants2} shows
 the impact of Landslide needing to automatically annotate {\tt counter}(2,2) being run for the first time,
 rather than reusing existing instrumentation,
@@ -971,22 +943,6 @@ The {\sf quicksand} variance was surprisingly bimodal,
 with 6 samples in a distribution of 106.14$\pm$1.22 and 4 in 142.11$\pm$1.67,
 suggesting two distinct scheduling patterns for its workqueue threads.
 Future work should figure out why.
-
-\begin{table}[t]
-	\begin{center}
-	\begin{tabular}{l|c|r}
-		\bf Landslide mode & \cpu{\bf cpu (s)} & \ints{\bf total int's} \\
-		\hline
-		{\sf verif} ({\tt -M})		& \cpu{~~14.95 $\pm$ 00.17} &  \ints{403} \\
-		{\sf reinstrument}		& \cpu{~~24.72 $\pm$ 00.10} &  \ints{403}     \\
-		{\sf quicksand} (no {\tt -M})	& \cpu{120.53 $\pm$ 18.62}  & \ints{2128}     \\
-	\end{tabular}
-	\end{center}
-	\caption{Performance variance on {\tt counter}(2,2) in various modes.
-		Average of 10 samples, $\pm N$ is 1 stddev.
-	}
-	\label{tab:variants2}
-\end{table}
 
 We conclude that MC performance evaluations must address
 experimental environment variables
@@ -1042,6 +998,50 @@ and instruments {\tt \_xabort()} calls to record any user-supplied codes for {\t
 This comes at a cost of even more state space explosion,
 increasing the exponent at each {\tt \_xbegin()} preemption point
 by (usually) 1 plus however many distinct {\tt \_xabort()} codes the program uses.
+
+\newcommand\vsx[1]{\hilight{darklavender}{#1}\xspace}
+\begin{table}[t]
+	\begin{center}
+	\begin{tabular}{l|c|c|c}
+		\bf load & \cpu{\bf cpu (s)} & \vsx{\bf vs self avg} & \vsx{\bf vs baseline} \\
+		\hline
+		{\sf none	} & \cpu{14.95 $\pm$ 0.17} & \vsx{0.99-1.02x}	& \vsx{(baseline)}	\\
+		{\sf vid-L	} & \cpu{15.13 $\pm$ 0.10} & \vsx{0.99-1.01x}	& \vsx{1.01x}	\\
+		{\sf ff/c	} & \cpu{15.55 $\pm$ 0.16} & \vsx{0.99-1.02x}	& \vsx{1.04x}	\\
+		{\sf sm5	} & \cpu{16.63 $\pm$ 0.07} & \vsx{0.99-1.01x}	& \vsx{1.11x} \\
+		{\sf ff/c+vid-S	} & \cpu{17.09 $\pm$ 0.34} & \vsx{0.98-1.05x}	& \vsx{1.14x}	\\
+		{\sf ls		} & \cpu{19.11 $\pm$ 0.32} & \vsx{0.97-1.03x}	& \vsx{1.28x}	\\
+		% simply love title screen
+		%{\sf sm5+sl}	& 19.18 $\pm$ 0.32	& \vsx{0.97-1.02x   } & \vsx{1.28x} \\
+		{\sf ff/c+ls	} & \cpu{19.66 $\pm$ 0.50} & \vsx{0.96-1.02x}	& \vsx{1.31x}	\\
+	\end{tabular}
+	\end{center}
+	\caption{Performance variance on {\tt counter}(2,2) with other programs running on the test machine.
+		{\sf vid-L} is full-screen video (played locally with {\tt mplayer}),
+		{\sf ff/c} is Firefox and Chrome (idle, $\le$20 tabs),
+		{\sf sm5} is StepMania 5.1 (during gameplay \cite{itg2}),
+		{\sf vid-S} is full-screen video (streamed via Crunchyroll),
+		{\sf ls} is a 2nd instance of Landslide.
+		Average of 10 samples, $\pm N$ is 1 stddev.
+	}
+	\label{tab:variants}
+\end{table}
+
+\begin{table}[t]
+	\begin{center}
+	\begin{tabular}{l|c|r}
+		\bf Landslide mode & \cpu{\bf cpu (s)} & \ints{\bf total int's} \\
+		\hline
+		{\sf verif} ({\tt -M})		& \cpu{~~14.95 $\pm$ 00.17} &  \ints{403} \\
+		{\sf reinstrument}		& \cpu{~~24.72 $\pm$ 00.10} &  \ints{403}     \\
+		{\sf quicksand} (no {\tt -M})	& \cpu{120.53 $\pm$ 18.62}  & \ints{2128}     \\
+	\end{tabular}
+	\end{center}
+	\caption{Performance variance on {\tt counter}(2,2) in various modes.
+		Average of 10 samples, $\pm N$ is 1 stddev.
+	}
+	\label{tab:variants2}
+\end{table}
 
 Many such branches may be equivalent;
 for example,
