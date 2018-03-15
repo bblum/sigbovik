@@ -603,7 +603,7 @@ All test cases therein are also available in the repository linked above.
 		% TODO: highlight the winning statistic for each test
 	\begin{tabular}{cc||r|r|r||r|r|r|r}
 			&	&\multicolumn{3}{c||}{\bf Quicksand mode}&\multicolumn{4}{c}{{\bf Maximal state space mode} ({\tt -M})} \\
-		\bf buggy test	& \bf params&\cpu{\bf cputime}&\wtm{\bf walltime}&\ints{\bf int's}&\cpu{\bf cputime}&\wtm{\bf walltime}&\ints{\bf int's}& \ETA{\bf SS size (est.)} \\
+		\bf buggy test	& \bf params&\cpu{\bf cpu (s)}&\wtm{\bf wall (s)}&\ints{\bf int's}&\cpu{\bf cpu (s)}&\wtm{\bf wall (s)}&\ints{\bf int's}& \ETA{\bf SS size (est.)} \\
 		\hline
 		\hline
 		{\tt htm1}
@@ -643,7 +643,7 @@ All test cases therein are also available in the repository linked above.
 	\caption{Landslide's bug-finding performance on various test configurations.
 		Quicksand's workqueue approach optimized for fast bug-finding
 		is compared against our maximum-state-space-prioritizing approach for fast verification.
-		For each, we list the CPU-time and wall-clock time (both in seconds)
+		For each, we list the CPU-time and wall-clock time %(both in seconds)
 		elapsed, %until the bug was found,
 		plus the number of interleavings of the ultimately buggy state space tested,
 		before the bug was found.
@@ -736,31 +736,32 @@ Landslide proved the following tests correct using {\tt -M} mode.
 With no bugs to find, comparing the different testing modes against each other is meaningless;
 we simply present their state space sizes and runtime in Table~\ref{tab:verifs}.
 
-\newcommand\ETAdag[1]{\ETA{\ensuremath{\dagger}#1}\xspace}
+\newcommand\ETAdag[1]{\ETA{\ensuremath{\dagger}#1}}
 \begin{table}[h]
 	\begin{center}
-		\begin{tabular}{cc|r|r}
-			test & params & cputime (s) & SS size \\
+		\begin{tabular}{cc||r|r}
+			\bf test & \bf params & \cpu{\bf cpu (s)} & \ints{\bf SS size} \\
 			\hline
 			\hline
 			{\tt counter}
-			& (2,1) & 5.57	& 30	\\
-			& (2,2) & 15.53	& 384	\\
-			& (2,3) & 20.00	& 5280	\\
-			& (2,4) &2211.10& 75264	\\
-			& (3,1) & 57.90	& 1960	\\
-			& (3,2) &	&	\\
+			& (2,1) & \cpu{5.57}	& \ints{30}	\\
+			& (2,2) & \cpu{15.53}	& \ints{384}	\\
+			& (2,3) &\cpu{20.00}	& \ints{5280}	\\
+			& (2,4) &\cpu{2211.10}	& \ints{75264}	\\
+			& (3,1) & \cpu{57.90}	& \ints{1960}	\\
+			& (3,2) &		& 	\\
 			\hline
 			{\tt htm2}
-			& (2,1) & 18.57	& 294	\\
-			& (2,2) & 133.78& 4902	\\
-			& (2,3) &1986.98& 79017	\\
-			& (3,1) &11672.15& 467730	\\
+			& (2,1) & \cpu{18.57}	& \ints{294}	\\
+			& (2,2) & \cpu{133.78}	& \ints{4902}	\\
+			& (2,3) &\cpu{1986.98}	& \ints{79017}	\\
+			& (3,1) &\cpu{11672.15}	& \ints{467730}	\\
 			& (3,2) &	&	\\
 			\hline
 			{\tt swap}
-			& (2,1) & 38.77	& 228	\\
+			& (2,1) & \cpu{38.77}	& \ints{228}	\\
 			& (2,2) &	&	\\
+			& (3,1) &	&	\\ % running atm
 			\hline
 			{\tt map\_basic}
 			& (2,1) & \ETAdag{10d 16h} & \ETAdag{16388977} \\
@@ -768,8 +769,10 @@ we simply present their state space sizes and runtime in Table~\ref{tab:verifs}.
 			%[JOB 15] TIMED OUT (0.429130%; ETA 10d 16h 34m 15s)
 			\hline
 			{\tt map\_basicer}
-			& (2,1) & 877.44& 28635	\\
-			& (2,2) &	&	\\ % currently running
+			& (2,1) & \cpu{877.44}& \ints{28635}	\\
+			& (2,2) & \ETAdag{2d 6h} & \ETAdag{5925634} \\
+			%[JOB 6] progress: 35042/5925634 brs (0.591363%), ETA 2d 6h 40m 30s (elapsed 21m 12s)
+			%[JOB 6] TIMED OUT (0.591363%; ETA 2d 6h 40m 30s)
 		\end{tabular}
 	\end{center}
 	\caption{Transactional tests verified (or not) by Landslide.}
@@ -782,7 +785,8 @@ Several larger tests we were unable to complete before the submission deadline a
 These are indicated with \ETAdag{}
 and their listed ETAs and state space sizes represent Landslide's estimate %at the moment of timeout.
 after a timeout of 1 hour
-(hopefully enough for data-race PPs to saturate and estimates to stablize).
+(hopefully enough for data-race PPs to saturate and estimates to stablize,
+although note the two estimate types use different algorithms so may disagree significantly).
 %For these, Table~\ref{tab:timeouts} presents their size estimates at the moment of timeout.
 Future work may expand our coverage upon this frontier \cite{landslide-phdthesis}.
 %\begin{table}[h]
@@ -816,17 +820,17 @@ with various programs also running, despite never saturating our test system's 8
 \begin{table}[h]
 	\begin{center}
 	\begin{tabular}{l|c|c|c}
-		load & cputime (s) & vs self avg & vs baseline \\
+		\bf load & \cpu{\bf cpu (s)} & \bf vs self avg & \bf vs baseline \\
 		\hline
-		{\sf none	} & 14.95 $\pm$ 0.17	& 0.99-1.02x	& (baseline)	\\
-		{\sf vid-L	} & 15.13 $\pm$ 0.10	& 0.99-1.01x	& 1.01x	\\
-		{\sf ff/c	} & 15.55 $\pm$ 0.16	& 0.99-1.02x	& 1.04x	\\
-		{\sf sm5	} & 16.63 $\pm$ 0.07	& 0.99-1.01x	& 1.11x \\
-		{\sf ff/c+vid-S	} & 17.09 $\pm$ 0.34	& 0.98-1.05x	& 1.14x	\\
-		{\sf ls		} & 19.11 $\pm$ 0.32	& 0.97-1.03x	& 1.28x	\\
+		{\sf none	} & \cpu{14.95 $\pm$ 0.17} & 0.99-1.02x	& (baseline)	\\
+		{\sf vid-L	} & \cpu{15.13 $\pm$ 0.10} & 0.99-1.01x	& 1.01x	\\
+		{\sf ff/c	} & \cpu{15.55 $\pm$ 0.16} & 0.99-1.02x	& 1.04x	\\
+		{\sf sm5	} & \cpu{16.63 $\pm$ 0.07} & 0.99-1.01x	& 1.11x \\
+		{\sf ff/c+vid-S	} & \cpu{17.09 $\pm$ 0.34} & 0.98-1.05x	& 1.14x	\\
+		{\sf ls		} & \cpu{19.11 $\pm$ 0.32} & 0.97-1.03x	& 1.28x	\\
 		% simply love title screen
 		%{\sf sm5+sl}	& 19.18 $\pm$ 0.32	& 0.97-1.02x	& 1.28x \\
-		{\sf ff/c+ls	} & 19.66 $\pm$ 0.50	& 0.96-1.02x	& 1.31x	\\
+		{\sf ff/c+ls	} & \cpu{19.66 $\pm$ 0.50} & 0.96-1.02x	& 1.31x	\\
 	\end{tabular}
 	\end{center}
 	\caption{Performance variance on {\tt counter}(2,2) with other programs running on the test machine.
@@ -852,12 +856,12 @@ Future work should figure out why.
 
 \begin{table}[h]
 	\begin{center}
-	\begin{tabular}{l|r|r}
-		Landslide mode & total int's & cputime (s) \\
+	\begin{tabular}{l|r|c}
+		\bf Landslide mode & \bf total int's & \cpu{\bf cpu (s)} \\
 		\hline
-		{\sf verif} ({\tt -M})		& 403 & 14.95 $\pm$ 00.17	\\
-		{\sf reinstrument}		& 403 & 24.72 $\pm$ 00.10	\\
-		{\sf quicksand} (no {\tt -M})	& 2128 & 120.53 $\pm$ 18.62	\\
+		{\sf verif} ({\tt -M})		& 403  & \cpu{14.95 $\pm$ 00.17} \\
+		{\sf reinstrument}		& 403  & \cpu{24.72 $\pm$ 00.10}	\\
+		{\sf quicksand} (no {\tt -M})	& 2128 & \cpu{120.53 $\pm$ 18.62}	\\
 	\end{tabular}
 	\end{center}
 	\caption{Performance variance on {\tt counter}(2,2) in various modes.
