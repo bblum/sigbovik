@@ -218,6 +218,7 @@ but verifying the client programs written to use transactions remains an open pr
 
 % syntax hilighting
 \definecolor{brown}{RGB}{170,85,0}
+% \definecolor{pink}{RGB}{170,45,136} % pinkish * 4/3 % but actually looks better darker
 \newcommand\flow[1]{\hilight{brown}{#1}\xspace}
 \newcommand\const[1]{\hilight{brickred}{#1}\xspace}
 \newcommand\call[1]{\hilight{pinkish}{#1}}
@@ -299,7 +300,8 @@ the program's own internal consistency checks,
 or a set of expected properties encoded in the tool itself.
 Landslide uses the latter two cases, checking for assertion failures
 as well as deadlocks, use-after-frees, and segfaults.
-For this work we also detect use of {\tt xend} outside of a transaction as a bug.
+For this work we also detect use of {\tt xend} outside of a transaction
+or {\tt xbegin} within one as a bug.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -639,16 +641,6 @@ All test cases therein are also available in the repository linked above.
 		\cline{2-9}
 			& 3,1	&\cpu{1275.04}&\wtm{163.42}&\ints{771}&\ETA{>30m}&\ETA{>30m}&\ETA{unk.}& \ETA{184984} \\
 			& 3,2	&\ETA{>30m}&\ETA{>30m}&\ETA{unk.}&\ETA{>30m}&\ETA{>30m}&\ETA{unk.}& \ETA{3099225} \\
-		\hline
-		{\tt avl\_insert}
-			& 2,2	&\cpu{488.07}&\wtm{64.77}&\ints{83}	&\cpu{81.00}&\wtm{40.30}&\ints{336}&\ETA{379982} \\
-		(segfault+)
-			% XXX: this 2,3 -M-mode bug was found *mostly* running in isolation,
-			% but for the last few minutes i had another landslide running in parallel bc i thought itd time out.
-			% according to variance expt, it should be rerun for a *minor* speedup, but i can't be bothered
-			& 2,3	&\cpu{2670.87}&\wtm{330.45}&\ints{3066}	&\cpu{1331.79}&\wtm{1274.36}&\ints{13926}&\ETA{96248131} \\
-		\cline{2-9}
-			& 3,1	&\cpu{222.02}&\wtm{40.04}&\ints{28}	&\cpu{69.99}&\wtm{24.25}&\ints{78}&\ETA{1572107} \\
 		% whoops, this was with the dumb lock ordering
 		%	& 3,1	& 11.19	& 3.46	& 9	& 3.13	& 3.13	& 9	& 432 \\
 		%	& 3,2	& 12.41	& 3.76	& 19	& 3.33	& 3.33	& 19	& 5832 \\
@@ -657,6 +649,20 @@ All test cases therein are also available in the repository linked above.
 		%\cline{2-9}
 		%	& 4,1	& 702.33& 98.06	& 361	& 90.94	& 64.27	& 1607	& 138758 \\
 		%	& 4,2	&9738.43&1257.20& 3023	& 674.87& 650.58& 16511	& 13755188 \\
+		\hline
+		{\tt avl\_insert}
+			& 2,2	&\cpu{488.07}&\wtm{64.77}&\ints{83}	&\cpu{81.00}&\wtm{40.30}&\ints{336}&\ETA{379982} \\
+		(segfault+)
+			% XXX: this 2,3 -M-mode bug was found *mostly* running in isolation,
+			% but for the last few minutes i had another landslide running in parallel bc i thought itd time out.
+			% according to variance expt, it should be rerun for a *minor* speedup, but i can't be bothered
+			& 2,3	&\cpu{2670.87}&\wtm{330.45}&\ints{3066}	&\cpu{1331.79}&\wtm{1274.36}&\ints{13926}&\ETA{96248131} \\
+			& 2,4	&\cpu{3259.37}&\wtm{436.50}&\ints{1639}&\ETA{>30m}&\ETA{>30m}&\ETA{unk.}& \ETA{???} \\
+			% TODO
+		\cline{2-9}
+			& 3,1	&\cpu{222.02}&\wtm{40.04}&\ints{28}	&\cpu{69.99}&\wtm{24.25}&\ints{78}&\ETA{1572107} \\
+			& 3,2	&\ETA{>30m}&\ETA{>30m}&\ETA{unk.}&\ETA{>30m}&\ETA{>30m}&\ETA{unk.}& \ETA{???} \\
+			% TODO
 	\end{tabular}
 	\end{center}
 	\caption{Landslide's bug-finding performance on various test configurations.
@@ -698,7 +704,7 @@ as follows.
 	\item {\tt swap}: Microbenchmark that swaps values in an array.
 	\item {\tt swapbug}: {\tt swap} modified to introduce circular locking in the failure path. %(deadlock).
 	\item {\tt avl\_insert}: AVL tree concurrent insertion test.
-	\item {\tt avl\_fixed}: {\tt avl\_insert} with the AVL bug fixed. %(spoilers!!)
+	\item {\tt avl\_fixed}: {\tt avl\_insert} with the AVL bug fixed (spoilers!!).
 	\item {\tt map\_basic}: Separate-chaining hashmap concurrent insertion test.
 	\item {\tt map\_basicer}: {\tt map\_basic} modified with a larger initial size to skip the resizing step.
 \end{itemize}
@@ -771,7 +777,6 @@ We draw three main conclusions from this data.
 		which can be verified in isolation with smaller state spaces
 		then trusted in turn when checking their client programs \cite{dbug-phdthesis}.
 
-% TODO syntax hilighting
 \begin{figure}[t]
 	%\begin{center}
 		\begin{tabular}{l}
@@ -831,11 +836,19 @@ With no bugs to find, comparing the different testing modes against each other i
 we simply present their state space sizes and runtime (using {\tt -M}) in Table~\ref{tab:verifs}.
 
 \newcommand\ETAdag[1]{\ETA{\ensuremath{\dagger}#1}}
-\begin{table}[t]
+\begin{table}[h]
 	\begin{center}
-		\begin{tabular}{cc||r|r}
-			\bf test & \bf params & \cpu{\bf cpu (s)} & \ints{\bf SS size} \\
+		\begin{tabular}{cc|r|r}
+			& & \cpu{\bf cpu (s)} & \ints{\bf SS size} \\
+			\bf test & \bf params & \em (or \ETAdag{\bf \em ETA}) & \em (or \ETAdag{\bf \em est.}) \\
 			\hline
+			\hline
+			{\tt htm2}
+			& 2,1 & \cpu{18.57}	& \ints{294}	\\
+			& 2,2 & \cpu{133.78}	& \ints{4902}	\\
+			& 2,3 &\cpu{1986.98}	& \ints{79017}	\\
+			& 3,1 &\cpu{11672.15}	& \ints{467730}	\\
+			%& 3,2 &	&	\\
 			\hline
 			{\tt counter}
 			& 2,1 & \cpu{5.57}	& \ints{30}	\\
@@ -845,20 +858,14 @@ we simply present their state space sizes and runtime (using {\tt -M}) in Table~
 			& 3,1 & \cpu{57.90}	& \ints{1960}	\\
 			%& 3,2 &		& 	\\
 			\hline
-			{\tt htm2}
-			& 2,1 & \cpu{18.57}	& \ints{294}	\\
-			& 2,2 & \cpu{133.78}	& \ints{4902}	\\
-			& 2,3 &\cpu{1986.98}	& \ints{79017}	\\
-			& 3,1 &\cpu{11672.15}	& \ints{467730}	\\
-			%& 3,2 &	&	\\
-			\hline
 			{\tt swap}
-			& 2,1 & \cpu{38.77}	& \ints{228}	\\
-			& 2,2 & &       \\ % TODO: fix, or use timeout if you HAVE to
+			%& 2,1 & \cpu{38.77}	& \ints{228}	\\ % pre-ignore_thr_func fix
+			& 2,1 & \cpu{32.98}	& \ints{193}	\\
+			& 2,2 & \cpu{3652.91}	& \ints{101150}	\\
 			%[JOB 8] progress: 97913/161897 brs (60.478362%), ETA 1h 29m 30s (elapsed 59m 52s)
 			% [JOB 8] TIMED OUT (60.478362%; ETA 1h 29m 30s)
 
-			& 3,1 & \ETAdag{8d 11h} & \ETAdag{411312}	\\
+			& 3,1 & \ETAdag{8d 12h} & \ETAdag{411312}	\\
 			%[JOB 8] progress: 103873/411312 brs (25.254021%), ETA 8d 11h 36m 0s (elapsed 59m 42s)
 			%[JOB 8] TIMED OUT (25.254021%; ETA 8d 11h 36m 0s)
 			\hline
@@ -866,18 +873,27 @@ we simply present their state space sizes and runtime (using {\tt -M}) in Table~
 			& 2,1 & \cpu{1083.35}	& \ints{40062}	\\
 			%& 2,2 & \multicolumn{2}{c}{\em (bug!)} \\
 			\hline
-			{\tt avl\_fixed} % TODO
-			& 2,1 & 	& 	\\
-			& 2,2 & 	& 	\\
+			{\tt avl\_fixed}
+			& 2,1 & \cpu{1079.03} 	& \ints{45078} 	\\
+			& 2,2 & \ETAdag{2762y}	& \ETAdag{8714863} 	\\
+			%[JOB 19] progress: 45863/8714863 brs (0.526262%), ETA 2762y 28d 9h 57m 14s (elapsed 59m 25s)
+			%[JOB 19] TIMED OUT (0.526262%; ETA 2762y 28d 9h 57m 14s)
+			% the below is from avlfixed2,2 after running it overnight
+			% eta is ever worse but i'm using the 1hr one as promised
+			%[JOB 19] progress: 315672/29992026 brs (1.052520%), ETA 321008y 136d 18h 22m 12s (elapsed 6h 58m 15s)
+			& 3,1 & \ETAdag{12d 2h}	& \ETAdag{11498545}	\\
+
 			\hline
 			{\tt map\_basic}
-			& 2,1 & \ETAdag{10d 16h} & \ETAdag{16388977} \\
+			& 2,1 & \ETAdag{10d 17h} & \ETAdag{16388977} \\
 			%[JOB 15] progress: 70330/16388977 brs (0.429130%), ETA 10d 16h 34m 15s (elapsed 43m 21s)
 			%[JOB 15] TIMED OUT (0.429130%; ETA 10d 16h 34m 15s)
 			\hline
 			{\tt map\_basicer}
 			& 2,1 & \cpu{877.44}& \ints{28635}	\\
-			& 2,2 & \ETAdag{2d 6h} & \ETAdag{5925634} \\
+			& 2,2 & \ETAdag{2d 7h} & \ETAdag{5925634} \\
+			& 3,1 & 	& 	\\ % TODO
+			% ^^ running now, certified not recompiled
 			%[JOB 6] progress: 35042/5925634 brs (0.591363%), ETA 2d 6h 40m 30s (elapsed 21m 12s)
 			%[JOB 6] TIMED OUT (0.591363%; ETA 2d 6h 40m 30s)
 		\end{tabular}
@@ -896,9 +912,10 @@ although note the two estimate types use different algorithms so may disagree si
 %For these, Table~\ref{tab:timeouts} presents their size estimates at the moment of timeout.
 Though these tests proved beyond our reach,
 in contrast with the high speed expected of bug-finding results,
-we believe the verification guarantee may be worth the estimated time requirement
+%we believe
+the verification guarantee may in some cases be worth the estimated time requirement
 for widely-used industrial implementations.
-Future work may expand our coverage upon this frontier \cite{landslide-phdthesis}.
+Future work may also expand our coverage upon this frontier \cite{landslide-phdthesis}.
 
 \subsection{Variance}
 
