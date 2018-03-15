@@ -593,6 +593,7 @@ All test cases therein are also available in the repository linked above.
 \definecolor{lime}{RGB}{48,128,0}
 \definecolor{pinkish}{RGB}{128,34,102} % ff4488
 \definecolor{brownish}{RGB}{128,96,0}
+\definecolor{darklavender}{RGB}{68,44,138}
 \newcommand\ETA[1]{\hilight{brownish}{{\em #1}}\xspace}
 \newcommand\cpu[1]{\hilight{darkcyan}{{#1}}\xspace}
 \newcommand\wtm[1]{\hilight{lime}{{#1}}\xspace}
@@ -632,7 +633,7 @@ All test cases therein are also available in the repository linked above.
 		\hline
 		{\tt avl\_insert}
 			& 2,2	&\cpu{488.07}&\wtm{64.77}&\ints{83}	&\cpu{81.00}&\wtm{40.30}&\ints{336}&\ETA{379982} \\
-		(see text)
+		(segfault+)
 			% XXX: this 2,3 -M-mode bug was found *mostly* running in isolation,
 			% but for the last few minutes i had another landslide running in parallel bc i thought itd time out.
 			% according to variance expt, it should be rerun for a *minor* speedup, but i can't be bothered
@@ -754,8 +755,12 @@ We draw three main conclusions from this data.
 		%which reduces the state space size, but maintains the program's semantics.}
 		Moreover, we conclude that even Figure~\ref{fig:htm-fixed}'s protocol's very proposer % こそさえ
 		getting it wrong motivates the need for MC on such programs,
-		and perhaps also means TSX primitives should be used only behind higher-level abstractions
-		such as lock elision \cite{lock-elision}.
+		%and perhaps also means TSX primitives should be used only behind higher-level abstractions
+		%such as lock elision \cite{lock-elision}.
+		and suggests TSX primitives should be encapsulated behind higher-level abstractions
+		such as lock elision \cite{lock-elision},
+		which can be verified in isolation with smaller state spaces
+		then trusted in turn when checking their client programs \cite{dbug-phdthesis}.
 
 % TODO syntax hilighting
 \begin{figure}[t]
@@ -817,7 +822,7 @@ With no bugs to find, comparing the different testing modes against each other i
 we simply present their state space sizes and runtime (using {\tt -M}) in Table~\ref{tab:verifs}.
 
 \newcommand\ETAdag[1]{\ETA{\ensuremath{\dagger}#1}}
-\begin{table}[h]
+\begin{table}[t]
 	\begin{center}
 		\begin{tabular}{cc||r|r}
 			\bf test & \bf params & \cpu{\bf cpu (s)} & \ints{\bf SS size} \\
@@ -880,17 +885,11 @@ after a timeout of 1 hour
 (hopefully enough for data-race PPs to saturate and estimates to stablize,
 although note the two estimate types use different algorithms so may disagree significantly).
 %For these, Table~\ref{tab:timeouts} presents their size estimates at the moment of timeout.
+Though these tests proved beyond our reach,
+in contrast with the high speed expected of bug-finding results,
+we believe the verification guarantee may be worth the estimated time requirement
+for widely-used industrial implementations.
 Future work may expand our coverage upon this frontier \cite{landslide-phdthesis}.
-%\begin{table}[h]
-%	\begin{center}
-%		\begin{tabular}{cc|r}
-%			test & params & SS size (est.) \\
-%			\hline
-%		\end{tabular}
-%	\end{center}
-%	\caption{Transactional test verification timeouts.}
-%	\label{tab:timeouts}
-%\end{table}
 
 \subsection{Variance}
 
@@ -909,20 +908,21 @@ Table~\ref{tab:variants} shows the impact of running a single Landslide instance
 with various programs also running, despite never saturating our test system's 8 CPUs.
 % for i in `seq 1 10`; do ./landslide -X -v -p counter -M 2>&1 | grep 'total CPU time'; done
 
+\newcommand\vsx[1]{\hilight{darklavender}{#1}\xspace}
 \begin{table}[t]
 	\begin{center}
 	\begin{tabular}{l|c|c|c}
-		\bf load & \cpu{\bf cpu (s)} & \bf vs self avg & \bf vs baseline \\
+		\bf load & \cpu{\bf cpu (s)} & \vsx{\bf vs self avg} & \vsx{\bf vs baseline} \\
 		\hline
-		{\sf none	} & \cpu{14.95 $\pm$ 0.17} & 0.99-1.02x	& (baseline)	\\
-		{\sf vid-L	} & \cpu{15.13 $\pm$ 0.10} & 0.99-1.01x	& 1.01x	\\
-		{\sf ff/c	} & \cpu{15.55 $\pm$ 0.16} & 0.99-1.02x	& 1.04x	\\
-		{\sf sm5	} & \cpu{16.63 $\pm$ 0.07} & 0.99-1.01x	& 1.11x \\
-		{\sf ff/c+vid-S	} & \cpu{17.09 $\pm$ 0.34} & 0.98-1.05x	& 1.14x	\\
-		{\sf ls		} & \cpu{19.11 $\pm$ 0.32} & 0.97-1.03x	& 1.28x	\\
+		{\sf none	} & \cpu{14.95 $\pm$ 0.17} & \vsx{0.99-1.02x}	& \vsx{(baseline)}	\\
+		{\sf vid-L	} & \cpu{15.13 $\pm$ 0.10} & \vsx{0.99-1.01x}	& \vsx{1.01x}	\\
+		{\sf ff/c	} & \cpu{15.55 $\pm$ 0.16} & \vsx{0.99-1.02x}	& \vsx{1.04x}	\\
+		{\sf sm5	} & \cpu{16.63 $\pm$ 0.07} & \vsx{0.99-1.01x}	& \vsx{1.11x} \\
+		{\sf ff/c+vid-S	} & \cpu{17.09 $\pm$ 0.34} & \vsx{0.98-1.05x}	& \vsx{1.14x}	\\
+		{\sf ls		} & \cpu{19.11 $\pm$ 0.32} & \vsx{0.97-1.03x}	& \vsx{1.28x}	\\
 		% simply love title screen
-		%{\sf sm5+sl}	& 19.18 $\pm$ 0.32	& 0.97-1.02x	& 1.28x \\
-		{\sf ff/c+ls	} & \cpu{19.66 $\pm$ 0.50} & 0.96-1.02x	& 1.31x	\\
+		%{\sf sm5+sl}	& 19.18 $\pm$ 0.32	& \vsx{0.97-1.02x   } & \vsx{1.28x} \\
+		{\sf ff/c+ls	} & \cpu{19.66 $\pm$ 0.50} & \vsx{0.96-1.02x}	& \vsx{1.31x}	\\
 	\end{tabular}
 	\end{center}
 	\caption{Performance variance on {\tt counter}(2,2) with other programs running on the test machine.
@@ -990,7 +990,8 @@ The numbers of interleavings in each state space are, of course, deterministic a
 \section{Limitations}
 \label{sec:warpzone}
 
-This section discusses opportunities for future work.
+%This section discusses opportunities for future work.
+This section should be mandatory in all systems papers.
 
 {\bf Transaction failure codes.}
 When a transaction fails, {\tt \_xbegin()} returns a failure code
@@ -1026,10 +1027,10 @@ if the client abstracts it away behind a retry loop.%
 In fact, applying both reductions simultaneously
 produces a state space smaller than the original;
 testing them by hand
-on {\tt map\_basicer}(2,1)%
-\footnote{Trusting the reductions' soundness from visual inspection of the test.}
-reduced its 28635 interleavings to 11577
-(although {\tt map\_basic}(2,1) lies still beyond reach).
+\footnote{Using visual inspection of the test to trust the reductions' soundness.}
+reduced {\tt map\_basicer}(2,1)'s 28635 interleavings to 11577.
+% TODO: try map_basic and get a 1 hour estimate
+%(although {\tt map\_basic}(2,1) lies still beyond reach).
 %We tested both reductions by hand, trusting their soundness by visual inspection,
 %on {\tt map\_basic}(2,1),
 %and preview the resulting state space sizes in Table~\ref{tab:abort-codes}.
@@ -1070,7 +1071,7 @@ with 294 distinct interleavings in total,
 none of which include the above-listed sequence.
 Recent work extended DPOR to support TSO and PSO memory nondeterminism \cite{tsopso};
 if incorporated into Landslide, we could find or verify the absence of such bugs.
-Visual inspection of \cite{htm-mario}'s HTM data structures found the same implementation pattern with no barriers;
+Visual inspection of \cite{htm-mario}'s HTM data structures found no barriers used in this implementation pattern;
 we would urge any reader interested in using them to add them in by hand first.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
