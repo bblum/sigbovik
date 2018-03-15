@@ -576,7 +576,7 @@ Programs should be ported to the Pebbles userland \cite{thrlib,kspec},
 their use of compiler HTM intrinsics should be replaced with the Landslide stubs provided in {\tt 410user/inc/htm.h},
 and HTM nondeterminism can then be enabled with the {\tt -X} command-line flag.
 We have also extended its Iterative Deepening implementation \cite{quicksand}
-with an option ({\tt -M}) to
+with an option ({\tt -M} flag) to
 to optimize for completion time by prioritizing the maximal state space job and cancelling all others,
 while maintaining its soundness guarantee,
 which we will use in our evaluation.
@@ -589,38 +589,47 @@ All test cases therein are also available in the repository linked above.
 
 \section{Evaluation}
 
+\definecolor{darkcyan}{RGB}{0,128,128}
+\definecolor{lime}{RGB}{48,128,0}
+\definecolor{pinkish}{RGB}{128,34,102} % ff4488
+\definecolor{brownish}{RGB}{128,96,0}
+\newcommand\ETA[1]{\hilight{brownish}{{\em #1}}\xspace}
+\newcommand\cpu[1]{\hilight{darkcyan}{{#1}}\xspace}
+\newcommand\wtm[1]{\hilight{lime}{{#1}}\xspace}
+\newcommand\ints[1]{\hilight{pinkish}{{#1}}\xspace}
+
 \begin{table*}[t]
 	\begin{center}
 		% TODO: highlight the winning statistic for each test
 	\begin{tabular}{cc||r|r|r||r|r|r|r}
 			&	&\multicolumn{3}{c||}{\bf Quicksand mode}&\multicolumn{4}{c}{{\bf Maximal state space mode} ({\tt -M})} \\
-		buggy test	& params&cputime&walltime&int's&cputime&walltime&int's& SS size (est.) \\
+		\bf buggy test	& \bf params&\cpu{\bf cputime}&\wtm{\bf walltime}&\ints{\bf int's}&\cpu{\bf cputime}&\wtm{\bf walltime}&\ints{\bf int's}& \ETA{\bf SS size (est.)} \\
 		\hline
 		\hline
 		{\tt htm1}
-			& 2,1	& 45.78	& 9.70	& 21	& 9.47	& 6.40	& 21	& 213 \\
+			& 2,1	&\cpu{  45.78}&\wtm{9.70}&\ints{21}& \cpu{9.47}& \wtm{6.40}& \ints{21	}& \ETA{213} \\
 		(assertion)
-			& 2,2	& 84.14	& 13.59	& 33	& 10.39	& 7.70	& 49	& 1536 \\
-			& 2,3	& 131.91& 20.44	& 73	& 12.83	& 9.67	& 113	& 10752 \\
-			& 2,4	& 255.75& 37.56	& 257	& 18.63	& 15.86	& 257	& 73728 \\
+			& 2,2	&\cpu{  84.14}&\wtm{13.59}&\ints{33}& \cpu{10.39}& \wtm{7.70}& \ints{49	}& \ETA{1536} \\
+			& 2,3	&\cpu{ 131.91}&\wtm{20.44}&\ints{73}& \cpu{12.83}& \wtm{9.67}& \ints{113	}& \ETA{10752} \\
+			& 2,4	&\cpu{ 255.75}&\wtm{37.56}&\ints{257}& \cpu{18.63}& \wtm{15.86}& \ints{257	}& \ETA{73728} \\
 		\cline{2-9}
-			& 3,1	& 114.06& 17.45	& 15	& 9.50	& 6.79	& 21	& 13653 \\
-			& 3,2	& 109.60& 26.16	& 49	& 10.72	& 7.97	& 49	& 393216 \\
-			& 3,3	& 124.80& 20.40	& 73	& 13.84	& 11.01	& 113	& 11010048 \\
-			& 3,4	& 227.49& 35.15	& 161	& 31.37	& 28.53	& 257	& 301989888 \\
+			& 3,1	&\cpu{ 114.06}&\wtm{17.45}&\ints{15}& \cpu{9.50}& \wtm{6.79}& \ints{21	}& \ETA{13653} \\
+			& 3,2	&\cpu{ 109.60}&\wtm{26.16}&\ints{49}& \cpu{10.72}& \wtm{7.97}& \ints{49	}& \ETA{393216} \\
+			& 3,3	&\cpu{ 124.80}&\wtm{20.40}&\ints{73}& \cpu{13.84}& \wtm{11.01}& \ints{113	}& \ETA{11010048} \\
+			& 3,4	&\cpu{ 227.49}&\wtm{35.15}&\ints{161}& \cpu{31.37}& \wtm{28.53}& \ints{257	}& \ETA{301989888} \\
 		\cline{2-9}
-			& 4,1	& 53.08	& 9.79	& 15	& 9.82	& 7.00	& 21	& 873813 \\
-			& 4,2	&117.07	& 19.09	& 33	& 11.54	& 8.55	& 49	& 100663296 \\
+			& 4,1	&\cpu{ 53.08}&\wtm{9.79}&\ints{15}& \cpu{9.82}& \wtm{7.00}& \ints{21	}& \ETA{873813} \\
+			& 4,2	&\cpu{117.07}&\wtm{19.09}&\ints{33}& \cpu{11.54}& \wtm{8.55}& \ints{49	}& \ETA{100663296} \\
 		\hline
 		{\tt swapbug}
-			& 2,1	& 70.95	& 13.45	& 16	& 38.96	& 13.15	& 109	& 194 \\
+			& 2,1	&\cpu{ 70.95}&\wtm{13.45}&\ints{16}& \cpu{38.96}& \wtm{13.15}& \ints{109	}& \ETA{194} \\
 		(deadlock)
-			& 2,2	& 107.28& 17.45	& 146	& 44.73	& 19.47	& 281	& 1620 \\
-			& 2,3	& 280.05& 38.70	& 352	& 60.30	& 35.55	& 718	& 12748 \\
-			& 2,4	& 617.94& 81.50	& 834	& 108.58& 82.60	& 1820	& 97823 \\
+			& 2,2	&\cpu{ 107.28}&\wtm{17.45}&\ints{146}& \cpu{44.73}& \wtm{19.47}& \ints{281	}& \ETA{1620} \\
+			& 2,3	&\cpu{ 280.05}&\wtm{38.70}&\ints{352}& \cpu{60.30}& \wtm{35.55}& \ints{718	}& \ETA{12748} \\
+			& 2,4	&\cpu{ 617.94}&\wtm{81.50}&\ints{834}& \cpu{108.58}& \wtm{82.60}& \ints{1820	}& \ETA{97823} \\
 		\cline{2-9}
-			& 3,1	&1275.04& 163.42& 771	&{\em >30m}&{\em >30m}&{\em unk.}& 184984 \\
-			& 3,2	&{\em >30m}&{\em >30m}&{\em unk.}&{\em >30m}&{\em >30m}&{\em unk.}& 3099225 \\
+			& 3,1	&\cpu{1275.04}&\wtm{163.42}&\ints{771}&\ETA{>30m}&\ETA{>30m}&\ETA{unk.}& \ETA{184984} \\
+			& 3,2	&\ETA{>30m}&\ETA{>30m}&\ETA{unk.}&\ETA{>30m}&\ETA{>30m}&\ETA{unk.}& \ETA{3099225} \\
 		% whoops, this was with the dumb lock ordering
 		%	& 3,1	& 11.19	& 3.46	& 9	& 3.13	& 3.13	& 9	& 432 \\
 		%	& 3,2	& 12.41	& 3.76	& 19	& 3.33	& 3.33	& 19	& 5832 \\
@@ -726,26 +735,20 @@ Speaking of which...
 Landslide proved the following tests correct using {\tt -M} mode.
 With no bugs to find, comparing the different testing modes against each other is meaningless;
 we simply present their state space sizes and runtime in Table~\ref{tab:verifs}.
-%
-Also shown are several
-larger tests we were unable to complete before the submission deadline,
-each given a timeout of 1 hour. % TODO: ??
-Their completion times are listed as {\em unk.}
-and their listed state space sizes represent Landslide's estimate at the moment of timeout.
-%For these, Table~\ref{tab:timeouts} presents their size estimates at the moment of timeout.
-Future work may expand our coverage upon this frontier \cite{landslide-phdthesis}.
 
+\newcommand\ETAdag[1]{\ETA{\ensuremath{\dagger}#1}\xspace}
 \begin{table}[h]
 	\begin{center}
 		\begin{tabular}{cc|r|r}
 			test & params & cputime (s) & SS size \\
+			\hline
 			\hline
 			{\tt counter}
 			& (2,1) & 5.57	& 30	\\
 			& (2,2) & 15.53	& 384	\\
 			& (2,3) & 20.00	& 5280	\\
 			& (2,4) &2211.10& 75264	\\
-			& (3,1) & 57.9	& 1960	\\
+			& (3,1) & 57.90	& 1960	\\
 			& (3,2) &	&	\\
 			\hline
 			{\tt htm2}
@@ -760,17 +763,28 @@ Future work may expand our coverage upon this frontier \cite{landslide-phdthesis
 			& (2,2) &	&	\\
 			\hline
 			{\tt map\_basic}
-			& (2,1) &	&	\\
+			& (2,1) & \ETAdag{10d 16h} & \ETAdag{16388977} \\
+			%[JOB 15] progress: 70330/16388977 brs (0.429130%), ETA 10d 16h 34m 15s (elapsed 43m 21s)
+			%[JOB 15] TIMED OUT (0.429130%; ETA 10d 16h 34m 15s)
 			\hline
 			{\tt map\_basicer}
 			& (2,1) & 877.44& 28635	\\
-			& (2,2) &	&	\\
+			& (2,2) &	&	\\ % currently running
 		\end{tabular}
 	\end{center}
-	\caption{Transactional tests verified by Landslide.}
+	\caption{Transactional tests verified (or not) by Landslide.}
 	\label{tab:verifs}
 \end{table}
 
+Several larger tests we were unable to complete before the submission deadline are also shown.
+%each timing out after 1 hour. % TODO: ??
+%Their completion times are listed as {\em unk.}
+These are indicated with \ETAdag{}
+and their listed ETAs and state space sizes represent Landslide's estimate %at the moment of timeout.
+after a timeout of 1 hour
+(hopefully enough for data-race PPs to saturate and estimates to stablize).
+%For these, Table~\ref{tab:timeouts} presents their size estimates at the moment of timeout.
+Future work may expand our coverage upon this frontier \cite{landslide-phdthesis}.
 %\begin{table}[h]
 %	\begin{center}
 %		\begin{tabular}{cc|r}
