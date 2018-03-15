@@ -154,7 +154,7 @@ exhaustively checking for bugs or verifying their absence in the corresponding s
 Many such model checkers exist, varying in
 interleaving granularity, memory analysis, types of programs checked, and search ordering strategy
 \cite{chess,dbug-ssv,spin,inspect,r4,portend,samc,mcr,randomized-scheduler}.
-This work builds upon Landslide \cite{landslide,quicksand,landslide-phdthesis},
+This work builds upon Landslide \cite{landslide}, %,quicksand,landslide-phdthesis},
 a simulator-based tester which checks both user- and kernel-level programs
 and incorporates data-race analysis \cite{tsan,fasttrack} to find new preemption points
 at memory access granularity.
@@ -262,7 +262,7 @@ Some target distributed systems, instrumenting only message-passing events \cite
 some run multithreaded programs natively, instrumenting only the pthread API for performance \cite{dbug-ssv};
 and some insert compiler instrumentation on statically-identified memory accesses \cite{chess,inspect}.
 Landslide traces every memory access through the use of a simulated environment \cite{bochs},
-which is important for identifying data races to use as new preemption points \cite{fasttrack,djit,quicksand},
+which is important for identifying data races to use as new preemption points \cite{quicksand},
 as well as for identifying when a memory conflict may cause transaction aborts.
 With regard to checking for bugs,
 the ``model'' the name refers to being checked may be
@@ -471,7 +471,7 @@ Stated formally:
 	If so, then the hardware will abort \tii's transaction, discarding the effects of $\tiiat{\beta_1}\dots\tiiat{\beta_n}$
 	and jumping to $\tiiat{\phi_1}$,
 	satisfying case 1.
-	Otherwise, by DPOR's definition of transition dependence \cite{dpor,landslide-phdthesis},
+	Otherwise, by DPOR's definition of transition dependence \cite{dpor}, %,landslide-phdthesis},
 	$\tiiat{\beta_{b+1}}\dots\tiiat{\beta_n}$ is independent with the transitions of \tjj and \tkk,
 	may be successfully executed until transaction commit,
 	and reordering them produces an equivalent interleaving,
@@ -570,15 +570,15 @@ Hence, data-race analysis is sound when transaction boundaries are replaced by a
 
 \subsection{Implementation}
 
-Our implementation of HTM has been incorporated by the Landslide maintainers upstream.
-The repository is available open-source at \url{https://github.com/bblum/landslide}.
+Our implementation of HTM-equivalent semantics has been incorporated by the Landslide maintainers upstream.
+It is available open-source at \url{https://github.com/bblum/landslide}.
 Programs should be ported to the Pebbles userland \cite{thrlib,kspec},
 their use of compiler HTM intrinsics should be replaced with the Landslide stubs provided in {\tt 410user/inc/htm.h},
 and HTM nondeterminism can then be enabled with the {\tt -X} command-line flag.
 We have also extended its Iterative Deepening implementation \cite{quicksand}
-with an option ({\tt -M} flag) to
-to optimize for completion time by prioritizing the maximal state space job and cancelling all others,
-while maintaining its soundness guarantee,
+with a new option ({\tt -M} flag) to
+to optimize for completion time by prioritizing the maximal state space job and cancelling all others
+(which maintains its soundness guarantee)
 which we will use in our evaluation.
 All test cases therein are also available in the repository linked above.
 %Several example tests are also provided:
@@ -741,6 +741,11 @@ We draw three main conclusions from this data.
 		The presence of {\tt while (\_retry);} makes the necessary preemption window extremely small
 		in practice (between it and {\tt \_xbegin()}),
 		whereas MC is blind to such matters of chance.%
+		% NB. In case a reader doesn't believe this footnote,
+		% I put the loop back in (with thr_yield(-1) therein) to restore the original state space,
+		% and found the bug with these statistics:
+		% [JOB 28] progress: 1957/3005897 brs (0.065105%), ETA 6414673y 121d 18h 28m 59s (elapsed 3m 15s)
+		% [JOB 28] BUG FOUND: landslide-trace-1521099044.76395.html (1958 interleavings tested; 3 preemptions; job time 3m 15s; pldi time 746832861; new-fixed pldi cputime 823243872)
 		\footnote{Considering the loop does not affect the test's possible behaviours,
 		only its {\em likely} ones,
 		we removed it in Landslide's version of the test to keep the state space size manageable.}
@@ -754,7 +759,7 @@ We draw three main conclusions from this data.
 
 % TODO syntax hilighting
 \begin{figure}[t]
-	\begin{center}
+	%\begin{center}
 		\begin{tabular}{l}
 		%\texttt{void count() \{} \\
 		%\texttt{~~~~for (int i = 0; i < 1000; i++) \{} \\
@@ -770,7 +775,7 @@ We draw three main conclusions from this data.
 		\texttt{~~~~pthread\_mutex\_unlock(\&\_tree\_lock);} \\
 		\texttt{\}} \\
 		\end{tabular}
-	\end{center}
+	%\end{center}
 	%\caption{mario man had a very large house. or a castle.}
 	\caption{Unmodified code from {\tt htmavl.cpp} with the previously-unknown bug found by Landslide.
 		The transaction path fails to check {\tt \_retry},
@@ -835,7 +840,7 @@ we simply present their state space sizes and runtime (using {\tt -M}) in Table~
 			\hline
 			{\tt swap}
 			& 2,1 & \cpu{38.77}	& \ints{228}	\\
-			& 2,2 &	&	\\ % TODO: fix, or use timeout if you HAVE to
+			& 2,2 & &       \\ % TODO: fix, or use timeout if you HAVE to
 			%[JOB 8] progress: 97913/161897 brs (60.478362%), ETA 1h 29m 30s (elapsed 59m 52s)
 			% [JOB 8] TIMED OUT (60.478362%; ETA 1h 29m 30s)
 
@@ -846,6 +851,10 @@ we simply present their state space sizes and runtime (using {\tt -M}) in Table~
 			{\tt avl\_insert}
 			& 2,1 & \cpu{1083.35}	& \ints{40062}	\\
 			%& 2,2 & \multicolumn{2}{c}{\em (bug!)} \\
+			\hline
+			{\tt avl\_fixed} % TODO
+			& 2,1 & 	& 	\\
+			& 2,2 & 	& 	\\
 			\hline
 			{\tt map\_basic}
 			& 2,1 & \ETAdag{10d 16h} & \ETAdag{16388977} \\
@@ -939,12 +948,12 @@ Future work should figure out why.
 
 \begin{table}[t]
 	\begin{center}
-	\begin{tabular}{l|r|c}
-		\bf Landslide mode & \bf total int's & \cpu{\bf cpu (s)} \\
+	\begin{tabular}{l|c|r}
+		\bf Landslide mode & \cpu{\bf cpu (s)} & \ints{\bf total int's} \\
 		\hline
-		{\sf verif} ({\tt -M})		& 403  & \cpu{~~14.95 $\pm$ 00.17} \\
-		{\sf reinstrument}		& 403  & \cpu{~~24.72 $\pm$ 00.10}	\\
-		{\sf quicksand} (no {\tt -M})	& 2128 & \cpu{120.53 $\pm$ 18.62}	\\
+		{\sf verif} ({\tt -M})		& \cpu{~~14.95 $\pm$ 00.17} &  \ints{403} \\
+		{\sf reinstrument}		& \cpu{~~24.72 $\pm$ 00.10} &  \ints{403}     \\
+		{\sf quicksand} (no {\tt -M})	& \cpu{120.53 $\pm$ 18.62}  & \ints{2128}     \\
 	\end{tabular}
 	\end{center}
 	\caption{Performance variance on {\tt counter}(2,2) in various modes.
