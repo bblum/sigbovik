@@ -799,7 +799,7 @@ Table~\ref{tab:variants} shows the impact of running a single Landslide instance
 with various programs also running, despite never saturating our test system's 8 CPUs.
 % for i in `seq 1 10`; do ./landslide -X -v -p counter -M 2>&1 | grep 'total CPU time'; done
 
-\begin{table}[t]
+\begin{table}[h]
 	\begin{center}
 	\begin{tabular}{l|c|c|c}
 		load & cputime (s) & vs self avg & vs baseline \\
@@ -836,7 +836,7 @@ with 6 samples in a distribution of 106.14$\pm$1.22 and 4 in 142.11$\pm$1.67,
 suggesting two distinct scheduling patterns for its workqueue threads.
 Future work should figure out why.
 
-\begin{table}[t]
+\begin{table}[h]
 	\begin{center}
 	\begin{tabular}{l|r|r}
 		Landslide mode & total int's & cputime (s) \\
@@ -856,8 +856,6 @@ We conclude that MC performance evaluations must address
 experimental environment variables
 %at least enough
 to ensure consistent performance between runs.
-Considering recent news on cross-VM cache attacks \cite{meltdown,spectre},
-we also conjecture that cloud-based virtual machines cannot be trusted for low-variance performance measurements.
 So doing, multiple samples and error bars are then necessary
 only when using nondeterministic search ordering strategies
 such as Iterative Deepening.
@@ -866,10 +864,15 @@ they need be shown only for a token small test
 to promise the reader the same consistency in the larger tests
 (especially if the time tradeoff to measure them would sacrifice testing larger state spaces to begin with).
 % We also advise the busy researcher to torrent their anime rather than stream it. % lol can't put this in a paper
+%% i'm not actually sure this fits..
+%Finally, considering recent news on cross-VM cache attacks \cite{meltdown,spectre},
+%we also conjecture that cloud-based virtual machines cannot be trusted for low-variance performance measurements.
 
-Outside of Table~\ref{tab:variants}, we measured all performance numbers
+Outside of Table~\ref{tab:variants}, we fixed our environment by measuring all performance numbers
 with Firefox and Chrome as the only other significant machine load.
-(we gotta stay amused somehow).
+%(we gotta stay amused somehow).
+We believe the exponential differences among completion times justifies the absence of error bars,
+which would be expected to show 2\% variance if extrapolating from this experiment.
 The numbers of interleavings in each state space are, of course, deterministic and do not vary across runs.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -912,7 +915,8 @@ if the client abstracts it away behind a retry loop.
 In fact, applying both reductions simultaneously
 produces a state space smaller than the original;
 testing them by hand (trusting their soundness by visual inspection)
-on {\tt map\_basic}(2,1) reduced its 28635 interleavings to 11577.
+on {\tt map\_basicer}(2,1) reduced its 28635 interleavings to 11577
+(although {\tt map\_basic}(2,1) lies still beyond reach).
 %We tested both reductions by hand, trusting their soundness by visual inspection,
 %on {\tt map\_basic}(2,1),
 %and preview the resulting state space sizes in Table~\ref{tab:abort-codes}.
@@ -929,7 +933,7 @@ to Landslide (in addition to {\tt -X}).
 
 {\bf Relaxed memory orderings.}
 Section~\ref{sec:design}'s formalization of thread interleavings does not account for read/write reorderings
-possible on relaxed memory consistency architectures \cite{memory-consistency-models}.
+possible on relaxed consistency architectures \cite{memory-consistency-models}.
 In fact,
 even after \cite{htm-mario}'s proposed fix,
 our running example program is still incorrect on Total Store Ordering (TSO) architectures such as x86.
