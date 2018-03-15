@@ -892,8 +892,10 @@ we simply present their state space sizes and runtime (using {\tt -M}) in Table~
 			{\tt map\_basicer}
 			& 2,1 & \cpu{877.44}& \ints{28635}	\\
 			& 2,2 & \ETAdag{2d 7h} & \ETAdag{5925634} \\
-			& 3,1 & 	& 	\\ % TODO
-			% ^^ running now, certified not recompiled
+			& 3,1 & \ETAdag{468d 13h} & \ETAdag{35893653} \\
+			% [JOB 5] progress: 100181/35893653 brs (0.279105%), ETA 1y 103d 12h 50m 47s (elapsed 59m 24s)
+			%[JOB 5] TIMED OUT (0.279105%; ETA 1y 103d 12h 50m 47s)
+			% i don't know what this is but it was hanging out under 3,1 here :<
 			%[JOB 6] progress: 35042/5925634 brs (0.591363%), ETA 2d 6h 40m 30s (elapsed 21m 12s)
 			%[JOB 6] TIMED OUT (0.591363%; ETA 2d 6h 40m 30s)
 		\end{tabular}
@@ -911,7 +913,7 @@ after a timeout of 1 hour
 although note the two estimate types use different algorithms so may disagree significantly).
 %For these, Table~\ref{tab:timeouts} presents their size estimates at the moment of timeout.
 Though these tests proved beyond our reach,
-in contrast with the high speed expected of bug-finding results,
+in contrast with the instant gratification expected of bug-finding,
 %we believe
 the verification guarantee may in some cases be worth the estimated time requirement
 for widely-used industrial implementations.
@@ -925,12 +927,14 @@ we regret being unable to present every performance measurement above
 as an average of multiple samples with error bars \cite{epsilon}.
 Nevertheless, we make some effort to address variance.
 
-We noticed significant slowdowns when varying several factors of our experimental environment.
-For example, multiple Landslides running at once on our test machine slow each other down,
+We noticed significant slowdowns when varying several aspects of our experimental environment.
+For example, multiple Landslides running at once
+%on our test machine
+slow each other down,
 %(including multiple single state spaces in a single test when not using {\tt -M}),
 likely arising from kernel resource contention as Landslide uses {\tt fork()} to save simulation state.
 Table~\ref{tab:variants} shows the impact of running a single Landslide instance with {\tt -M} on
-{\tt counter}(2,2) (384 distinct interleavings)
+{\tt counter}(2,2) %(384 distinct interleavings)
 with various programs also running, despite never saturating our test system's 8 CPUs.
 % for i in `seq 1 10`; do ./landslide -X -v -p counter -M 2>&1 | grep 'total CPU time'; done
 
@@ -938,6 +942,10 @@ Table~\ref{tab:variants2} shows
 the impact of Landslide needing to automatically annotate {\tt counter}(2,2) being run for the first time,
 rather than reusing existing instrumentation,
 as well as the variance of Quicksand mode. %(i.e., without {\tt -M}).
+Because Quicksand repeats more work across jobs,
+rather than comparing it to a baseline,
+we show in the right column how many total interleavings each approach executed.
+(The maximal state space alone comprises 384 in all cases.)
 %(2128 interleavings total).
 The {\sf quicksand} variance was surprisingly bimodal,
 with 6 samples in a distribution of 106.14$\pm$1.22 and 4 in 142.11$\pm$1.67,
@@ -1048,14 +1056,17 @@ for example,
 explicit and conflict aborts need not be tested separately in transactions
 whose failure paths do not distinguish the cause,
 and the perennial {\tt \_XABORT\_RETRY} abort can be skipped entirely
-if the client abstracts it away behind a retry loop.%
-\footnote{Proof left to future work. We've proved enough here already.}
+if the client abstracts it away behind a retry loop.
 In fact, applying both reductions simultaneously
-produces a state space smaller than the original;
-testing them by hand
+amounts to the STM concurrency model \cite{stm-pldi06}%
+\footnote{Proof left to future work. We've proved enough here already.}
+and may reduce the state space even smaller than the original.
+Testing them by hand
 \footnote{Using visual inspection of the test to trust the reductions' soundness.}
-reduced {\tt map\_basicer}(2,1)'s 28635 interleavings to 11577.
-% TODO: try map_basic and get a 1 hour estimate
+reduced {\tt map\_basicer}(2,1)'s 28635 interleavings to 11577,
+and produced the same 384-interleaving state space on {\tt counter}(2,2)
+(in which DPOR triggers conflict aborts on every transaction anyway).
+%and {\tt map\_basic}(2,1)'s 1-hour size estimate from 16388977 to 16126960. % about the same after all...
 %(although {\tt map\_basic}(2,1) lies still beyond reach).
 %We tested both reductions by hand, trusting their soundness by visual inspection,
 %on {\tt map\_basic}(2,1),
@@ -1069,14 +1080,15 @@ reduced {\tt map\_basicer}(2,1)'s 28635 interleavings to 11577.
 Future work could use static or dynamic flow analysis to
 identify such reduction opportunities automatically;
 for now, this feature is disabled by default but accessible via the {\tt -A} command-line option
-to Landslide (in addition to {\tt -X}).
+%to Landslide
+(in addition to {\tt -X}).
 
 {\bf Relaxed memory orderings.}
 Section~\ref{sec:design}'s formalization of thread interleavings does not account for read/write reorderings
 possible on relaxed consistency architectures \cite{memory-consistency-models}.
 In fact,
 even after \cite{htm-mario}'s proposed fix,
-our running example program is still incorrect on Total Store Ordering (TSO) architectures such as x86.
+our running example program is still incorrect on Total Store Order (TSO) architectures such as x86.
 Despite stores being totally-ordered, x86 may still reorder stores after subsequent loads.
 Accordingly, an execution of $8,9a,9b,9c$ in Figure~\ref{fig:htm-fixed}
 may be locally visible to another thread as $9a,8,9b,9c$,
@@ -1087,7 +1099,7 @@ and hence an apparent interleaving of
 is possible
 (reordered accesses underlined for emphasis).
 An {\tt mfence} barrier is needed between lines 8 and 9 to solve this problem on TSO \cite{tsx-need-barrier}.
-On Partial Store Ordering (PSO) architectures, even more barriers may be necessary.
+On Partial Store Order (PSO) architectures, even more barriers may be necessary.
 
 Because Landslide's concurrency model includes only instruction-level thread nondeterminism,
 not per-CPU memory buffer reorderings,
@@ -1121,6 +1133,7 @@ We thank Mario Dehesa-Azuara for generously providing the HTM data structures an
 %Microsoft Research, MongoDB, NetApp, Oracle, Samsung America, Seagate,
 %Tintri, Two Sigma, Uber, Veritas and Western Digital).
 This work was supported in part by the U.S. Army Research Office under grant number W911NF0910273.
+\vspace{1em}
 
 \bibliographystyle{abbrv}
 \bibliography{citations}
