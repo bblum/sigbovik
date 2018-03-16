@@ -206,7 +206,7 @@ but verifying the client programs written to use transactions remains an open pr
 
 % threads
 \definecolor{lavender}{RGB}{102,65,208} % (?? i don't know what happened here anymore but it looks good)
-\definecolor{seafoam}{RGB}{65,178,76} % * 3/4
+\definecolor{seafoam}{RGB}{56,158,68} % * 2/3
 \definecolor{salmon}{RGB}{208,89,74} % * 7/8
 
 % eval data
@@ -324,7 +324,7 @@ For discussion of relaxed memory models refer to Section~\ref{sec:warpzone}.}
 \subsection{Example}
 
 Consider again the program in Figure~\ref{fig:htm-example}.
-Note that the C-style {\tt x++} operations, when compiled into assembly,
+Note that the C-style {\tt x++} operations, when compiled into assembly \cite{printy},
 results in multiple memory accesses which can be interleaved with other threads.
 \[
 \begin{tabular}{ll}
@@ -850,15 +850,17 @@ we simply present their state space sizes and runtime (using {\tt -M}) in Table~
 			& 2,2 & \cpu{133.78}	& \ints{4902}	\\
 			& 2,3 &\cpu{1986.98}	& \ints{79017}	\\
 			& 3,1 &\cpu{11672.15}	& \ints{467730}	\\
-			& 3,2 &	&	\\ % TODO currently running
+			& 3,2 &	\ETAdag{10d 14h}& \ETAdag{13763999}	\\
+			%[JOB 4] progress: 127032/13763999 brs (0.922929%), ETA 10d 13h 52m 44s (elapsed 59m 56s)
+			%[JOB 4] TIMED OUT (0.922929%; ETA 10d 13h 52m 44s)
 			\hline
 			{\tt counter}
 			& 2,1 & \cpu{5.57}	& \ints{30}	\\
 			& 2,2 & \cpu{15.53}	& \ints{384}	\\
-			& 2,3 &\cpu{20.00}	& \ints{5280}	\\
+			& 2,3 &\cpu{155.00}	& \ints{5280}	\\
 			& 2,4 &\cpu{2211.10}	& \ints{75264}	\\
 			& 3,1 & \cpu{57.90}	& \ints{1960}	\\
-			& 3,2 &		& 	\\ % TODO
+			& 3,2 & \cpu{10028.93}	& \ints{329888}	\\ % TODO running atm
 			\hline
 			{\tt swap}
 			%& 2,1 & \cpu{38.77}	& \ints{228}	\\ % pre-ignore_thr_func fix
@@ -1139,7 +1141,7 @@ We thank Mario Dehesa-Azuara for generously providing the HTM data structures us
 % no
 %and the anonymous SIGBOVIK reviewers for their helpful comments.
 the anonymous SIGBOVIK program committee,
-and anyone who actually read this meta-joke of a non-joke paper in entirety.
+and anyone who actually read this unusual paper all the way through.
 %We also thank the member companies of the PDL Consortium (Broadcom,
 %Citadel, EMC, Facebook, Google, Hewlett-Packard Labs, Hitachi, Intel,
 %Microsoft Research, MongoDB, NetApp, Oracle, Samsung America, Seagate,
