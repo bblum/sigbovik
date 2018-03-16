@@ -101,7 +101,7 @@ it
 comes at a cost in implementation complexity:
 %programmers must support their
 fast-path code must be accompanied by backup paths to handle transaction failure.
-
+%
 We extend Landslide, a popular stateless model checker,
 with a concurrency model for transactional memory
 and evaluate it on several real-world transactional
@@ -122,7 +122,7 @@ is an instruction set extension for x86 CPUs which adds hardware-based transacti
 The processor uses its existing cache coherence algorithm to
 check for memory conflicts with other cores while temporarily staging a sequence of memory accesses.
 If no other CPU accesses the same memory during the transaction,
-the access sequence is committed to main memory atomically (with respect to visibility to other CPUs).
+the access sequence is committed to main memory atomically (with respect to visibility by other CPUs).
 Otherwise, the accesses are discarded, the CPU's local state is reverted, and the transaction returns a failure code.
 
 This feature can be used to replace conventional locking in performance-critical concurrent programs.
@@ -144,7 +144,7 @@ which even in the simplest transactions requires complex synchronization sequenc
 This introduces an additional dimension of nondeterminism into an already concurrent program,
 and moreover, because transaction failure is expected to be rare,
 % だからこそ
-obscure interleavings between failure paths are difficult to expose during testing.
+obscure interleavings between failure paths are difficult to expose during stress testing.
 
 This motivates the use of stateless model checking (MC) \cite{verisoft}
 to comprehensively verify these transactional programs,
@@ -180,7 +180,7 @@ in both hardware transactional memory and stateless model checking,
 which we propose to combine.
 
 {\bf Hardware transactional memory.}
-TSX was supported on consumer hardware for the first time by Intel's Haswell architecture \cite{htm-haswell},
+TSX was implemented on consumer hardware for the first time by Intel's Haswell architecture \cite{htm-haswell},
 which extends the x86 instruction set to provide
 {\tt xbegin}, {\tt xend}, and {\tt xabort} for beginning, committing, and aborting
 transactions, respectively.
@@ -223,6 +223,35 @@ but verifying the client programs written to use transactions remains an open pr
 \newcommand\const[1]{\hilight{brickred}{#1}\xspace}
 \newcommand\call[1]{\hilight{pinkish}{#1}}
 
+Under software transactional memory (STM) \cite{stm-pldi06},
+memory conflicts with other threads are the only reason for transaction failure
+(apart from programmer-supplied explicit aborts);
+hence, depending on program semantics, some transactions may be guaranteed to succeed.
+However, hardware transactions (HTM) may also fail
+for several other reasons such as random system interrupts or exhausting the CPU's cache capacity.
+Because timer interrupts can in principle occur at any moment,
+and with arbitrary frequency (observable by the program, perhaps as a result of a heavily-loaded system),
+in this paper we will simplify the failure model by saying that HTM transactions can fail for any reason.
+We defer discussion of programs which distinguish the reason for aborts through the failure code to Section~\ref{sec:warpzone}.
+
+{\bf Stateless model checking.}
+Model checking (MC) \cite{verisoft} is a testing technique for systematically executing and verifying
+the possible thread interleavings of a concurrent program.
+The main research challenge is to cope with exponential explosion of the state space,
+which is sized $O(n^k)$ for a program with $n$ operations and $k$ threads.
+Some {\em stateful} MCs explicitly store and compare all visited states of the program being tested \cite{spin},
+which both keeps track of test coverage
+and allows identifying identical states to avoid testing redundant interleavings.
+%
+By contrast, {\em stateless} MC (henceforth abbreviated simply as MC)
+stores only the current sequence of execution events to avoid a prohibitive memory footprint.
+Reduction algorithms \cite{dpor,optimal-dpor,satcheck,mcr,mcr,tsopso}
+can then analyze the memory accesses in that sequence to identify
+interleavings observationally-equivalent under Mazurkiewicz trace theory \cite{mazurkiewicz} and hence safe to skip.
+The resulting state spaces are still exponentially-sized,
+but only in the number of conflicting operations rather than all operations.
+Of these, Landslide uses Dynamic Partial Order Reduction (DPOR) \cite{dpor} to prune its state spaces.
+
 \begin{figure}[t]
 	\begin{center}
 		\begin{tabular}{ll}
@@ -256,35 +285,6 @@ but verifying the client programs written to use transactions remains an open pr
 	\label{fig:htm-example}
 \end{figure}
 
-Under software transactional memory (STM) \cite{stm-pldi06},
-memory conflicts with other threads are the only reason for transaction failure
-(apart from programmer-supplied explicit aborts);
-hence, depending on program semantics, some transactions may be guaranteed to succeed.
-However, hardware implementations (HTM) may also fail transactions
-for several other reasons such as random system interrupts or exhausting the CPU's cache capacity.
-Because timer interrupts can in principle occur at any moment,
-and with arbitrary frequency (observable by the program, perhaps as a result of a heavily-loaded system),
-in this paper we will simplify the failure model by saying that HTM transactions can fail for any reason.
-We defer discussion of programs which distinguish the reason for aborts through the failure code to Section~\ref{sec:warpzone}.
-
-{\bf Stateless model checking.}
-Model checking (MC) \cite{verisoft} is a testing technique for systematically executing and verifying
-the possible thread interleavings of a concurrent program.
-The main research challenge is to cope with exponential explosion of the state space,
-which is $O(n^k)$ for a program with $n$ operations and $k$ threads.
-Some {\em stateful} MCs explicitly store and compare all visited states of the program being tested \cite{spin},
-which both keeps track of test coverage
-and allows identifying identical states to avoid testing redundant interleavings.
-%
-By contrast, {\em stateless} MC (henceforth abbreviated simply as MC)
-stores only the current sequence of execution events to avoid a prohibitive memory footprint.
-Reduction algorithms \cite{dpor,optimal-dpor,satcheck,mcr,mcr,tsopso}
-can then analyze the memory accesses in that sequence to identify
-interleavings observationally-equivalent under Mazurkiewicz trace theory \cite{mazurkiewicz} and hence safe to skip.
-The resulting state spaces are still exponentially-sized,
-but only in the number of conflicting operations rather than all operations.
-Of these, Landslide uses Dynamic Partial Order Reduction (DPOR) \cite{dpor} to prune its state spaces.
-
 MCs may instrument programs to introduce thread switches at varying granularity, which affects the number of operations $n$.
 %The number of operations depends on how finely-grained the MC instruments the program to introduce thread switches.
 Some target distributed systems, instrumenting only message-passing events \cite{modist};
@@ -310,14 +310,14 @@ or {\tt xbegin} within one as a bug.
 
 This section presents our formalization of transactional memory in Landslide's framework of thread concurrency.
 We make two major simplifications:
-simulating transaction aborts as failure injections,
+simulating transaction aborts as immediate failure injections,
 and treating transaction atomicity as a global mutex during data-race analysis;
 and provide corresponding equivalence proofs.
 
 {\bf Notation.} Let $I = TN_1@L_1, TN_2@L_2, ... TN_n@L_n$,
 with $N_i$ a thread ID and $L_i$ a code line number,
 denote the execution sequence of a program as it runs according to the specified thread interleaving.%
-\footnote{This serialization of concurrent execution is told from the perspective of main memory
+\footnote{This serialization of concurrent execution is told from the perspective of all CPUs at once
 and hence assumes sequential consistency.
 For discussion of relaxed memory models refer to Section~\ref{sec:warpzone}.}
 
@@ -372,7 +372,7 @@ this highlights MC's dependence on its test cases to produce meaningful state sp
 \]
 Prior work \cite{htm-mario} proposed the idiom shown in Figure~\ref{fig:htm-fixed}
 to exclude this family of interleavings,
-showing that correctly synchronizing even the simplest transactions may be surprisingly difficult or complex.
+which shows that correctly synchronizing even the simplest transactions may be surprisingly difficult or complex.
 %further motivating our research.
 
 \begin{figure}[t]
@@ -410,7 +410,7 @@ showing that correctly synchronizing even the simplest transactions may be surpr
 \subsection{Modeling Transaction Failure}
 
 Left unstated in interleavings such as $\tiat{1-2c}, \tjat{1-3}, \tiat{4-7}$%
-\footnote{For the sake of example I reorder \ti's write to {\tt x} before \tj's part here.}
+\footnote{For a clearer example we reorder \ti's write to {\tt x} before \tj's part here.}
 are HTM's execution semantics, namely:
 \begin{enumerate}
 	\item any modifications to shared state (such as $2c$) by \ti are not visible to \tj during its execution,
@@ -421,7 +421,7 @@ are HTM's execution semantics, namely:
 While use of TSX in production requires the performance advantage
 of temporarily staging such accesses in local CPU cache,
 model checking such programs need be concerned only with the program's {\em observable} behaviours.
-We claim that MCing the interleaving $\tiat{1}, \tjat{1-3}, \tiat{4-7}$
+We claim that MCing the simpler interleaving $\tiat{1}, \tjat{1-3}, \tiat{4-7}$
 is an equivalent verification as MCing the one above;
 in fact, this interleaving suffices to check
 all observable behaviours
@@ -512,7 +512,7 @@ The second part of our claim follows naturally.
 
 Next, we address the memory accesses within transactions with regard to data-race analysis.
 From Theorem~\ref{thm:atom} we have that the body of all transactions may be executed atomically within the MC environment.
-While they may interleave within other non-transactional sequences,
+While they may interleave between other non-transactional sequences,
 no other operations (whether transactional or not) will interrupt them.
 We claim this level of atomicity is equivalent to that provided by a global lock,
 and hence abstracting it as such in Landslide's data-race analysis is sound.
@@ -538,7 +538,9 @@ For each, we semiformally state what it means to race in an execution with synch
 
 \begin{itemize}
 	\item {\bf Limited Happens-Before.}
-		Under this definition, to be a data race in $I$ they must be reorderable at instruction granularity
+		%Under this definition,
+		To race in $I$ they must be reorderable at instruction granularity,
+		at least one with a thread switch immediately before or after.
 		\cite{tsan,hybriddatarace}.
 		\begin{itemize}
 			\llitem $I \Rightarrow I'$:
@@ -559,7 +561,7 @@ For each, we semiformally state what it means to race in an execution with synch
 		\end{itemize}
 	\item {\bf Pure Happens-Before.}
 		WLOG fix $\tiiat{\mu} \prec \tjjat{\nu} \in I$.
-		Then under this definition, to be a data race in $I$ there must be no pair of synchronizing instructions
+		Then to race in $I$ there must be no pair of synchronizing instructions
 		$\tiiat{\epsilon}$ (a release edge) and $\tjjat{\chi}$ (an acquire edge) such that
 		\[
 			\tiiat{\mu} \prec \tiiat{\epsilon} \prec \tjjat{\chi} \prec \tjjat{\nu} \in I
@@ -657,7 +659,7 @@ All test cases therein are also available in the repository linked above.
 			% but for the last few minutes i had another landslide running in parallel bc i thought itd time out.
 			% according to variance expt, it should be rerun for a *minor* speedup, but i can't be bothered
 			& 2,3	&\cpu{2670.87}&\wtm{*330.45}&\ints{*3066}&\cpu{*1331.79}&\wtm{1274.36}&\ints{13926}&\ETA{96248131} \\
-			& 2,4	&\cpu{*3259.37}&\wtm{436.50}&\ints{*1639}&\ETA{--}&\ETA{>30m}&\ETA{--}& \ETA{36019973} \\
+			& 2,4	&\cpu{*3259.37}&\wtm{*436.50}&\ints{*1639}&\ETA{--}&\ETA{>30m}&\ETA{--}& \ETA{36019973} \\
 			% smaller than above? estimate's just fickle i guess; they can go up or down with time
 		\cline{2-9}
 			& 3,1	&\cpu{222.02}&\wtm{40.04}&\ints{*28}	&\cpu{*69.99}&\wtm{*24.25}&\ints{78}&\ETA{1572107} \\
@@ -681,7 +683,7 @@ All test cases therein are also available in the repository linked above.
 
 To the best of our knowledge, this is the first work to test transactional programs in a model-checking environment,
 %To the best of the author's knowledge, Landslide is the first MC to check transactional concurrency,
-so no other MC State-of-the-Art%
+so no other MC State of the Art%
 \footnote{The author's DJ name.}
 exists to compare to in controlled experiments.
 Nevertheless, we pose the following evaluation questions.
@@ -728,9 +730,9 @@ We draw three main conclusions from this data.
 	%\item
 
 		{\bf Finding bugs quickly.}
-		The multiplicative factor in bug-finding speed (2-4x, eyeballing) is generally smaller
-		than that of the total number of interleavings (10-100x)
-		as the test parameters increase.
+		As the test parameters increase,
+		the multiplicative factor in bug-finding speed (2-4x, eyeballing) is generally smaller
+		than that of the total number of interleavings (10-100x).
 		In other words,
 		should they exist,
 		Landslide find bugs reasonably quickly in these transactional programs
@@ -796,7 +798,7 @@ We draw three main conclusions from this data.
 		\end{tabular}
 	%\end{center}
 	%\caption{mario man had a very large house. or a castle.}
-	\caption{Unmodified code from {\tt htmavl.cpp} with the previously-unknown bug found by Landslide.
+	\caption{Unmodified code from {\tt htmavl.cpp} showing the previously-unknown bug found by Landslide.
 		The transaction path fails to check {\tt \_retry},
 		leading to data races and corruption just as in {\tt htm1}.
 		}
@@ -848,7 +850,7 @@ we simply present their state space sizes and runtime (using {\tt -M}) in Table~
 			& 2,2 & \cpu{133.78}	& \ints{4902}	\\
 			& 2,3 &\cpu{1986.98}	& \ints{79017}	\\
 			& 3,1 &\cpu{11672.15}	& \ints{467730}	\\
-			%& 3,2 &	&	\\
+			& 3,2 &	&	\\ % TODO currently running
 			\hline
 			{\tt counter}
 			& 2,1 & \cpu{5.57}	& \ints{30}	\\
@@ -856,7 +858,7 @@ we simply present their state space sizes and runtime (using {\tt -M}) in Table~
 			& 2,3 &\cpu{20.00}	& \ints{5280}	\\
 			& 2,4 &\cpu{2211.10}	& \ints{75264}	\\
 			& 3,1 & \cpu{57.90}	& \ints{1960}	\\
-			%& 3,2 &		& 	\\
+			& 3,2 &		& 	\\ % TODO
 			\hline
 			{\tt swap}
 			%& 2,1 & \cpu{38.77}	& \ints{228}	\\ % pre-ignore_thr_func fix
@@ -961,18 +963,20 @@ only when using nondeterministic search ordering strategies
 such as Iterative Deepening.
 Otherwise, considering the low variance shown in Table~\ref{tab:variants},
 they need be shown only for a token small test
-to promise the reader the same consistency in the larger tests
+to provide reader some assurance of similar consistency in the larger tests
 (especially if the time tradeoff to measure them would sacrifice testing larger state spaces to begin with).
 % We also advise the busy researcher to torrent their anime rather than stream it. % lol can't put this in a paper
 %% i'm not actually sure this fits..
 %Finally, considering recent news on cross-VM cache attacks \cite{meltdown,spectre},
 %we also conjecture that cloud-based virtual machines cannot be trusted for low-variance performance measurements.
 
-Outside of this experiment, we fixed our environment by measuring all performance numbers
+%Outside of this experiment,
+For all tests outside of Table~\ref{tab:variants},
+we fixed our environment by measuring all performance numbers
 with Firefox and Chrome as the only other significant machine load.
 %(we gotta stay amused somehow).
 We believe the exponential differences among completion times justifies the absence of error bars,
-which would be expected to show 2\% variance if extrapolating from this experiment.
+which one would expect to show 2\% variance if extrapolating from these results. %this experiment.
 The numbers of interleavings in each state space are, of course, deterministic and do not vary across runs.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1103,14 +1107,18 @@ On Partial Store Order (PSO) architectures, even more barriers may be necessary.
 
 Because Landslide's concurrency model includes only instruction-level thread nondeterminism,
 not per-CPU memory buffer reorderings,
-our current HTM implementation in Landslide cannot find this bug.
-In fact, it erroneously verifies the corresponding test {\tt htm2} in 7 CPU-minutes,
-with 294 distinct interleavings in total,
+our current HTM implementation cannot find this bug.
+In fact, it erroneously verifies the corresponding test {\tt htm2}(3,1)
+% lol this is both old (quicksand) AND wrong (testing (2,1) which can't expose the bug)
+%in 7 CPU-minutes,
+%with 294 distinct interleavings in total,
+in 3 CPU-hours,
+with 467730 distinct interleavings in total,
 none of which include the above-listed sequence.
 Recent work extended DPOR to support TSO and PSO memory nondeterminism \cite{tsopso};
 if incorporated into Landslide, we could find or verify the absence of such bugs.
 Visual inspection of \cite{htm-mario}'s HTM data structures found no barriers used in this implementation pattern;
-we would urge any reader interested in using them to add them in by hand first.
+we would urge any reader interested in using those to add them in by hand first.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1127,13 +1135,16 @@ Also, the author hopes their committee won't mind the publication venue when the
 
 \acks
 
-We thank Mario Dehesa-Azuara for generously providing the HTM data structures and benchmarks used in our evaluation.
+We thank Mario Dehesa-Azuara for generously providing the HTM data structures used in our evaluation,
+% no
+%and the anonymous SIGBOVIK reviewers for their helpful comments.
+the anonymous SIGBOVIK program committee,
+and anyone who actually read this meta-joke of a non-joke paper in entirety.
 %We also thank the member companies of the PDL Consortium (Broadcom,
 %Citadel, EMC, Facebook, Google, Hewlett-Packard Labs, Hitachi, Intel,
 %Microsoft Research, MongoDB, NetApp, Oracle, Samsung America, Seagate,
 %Tintri, Two Sigma, Uber, Veritas and Western Digital).
 This work was supported in part by the U.S. Army Research Office under grant number W911NF0910273.
-\vspace{1em}
 
 \bibliographystyle{abbrv}
 \bibliography{citations}
