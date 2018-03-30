@@ -271,6 +271,7 @@ in which only two increments of {\tt x} are observed while three are expected.
 	& & \hilight{seafoam}{$2$} & \hilight{seafoam}{\texttt{x++;}} \\
 	& & \hilight{seafoam}{$3$} & \hilight{seafoam}{\texttt{\_xend();}} \\
 	%
+	& \hilight{lavender}{\em transaction fails} & & & \\
 	\hilight{lavender}{$5$} & \hilight{lavender}{\texttt{mutex\_lock(m);}} & & \\
 	\hilight{lavender}{$6a$} & \hilight{lavender}{\texttt{temp <- x;}} & & \\
 	%
@@ -286,7 +287,7 @@ in which only two increments of {\tt x} are observed while three are expected.
 
 
 Prior work \cite{htm-mario} proposed the idiom shown in Figure~\ref{fig:htm-fixed}
-to exclude interleavings which violate the failure path's atomicity.
+to exclude interleavings which violate the failure path's atomicity such as shown above.
 Thread 1 would set the {\tt prevent\_transactions} flag across its {\tt x++} accesses,
 and
 Thread 3 would have to check it and trigger an abort. %(Figure \ref{fig:htm-fixed} lines 2-3).
@@ -327,6 +328,7 @@ Thread 3 would have to check it and trigger an abort. %(Figure \ref{fig:htm-fixe
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\newpage
 \section{Implementation}
 
 To model check a transactional program it suffices to test a set of interleavings
@@ -395,7 +397,7 @@ The notation {\tt testname}$(K,N)$ will denote a test configuration of $K$ threa
 All tests were run on an 8-core 2.7GHz Core i7 with 32 GB RAM.
 
 \subsection{Bugs}
-
+\label{sec:bugs}
 
 Table~\ref{tab:buges}
 presents our bug-finding results.
@@ -488,6 +490,7 @@ then trusted in turn when checking their client programs \cite{dbug-phdthesis}.
 	\end{tabular}
 	\end{center}
 	\caption{Landslide's bug-finding performance on various test configurations.
+		A parameter of $K,N$ denotes $K$ threads each running the test logic for $N$ iterations.
 		We list the CPU-time and wall-clock time %(both in seconds)
 		elapsed, %until the bug was found,
 		plus the number of interleavings of the ultimately buggy state space tested,
@@ -586,13 +589,14 @@ then trusted in turn when checking their client programs \cite{dbug-phdthesis}.
 		\end{tabular}
 	\end{center}
 	%\caption{mario man had a very large house. or a castle.}
-	\caption{Unmodified code from {\tt htmavl.cpp} showing the previously-unknown bug found by Landslide.
+	\caption{Unmodified code from {\tt htmavl.hpp} showing the previously-unknown bug found by Landslide.
 		The transaction path fails to check {\tt \_retry},
 		leading to data races and corruption just as in {\tt htm1}.
 		}
 	\label{fig:avlbug}
 \end{figure}
 
+\newpage
 \subsection{Verification}
 
 Landslide proved several of our test configurations correct, as shown in Table~\ref{tab:verifs}
@@ -605,8 +609,23 @@ Several larger tests we were unable to complete. %within several hours.
 These are indicated with $\dagger$ %\ETAdag{}
 and their listed ETAs and state space sizes represent Landslide's estimate %at the moment of timeout.
 after a timeout of 1 hour
-(hopefully enough for data-race PPs to saturate and estimates to stablize,
-although note the two estimate types use different algorithms so may disagree significantly).
+(hopefully enough for data-race PPs to saturate and estimates to stablize).
+Note that the two estimate types use different underlying algorithms, so may disagree significantly,
+such as in {\tt avl\_fixed}$(2,2)$.
+
+While we verified {\tt avl\_fixed} for 2 threads and 1 iteration,
+the buggy {\tt avl\_insert} actually required higher parameters ($2,2$ or $3,1$) to expose the bug in the first place,
+either of which produced too large of a state space under {\tt avl\_fixed},
+so we were unable to formally verify that our fix actually removed the bug.
+Likewise, {\tt map\_basic}, which includes a concurrent map-resizing step,
+could not be verified even under the minimum parameters ($2,1$);
+at best we were able to verify a modified version {\tt map\_basicer}
+which started with a pre-sized map to test inserts only.
+Possible approaches to bring the sizes of these state spaces within reach
+include testing the synchronization mechanism and the data structure logic separately, as discussed in Section~\ref{sec:bugs},
+upgrading Landslide's exploration algorithms to achieve better reduction,
+\cite{optimal-dpor,mcr}.
+and identifying new types of equivalent interleavings under the new concurrency model \cite{thesprop}.
 
 \newcommand\ETAdag[1]{\ETA{\ensuremath{\dagger}#1}}
 \begin{table}[h!]
