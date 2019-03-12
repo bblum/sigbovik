@@ -2,16 +2,28 @@ import Data.List
 import Data.Char
 import Data.Maybe
 
-data Step = L | D | U | R | Jump deriving Eq
+data Step = L | D | U | R | J Jump deriving (Ord, Eq)
 
+data Jump = LD | LU | DR | UR | Other deriving (Ord, Eq)
+
+data Foot = LeftFoot | RightFoot deriving (Ord, Eq)
+
+alternate LeftFoot = RightFoot
+alternate RightFoot = LeftFoot
+
+-- TODO add a field to track what the last arrow the left foot and right foot were on
+-- if you commitstream flipped, you need to flip those around too
 data AnalysisState = S { steps :: Int, xovers :: Int, switches :: Int,
                          jacks :: Int, doubles :: Int, xoverfs :: Int,
+                         brackets :: Int, stepsAndJumps :: Int,
                          lastStep :: Maybe Step, lastJack :: Maybe Step,
-                         lastFlip :: Bool, lastFoot :: Bool, stepsLR :: [Bool] }
+                         lastFlip :: Bool, lastFoot :: Foot, stepsLR :: [Bool] }
 
 commitStream :: AnalysisState -> AnalysisState
 commitStream s = maybe s0 splitStream splitIndex
-    where ns = length $ stepsLR s
+    where -- number of steps in the chunk of stream
+          ns = length $ stepsLR s
+          -- number of (seemingly) crossed-over steps
           nx = length $ filter not $ stepsLR s
           -- if more than half the L/R steps in this stream were crossed over,
           -- then we got the footing backwards and need to flip the stream.
@@ -39,11 +51,15 @@ commitStream s = maybe s0 splitStream splitIndex
                    lastFlip = f, stepsLR = [] }
 
 analyzeStep :: AnalysisState -> Step -> AnalysisState
-analyzeStep s step
+analyzeStep s (J _) = -- TODO change to Other only and handle bracketables below
     -- a jump resets the footing, so the next step can be stepped with either
     -- foot. commit the stream so far to treat it separately from what follows.
     -- bracket-jumps are, of course, future work.
-    | step == Jump = (commitStream s) { lastStep = Nothing, lastJack = Nothing }
+    -- NB. old version! still holds for LR and DU jumps, as well as 3+s
+    (commitStream s) { lastStep = Nothing, lastJack = Nothing,
+                       stepsAndJumps = stepsAndJumps s + 1 }
+-- analyzeStep s (J jump) = undefined -- TODO
+analyzeStep s step
     -- two steps on the same arrow might be a jack, or might be a footswitch.
     -- to figure out which, commit the stream so far, and begin a new stream
     -- whose footing will retroactively determine how to foot this step.
@@ -51,16 +67,19 @@ analyzeStep s step
     | lastStep s == Just step = stream (commitStream s) { lastJack = Just step }
     -- a normal streamy step.
     | otherwise = stream s
-    where foot = not $ lastFoot s
+    where foot = alternate $ lastFoot s
           -- record whether we stepped on a matching or crossed-over L/R arrow.
-          addStep ft L steps = steps ++ [ft]
-          addStep ft R steps = steps ++ [not ft]
+          addStep ft L steps = steps ++ [ft == LeftFoot]
+          addStep ft R steps = steps ++ [ft == RightFoot]
           addStep ft _ steps = steps -- U/D don't help to determine L/R footing.
           stream s = s { steps = steps s + 1, lastStep = Just step, lastFoot = foot,
-                         stepsLR = addStep foot step $ stepsLR s }
+                         stepsLR = addStep foot step $ stepsLR s,
+                         stepsAndJumps = stepsAndJumps s + 1 }
 
+-- the above function flips step before comparing,
+-- so this starts the chart on the left foot, actually
 analyze :: [Step] -> AnalysisState
-analyze = commitStream . foldl analyzeStep (S 0 0 0 0 0 0 Nothing Nothing False False [])
+analyze = commitStream . foldl analyzeStep (S 0 0 0 0 0 0 0 0 Nothing Nothing False LeftFoot [])
 
 -- turns a line of stepchart, eg "0100", into a Step, e.g. "D"
 -- in stepchart-ese: 1 = tap; 2 = hold; 3 = hold release; 4 = roll; M = mine
@@ -68,7 +87,16 @@ stepify :: String -> Maybe Step
 stepify = step . map fst . filter snd . zip [L,D,U,R] . map (flip elem "124")
     where step [] = Nothing
           step [s] = Just s
-          step ss = Just Jump
+          step ss = Just $ J $ toJump $ sort ss -- ensure LDUR order, but
+          -- TODO i *think* the sort is not necessary, so after implemented,
+          -- TODO try removing it and testing to see if same resulce?
+          toJump [L,D] = LD
+          toJump [L,U] = LU
+          toJump [D,R] = DR
+          toJump [U,R] = UR
+          toJump [L,R] = Other -- cannot bracket opposite-arrow jumps
+          toJump [D,U] = Other -- (perhaps aka, "candle jumps"???)
+          toJump (_:_:_:_) = Other -- any other jumps must be 3+
 
 -- handles chart metadata and formats the analysis result into tsv
 process :: (String, [String]) -> String
@@ -77,8 +105,11 @@ process (title,(name:diff:feet:_:rest)) = intercalate "\t" $ metadata ++ result
           trim = reverse . tail . dropWhile isSpace . reverse . dropWhile isSpace
           metadata = map trim [title,name,diff,feet]
           finalState = analyze $ catMaybes $ map (stepify . dropWhile isSpace) rest
-          result = map (show . ($ finalState)) [steps, xovers, switches,
-                                                jacks, doubles, xoverfs]
+          -- printing stepsandjumps first for backwards compatibility with the
+          -- 2017-era test cases, which expect just 'steps' (== streamy steps)
+          -- (their answers must be a uninterrupted substring of the output)
+          result = map (show . ($ finalState)) [stepsAndJumps, steps, xovers, switches,
+                                                jacks, doubles, xoverfs, brackets]
 
 -- splits up the input file by the "#NOTES:" lines
 charts :: String -> [String] -> [(String, [String])]
