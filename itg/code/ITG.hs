@@ -2,9 +2,11 @@ import Data.List
 import Data.Char
 import Data.Maybe
 
-data Step = L | D | U | R | J Jump deriving (Ord, Eq)
+data Arrow = L| D | U | R deriving (Ord, Eq)
 
 data Jump = LD | LU | DR | UR | Other deriving (Ord, Eq)
+
+data Step = A Arrow | J Jump deriving (Ord, Eq)
 
 data Foot = LeftFoot | RightFoot deriving (Ord, Eq)
 
@@ -16,7 +18,7 @@ alternate RightFoot = LeftFoot
 data AnalysisState = S { steps :: Int, xovers :: Int, switches :: Int,
                          jacks :: Int, doubles :: Int, xoverfs :: Int,
                          brackets :: Int, stepsAndJumps :: Int,
-                         lastStep :: Maybe Step, lastJack :: Maybe Step,
+                         lastStep :: Maybe Arrow, lastJack :: Maybe Arrow,
                          lastFlip :: Bool, lastFoot :: Foot, stepsLR :: [Bool] }
 
 commitStream :: AnalysisState -> AnalysisState
@@ -59,12 +61,12 @@ analyzeStep s (J _) = -- TODO change to Other only and handle bracketables below
     (commitStream s) { lastStep = Nothing, lastJack = Nothing,
                        stepsAndJumps = stepsAndJumps s + 1 }
 -- analyzeStep s (J jump) = undefined -- TODO
-analyzeStep s step
+analyzeStep s (A arrow)
     -- two steps on the same arrow might be a jack, or might be a footswitch.
     -- to figure out which, commit the stream so far, and begin a new stream
     -- whose footing will retroactively determine how to foot this step.
     -- also, unlike jumps, this step gets counted as part of the next stream.
-    | lastStep s == Just step = stream (commitStream s) { lastJack = Just step }
+    | lastStep s == Just arrow = stream (commitStream s) { lastJack = Just arrow }
     -- a normal streamy step.
     | otherwise = stream s
     where foot = alternate $ lastFoot s
@@ -72,8 +74,8 @@ analyzeStep s step
           addStep ft L steps = steps ++ [ft == LeftFoot]
           addStep ft R steps = steps ++ [ft == RightFoot]
           addStep ft _ steps = steps -- U/D don't help to determine L/R footing.
-          stream s = s { steps = steps s + 1, lastStep = Just step, lastFoot = foot,
-                         stepsLR = addStep foot step $ stepsLR s,
+          stream s = s { steps = steps s + 1, lastStep = Just arrow, lastFoot = foot,
+                         stepsLR = addStep foot arrow $ stepsLR s,
                          stepsAndJumps = stepsAndJumps s + 1 }
 
 -- the above function flips step before comparing,
@@ -86,8 +88,8 @@ analyze = commitStream . foldl analyzeStep (S 0 0 0 0 0 0 0 0 Nothing Nothing Fa
 stepify :: String -> Maybe Step
 stepify = step . map fst . filter snd . zip [L,D,U,R] . map (flip elem "124")
     where step [] = Nothing
-          step [s] = Just s
-          step ss = Just $ J $ toJump $ sort ss -- ensure LDUR order, but
+          step [arrow] = Just $ A arrow
+          step arrows = Just $ J $ toJump $ sort arrows -- ensure LDUR order, but
           -- TODO i *think* the sort is not necessary, so after implemented,
           -- TODO try removing it and testing to see if same resulce?
           toJump [L,D] = LD
