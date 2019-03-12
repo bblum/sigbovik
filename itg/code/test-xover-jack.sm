@@ -1,4 +1,11 @@
-6,1,0,2,0,0
+8,1,0,2,0,0
+# note: before adding those first 2 steps (RD), the alg would step the chart
+# differently depending what foot you started it on, returning 6,1,0,2,0,0 if
+# starting on the left foot (stream flips = false,true,false), vs 6,1,1,1,0,1
+# if starting on the right foot (stream flips = true,true,false); instead doing
+# a xover-switch on "gets flipped" and a jack on the 2nd "j" only
+# so i added those first two lines to break the tie, starting the chart on a
+# not-crossed-over step no matter what
 #TITLE:Test;
 #NOTES:
 	dance-single:
@@ -6,6 +13,8 @@
 	Edit:
 	1:
 	:
+0001 // added 2019 to stabilize wrt starting foot
+0100 // added 2019 to stabilize wrt starting foot
 1000 // x
 0100
 0001 // gets flipped
