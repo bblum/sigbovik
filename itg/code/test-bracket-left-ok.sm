@@ -1,0 +1,14 @@
+5,4,0,0,0,0,0,1
+#TITLE:Test;
+#NOTES:
+	dance-single:
+	test:
+	Edit:
+	1:
+	:
+1000
+0010
+1100 // bracket this
+0010
+1000
+;

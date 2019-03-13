@@ -1,0 +1,18 @@
+9,6,0,0,0,0,0,0
+#TITLE:Test;
+#NOTES:
+	dance-single:
+	test:
+	Edit:
+	1:
+	:
+1000
+0010
+0101 // no, wrong foot
+1000
+0001
+0010
+0011 // no, left foot interferes
+0001
+0101 // no, wrong last foot again
+;

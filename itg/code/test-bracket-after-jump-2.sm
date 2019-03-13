@@ -1,0 +1,16 @@
+7,4,0,0,0,0,0,2
+#TITLE:Test;
+#NOTES:
+	dance-single:
+	test:
+	Edit:
+	1:
+	:
+1000
+0010
+0100
+0101 // normal jump
+0011 // can bracket this sucker
+1100 // this too
+0001
+;

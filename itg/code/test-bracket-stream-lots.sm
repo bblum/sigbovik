@@ -1,0 +1,22 @@
+13,8,0,0,0,0,0,5
+#TITLE:Test;
+#NOTES:
+	dance-single:
+	test:
+	Edit:
+	1:
+	:
+1000
+0010
+1100 // yes
+0010
+1100 // yes
+0001
+1010 // yes
+0100
+0010 // this is the tricky part, i think
+0101 // yes
+1000
+0011 // yes
+1000
+;

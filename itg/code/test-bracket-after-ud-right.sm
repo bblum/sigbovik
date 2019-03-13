@@ -1,0 +1,15 @@
+6,4,0,0,0,0,0,1
+#TITLE:Test;
+#NOTES:
+	dance-single:
+	test:
+	Edit:
+	1:
+	:
+1000
+0010
+0110 // no chance
+0011 // bracketable; right foot on U preserved thru the UD jump, hence left on D
+1000
+0001
+;

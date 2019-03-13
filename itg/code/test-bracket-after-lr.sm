@@ -1,0 +1,15 @@
+6,4,0,0,0,0,0,1
+#TITLE:Test;
+#NOTES:
+	dance-single:
+	test:
+	Edit:
+	1:
+	:
+1000
+0010
+1001 // no chance
+1010 // bracket this, even tho right was last on U, the LR should clear it
+0001
+1000
+;
