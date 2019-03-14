@@ -2,14 +2,15 @@ import Data.List
 import Data.Char
 import Data.Maybe
 import Data.Tuple
+import Debug.Trace
 
-data Arrow = L| D | U | R deriving (Ord, Eq)
+data Arrow = L| D | U | R deriving (Ord, Eq, Show)
 
-data Jump = LD | LU | DR | UR | Other deriving (Ord, Eq)
+data Jump = LD | LU | DR | UR | LR | DU | Other deriving (Ord, Eq, Show)
 
-data Step = A Arrow | J Jump deriving (Ord, Eq)
+data Step = A Arrow | J Jump deriving (Ord, Eq, Show)
 
-data Foot = LeftFoot | RightFoot deriving (Ord, Eq)
+data Foot = LeftFoot | RightFoot deriving (Ord, Eq, Show)
 
 alternate LeftFoot = RightFoot
 alternate RightFoot = LeftFoot
@@ -20,15 +21,18 @@ data AnalysisState = S { steps :: Int, xovers :: Int, switches :: Int,
                          jacks :: Int, doubles :: Int, xoverfs :: Int,
                          brackets :: Int, stepsAndJumps :: Int,
                          lastStep :: Maybe Arrow, lastJack :: Maybe Arrow,
-                         lastFlip :: Bool, lastFoot :: Foot, stepsLR :: [Bool],
+                         lastFlip :: Bool, lastFoot :: Maybe Foot, stepsLR :: [Bool],
                          -- used for bracket jumps e.g. if left foot's last
                          -- step was on U, right foot cannot bracket UR
                          lastArrowLR :: ([Arrow], [Arrow]), -- (left, right)
                          lastTrueLastArrowLR :: ([Arrow], [Arrow]) -- ugh...
-                       }
+                       } deriving Show
 
-commitStream :: AnalysisState -> AnalysisState
-commitStream s = maybe s0 splitStream splitIndex
+commitStream s = s' -- traceShow ("commit", s, "=>", s') s'
+    where s' = commitStream' s
+
+commitStream' :: AnalysisState -> AnalysisState
+commitStream' s = maybe s0 splitStream splitIndex
     where -- number of steps in the chunk of stream
           ns = length $ stepsLR s
           -- number of (seemingly) crossed-over steps
@@ -66,15 +70,11 @@ commitStream s = maybe s0 splitStream splitIndex
           -- update the true lastFoot and lastArrows (if nonzero stream)
           -- this way the value always shows our true position on the pad after
           -- the stream ended, to see if bracket jumps are possible
-          -- TODO: maintain a lastTrueLastArrowLR, snapshotted at time of last jump
-          -- merge it in with this in case either list is empty on this thing
-          -- patterns such as e.g., LD(bracket) R(step) LD(bracket) R(step)
-          -- may possibly trigger it
           (trueLastFoot, trueLastArrowLR) =
               -- no stream, or not flipped: keep as is
               if ns == 0 || not f then (lastFoot s, unifyArrows $ lastArrowLR s)
               -- notes existed & was flipped; flip these
-              else (alternate $ lastFoot s, unifyArrows $ swap $ lastArrowLR s)
+              else (alternate <$> lastFoot s, unifyArrows $ swap $ lastArrowLR s)
           s0 = s { xovers   = xovers   s + if f then ns - nx else nx,
                    switches = switches s + fromEnum (f == lastFlip s && jack),
                    jacks    = jacks    s + fromEnum (f /= lastFlip s && jack),
@@ -86,35 +86,58 @@ commitStream s = maybe s0 splitStream splitIndex
 -- a jump resets the footing, so the next step can be stepped with either
 -- foot. commit the stream so far to treat it separately from what follows.
 -- this is the old version; still holds for LR and DU jumps, as well as 3+s.
--- we clear lastArrowLR here to represent resetting footing
--- TODO: add a J UD case and have them track lastfoot to maintain the
--- player's facing through UD jumps (J LR not relevant unless attempting
--- xover bracket jumps)
--- ex test cases. should bracket:
--- L R U UD LU
--- should not bracket:
--- L R U UD LD
+-- we clear lastArrowLR here to represent resetting footing, and also clear the
+-- lastFoot; if it's bracketable, that will be re-set afterwards down below.
 commitJump s = s { lastStep = Nothing, lastJack = Nothing,
-                   stepsAndJumps = stepsAndJumps s + 1, lastArrowLR = ([],[]) }
+                   lastFoot = Nothing,
+                   stepsAndJumps = stepsAndJumps s + 1,
+                   lastArrowLR = ([],[]), lastTrueLastArrowLR = ([],[]) }
 
 analyzeStep :: AnalysisState -> Step -> AnalysisState
-analyzeStep s (J Other) =
-    commitJump $ commitStream s
+analyzeStep s (J DU) =
+    -- for DU jumps, try to mimimic the facing the player currently has
+    -- e.g. if L D DU LU, the DU faces right (left on U) so the LU can bracket
+    (commitJump s') { lastArrowLR = newLastArrows, lastTrueLastArrowLR = newLastArrows }
+    where s' = commitStream s
+          -- there's gotta be a cleaner way to do this?
+          decideDUFacing' _ False False True = ([D],[U]) -- easy case
+          decideDUFacing' True False False _ = ([D],[U]) -- easy case
+          decideDUFacing' False _ True False = ([U],[D]) -- easy case
+          decideDUFacing' False True _ False = ([U],[D]) -- easy case
+          decideDUFacing' True False True False = ([],[]) -- D footswitch; allow anyth
+          decideDUFacing' False True False True = ([],[]) -- U footswitch; allow anyth
+          decideDUFacing' False False False False = ([],[]) -- no footing known
+          decideDUFacing' _ _ _ _ = error "same foot on both D and U at once??"
+          decideDUFacing a b c d = x -- traceShow ("deciding ud facing",a,b,c,d,x) x
+              where x = decideDUFacing' a b c d
+          newLastArrows = decideDUFacing (elem D $ fst $ lastArrowLR s') -- left on D?
+                                         (elem U $ fst $ lastArrowLR s') -- or on U?
+                                         (elem D $ snd $ lastArrowLR s') -- right on D?
+                                         (elem U $ snd $ lastArrowLR s') -- or on U?
+analyzeStep s (J jump) | elem jump [LR,Other] =
+    let s'' = commitJump $ commitStream s in s'' -- traceShow ("other jump", s, s'') s''
 analyzeStep s (J jump) =
     if can_bracket jump newLastFoot lastArrows then
         (commitJump s') { brackets = brackets s' + 1,
-                          lastFoot = newLastFoot,
-                          lastArrowLR = updateLastArrow newLastFoot lastArrows $ bracketArrows jump
+                          lastFoot = Just newLastFoot,
+                          lastArrowLR = newLastArrows,
+                          lastTrueLastArrowLR = newLastArrows -- XXX: is this correct? seems to work without
                         }
     else
-        commitJump s' -- jump it normally
+        let s'' = commitJump s' in s'' -- traceShow ("unbrackerable jump", s, s'') s'' -- jump it normally
     -- TODO: instruct commitstream to breka ties to bias towards bracketing this
     -- TODO-2: do a "check" for bracket on subsequent stream where you fix the
     -- foot and test if it flips, and if it needs to flip, you cancel the bracket
     -- ...either that, or you actually FORCE it never to flip
     -- idk which would be more natural!
     where s' = commitStream s
-          newLastFoot = alternate $ lastFoot s'
+          defaultJumpFoot LD = LeftFoot
+          defaultJumpFoot LU = LeftFoot
+          defaultJumpFoot DR = RightFoot
+          defaultJumpFoot UR = RightFoot
+          -- if foot-alternation is not established, e.g. we just did a LR jump,
+          -- or it's the very start of the chart, err towards bracketing
+          newLastFoot = maybe (defaultJumpFoot jump) alternate $ lastFoot s'
           lastArrows = lastArrowLR s'
           bracketArrows LD = [L,D]
           bracketArrows LU = [L,U]
@@ -122,18 +145,20 @@ analyzeStep s (J jump) =
           bracketArrows UR = [U,R]
           -- test if e.g. right foot is on U, then left foot cannot bracket LU
           interferes footArrows j = any (\a -> elem a footArrows) $ bracketArrows j
-          -- XXX: this will lead to artifacts where very first step of song
-          -- can or cannot be bracketed... depending on what foot the state is
-          -- initialized with... i'm not sure this matters enough to bother
           -- note 2nd argument is the foot to attempt to bracket with
-          can_bracket LD LeftFoot (_, lastRight) = not $ interferes lastRight LD
-          can_bracket LU LeftFoot (_, lastRight) = not $ interferes lastRight LU --(elem L lastRight) && not (elem U lastRight)
-          can_bracket DR RightFoot (lastLeft, _) = not $ interferes lastLeft DR
-          can_bracket UR RightFoot (lastLeft, _) = not $ interferes lastLeft UR
-          can_bracket _ _ _ = False -- don't allow jack-brackets (future work?)
+          can_bracket' LD LeftFoot (_, lastRight) = not $ interferes lastRight LD
+          can_bracket' LU LeftFoot (_, lastRight) = not $ interferes lastRight LU --(elem L lastRight) && not (elem U lastRight)
+          can_bracket' DR RightFoot (lastLeft, _) = not $ interferes lastLeft DR
+          can_bracket' UR RightFoot (lastLeft, _) = not $ interferes lastLeft UR
+          can_bracket' _ _ _ = False -- don't allow jack-brackets (future work?)
+          can_bracket j foot (ll,lr) =
+              -- traceShow ("can bracker?",j,foot,ll,lr) $ can_bracket' j foot (ll,lr)
+              can_bracket' j foot (ll,lr)
           -- again the foot is the foot we bracket with
           updateLastArrow LeftFoot  (lastLeft,lastRight) arrows = (arrows,lastRight)
           updateLastArrow RightFoot (lastLeft,lastRight) arrows = (lastLeft,arrows)
+          -- compute new foot positions, persisting thru the commit-jump
+          newLastArrows = updateLastArrow newLastFoot lastArrows $ bracketArrows jump
           
 analyzeStep s (A arrow)
     -- two steps on the same arrow might be a jack, or might be a footswitch.
@@ -143,7 +168,7 @@ analyzeStep s (A arrow)
     | lastStep s == Just arrow = stream (commitStream s) { lastJack = Just arrow }
     -- a normal streamy step.
     | otherwise = stream s
-    where foot = alternate $ lastFoot s
+    where foot = maybe LeftFoot alternate $ lastFoot s
           -- record whether we stepped on a matching or crossed-over L/R arrow.
           addStep ft L steps = steps ++ [ft == LeftFoot]
           addStep ft R steps = steps ++ [ft == RightFoot]
@@ -153,14 +178,16 @@ analyzeStep s (A arrow)
           -- with something that could be flipped later
           rememberFoot LeftFoot  arrow (_,r) = ([arrow],r)
           rememberFoot RightFoot arrow (l,r) = (l,[arrow])
-          stream s = s { steps = steps s + 1, lastStep = Just arrow, lastFoot = foot,
+          stream s = s { steps = steps s + 1, lastStep = Just arrow,
+                         lastFoot = Just foot,
                          stepsLR = addStep foot arrow $ stepsLR s,
+                         lastArrowLR = rememberFoot foot arrow $ lastArrowLR s,
                          stepsAndJumps = stepsAndJumps s + 1 }
 
 -- the above function flips step before comparing,
 -- so this starts the chart on the left foot, actually
 analyze :: [Step] -> AnalysisState
-analyze = commitStream . foldl analyzeStep (S 0 0 0 0 0 0 0 0 Nothing Nothing False LeftFoot [] ([],[]) ([],[]))
+analyze = commitStream . foldl analyzeStep (S 0 0 0 0 0 0 0 0 Nothing Nothing False Nothing [] ([],[]) ([],[]))
 
 -- turns a line of stepchart, eg "0100", into a Step, e.g. "D"
 -- in stepchart-ese: 1 = tap; 2 = hold; 3 = hold release; 4 = roll; M = mine
@@ -168,15 +195,14 @@ stepify :: String -> Maybe Step
 stepify = step . map fst . filter snd . zip [L,D,U,R] . map (flip elem "124")
     where step [] = Nothing
           step [arrow] = Just $ A arrow
-          step arrows = Just $ J $ toJump $ sort arrows -- ensure LDUR order, but
-          -- TODO i *think* the sort is not necessary, so after implemented,
-          -- TODO try removing it and testing to see if same resulce?
+          step arrows = Just $ J $ toJump arrows -- $ sort arrows -- sort not nec.
           toJump [L,D] = LD
           toJump [L,U] = LU
           toJump [D,R] = DR
           toJump [U,R] = UR
-          toJump [L,R] = Other -- cannot bracket opposite-arrow jumps
-          toJump [D,U] = Other -- (perhaps aka, "candle jumps"???)
+          toJump [L,R] = LR -- cannot bracket opposite-arrow jumps
+          toJump [D,U] = DU -- (perhaps aka, "candle jumps"???)
+          toJump [_,_] = error "somehow not sorted??"
           toJump (_:_:_:_) = Other -- any other jumps must be 3+
 
 -- handles chart metadata and formats the analysis result into tsv
