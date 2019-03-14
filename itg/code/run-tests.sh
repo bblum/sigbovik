@@ -1,7 +1,18 @@
 #!/bin/bash
 
 rv=0
-for t in test*.sm; do
+
+if [ -z "$1" ]; then
+	TESTS=`ls test*.sm`
+else
+	TESTS=`ls *$1* 2>/dev/null | grep '\.sm$'`
+	if [ -z "$TESTS" ]; then
+		echo -e "\033[01;33mno such test matching *$1*(.sm)\033[00m"
+		exit 1
+	fi
+fi
+
+for t in $TESTS; do
 	ans=`head -n 1 "$t"`
 	if ! echo "$ans" | grep ",.*,.*," >/dev/null; then
 		echo -e "\033[01;33m$t not well formed -- $ans not an answer.\033[00m"
