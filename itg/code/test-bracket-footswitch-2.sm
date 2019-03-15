@@ -1,0 +1,19 @@
+10,8,0,3,0,0,0,2
+#TITLE:Test;
+#NOTES:
+	dance-single:
+	test:
+	Edit:
+	1:
+	:
+0001 R
+0100 L
+0100 R(fs) // initialize preference for FSes
+1000 L
+0101 R(b)
+0010 L
+0010 R(fs)
+0010 L(fs)
+0101 R(b)
+1000
+;

@@ -21,27 +21,34 @@ data AnalysisState = S { steps :: Int, xovers :: Int, switches :: Int,
                          jacks :: Int, doubles :: Int, xoverfs :: Int,
                          brackets :: Int, stepsAndJumps :: Int,
                          lastStep :: Maybe Arrow, lastJack :: Maybe Arrow,
-                         lastFlip :: Bool, lastFoot :: Maybe Foot, stepsLR :: [Bool],
+                         lastFlip :: Bool, lastFoot :: Maybe Foot,
+                         justBracketed :: Bool, stepsLR :: [Bool],
                          -- used for bracket jumps e.g. if left foot's last
                          -- step was on U, right foot cannot bracket UR
                          lastArrowLR :: ([Arrow], [Arrow]), -- (left, right)
                          lastTrueLastArrowLR :: ([Arrow], [Arrow]) -- ugh...
                        } deriving Show
 
-commitStream s = s' -- traceShow ("commit", s, "=>", s') s'
-    where s' = commitStream' s
+commitStream tiebreakFoot s = s' -- traceShow ("commit", s, "=>", s') s'
+    where s' = commitStream' tiebreakFoot s
 
-commitStream' :: AnalysisState -> AnalysisState
-commitStream' s = maybe s0 splitStream splitIndex
+commitStream' :: Maybe Foot -> AnalysisState -> AnalysisState
+commitStream' tiebreakFoot s = maybe s0 splitStream splitIndex
     where -- number of steps in the chunk of stream
           ns = length $ stepsLR s
           -- number of (seemingly) crossed-over steps
           nx = length $ filter not $ stepsLR s
           -- if more than half the L/R steps in this stream were crossed over,
           -- then we got the footing backwards and need to flip the stream.
-          -- as a tiebreaker, flip if the chart is already more jacky than
+          -- as tiebreaker #1, don't flip if immediately preceded by a bracket
+          flipTieBreak _ | justBracketed s = False
+          -- as tiebreaker #2, if the stream is followed by a bracketable jump,
+          -- choose whichever flip-or-no-flip lets us bracket that jump.
+          flipTieBreak (Just bracketFoot) = lastFoot s == Just bracketFoot
+          -- as tiebreaker #3, flip if the chart is already more jacky than
           -- footswitchy, i.e., if past streams flipped more often than not.
-          f = nx * 2 > ns || nx * 2 == ns && ((switches s > jacks s) == lastFlip s)
+          flipTieBreak Nothing = (switches s > jacks s) == lastFlip s
+          f = nx * 2 > ns || nx * 2 == ns && flipTieBreak tiebreakFoot
           -- if "too much" of the stream is *completely* crossed-over, force
           -- a double-step there by splitting the stream to stay facing forward.
           -- heuristic value was chosen by inspection on Subluminal - After Hours.
@@ -51,8 +58,8 @@ commitStream' s = maybe s0 splitStream splitIndex
           splitStream 0 = splitStream $ fromJust $ findIndex (/= f) $ stepsLR s
           splitStream i = s2 { doubles = doubles s2 + 1 }
               where (steps1, steps2) = splitAt i $ stepsLR s
-                    s1 = commitStream s  { stepsLR = steps1 }
-                    s2 = commitStream s1 { stepsLR = steps2, lastJack = Nothing }
+                    s1 = commitStream Nothing      s  { stepsLR = steps1 }
+                    s2 = commitStream tiebreakFoot s1 { stepsLR = steps2, lastJack = Nothing }
           -- normal case; consider the whole stream at once
           jack = lastJack s /= Nothing
           jackLR = lastJack s == Just L || lastJack s == Just R
@@ -71,16 +78,20 @@ commitStream' s = maybe s0 splitStream splitIndex
           -- this way the value always shows our true position on the pad after
           -- the stream ended, to see if bracket jumps are possible
           (trueLastFoot, trueLastArrowLR) =
-              -- no stream, or not flipped: keep as is
-              if ns == 0 || not f then (lastFoot s, unifyArrows $ lastArrowLR s)
-              -- notes existed & was flipped; flip these
-              else (alternate <$> lastFoot s, unifyArrows $ swap $ lastArrowLR s)
+              -- was flipped; flip these (even if ns == 0, b/c that excludes U/D)
+              if f then (alternate <$> lastFoot s, unifyArrows $ swap $ lastArrowLR s)
+              -- not flipped: keep as is
+              else (lastFoot s, unifyArrows $ lastArrowLR s)
           s0 = s { xovers   = xovers   s + if f then ns - nx else nx,
                    switches = switches s + fromEnum (f == lastFlip s && jack),
                    jacks    = jacks    s + fromEnum (f /= lastFlip s && jack),
                    xoverfs  = xoverfs  s + fromEnum (f == lastFlip s && jackLR),
                    lastFoot = trueLastFoot, lastArrowLR = trueLastArrowLR,
                    lastTrueLastArrowLR = trueLastArrowLR, -- update snapshot
+                   justBracketed = False,
+                   -- if we had to flip a stream right after a bracket jump,
+                   -- that'd make it retroactively unbracketable; if so cancel it
+                   brackets = brackets s - (if f && justBracketed s && ns > 0 then 1 else 0),
                    lastFlip = f, stepsLR = [] }
 
 -- a jump resets the footing, so the next step can be stepped with either
@@ -89,7 +100,7 @@ commitStream' s = maybe s0 splitStream splitIndex
 -- we clear lastArrowLR here to represent resetting footing, and also clear the
 -- lastFoot; if it's bracketable, that will be re-set afterwards down below.
 commitJump s = s { lastStep = Nothing, lastJack = Nothing,
-                   lastFoot = Nothing,
+                   lastFoot = Nothing, justBracketed = False,
                    stepsAndJumps = stepsAndJumps s + 1,
                    lastArrowLR = ([],[]), lastTrueLastArrowLR = ([],[]) }
 
@@ -98,7 +109,7 @@ analyzeStep s (J DU) =
     -- for DU jumps, try to mimimic the facing the player currently has
     -- e.g. if L D DU LU, the DU faces right (left on U) so the LU can bracket
     (commitJump s') { lastArrowLR = newLastArrows, lastTrueLastArrowLR = newLastArrows }
-    where s' = commitStream s
+    where s' = commitStream Nothing s
           -- there's gotta be a cleaner way to do this?
           decideDUFacing' _ False False True = ([D],[U]) -- easy case
           decideDUFacing' True False False _ = ([D],[U]) -- easy case
@@ -115,12 +126,13 @@ analyzeStep s (J DU) =
                                          (elem D $ snd $ lastArrowLR s') -- right on D?
                                          (elem U $ snd $ lastArrowLR s') -- or on U?
 analyzeStep s (J jump) | elem jump [LR,Other] =
-    let s'' = commitJump $ commitStream s in s'' -- traceShow ("other jump", s, s'') s''
+    let s'' = commitJump $ commitStream Nothing s in s'' -- traceShow ("other jump", s, s'') s''
 analyzeStep s (J jump) =
     if can_bracket jump newLastFoot lastArrows then
         (commitJump s') { brackets = brackets s' + 1,
                           lastFoot = Just newLastFoot,
-                          lastArrowLR = newLastArrows,
+                          justBracketed = True, -- contingent on not next stream flip
+                          lastArrowLR = ([],[]), -- newLastArrows,
                           lastTrueLastArrowLR = newLastArrows -- XXX: is this correct? seems to work without
                         }
     else
@@ -130,13 +142,15 @@ analyzeStep s (J jump) =
     -- foot and test if it flips, and if it needs to flip, you cancel the bracket
     -- ...either that, or you actually FORCE it never to flip
     -- idk which would be more natural!
-    where s' = commitStream s
+    where s' = commitStream (Just $ defaultJumpFoot jump) s -- tell it how to break tie
           defaultJumpFoot LD = LeftFoot
           defaultJumpFoot LU = LeftFoot
           defaultJumpFoot DR = RightFoot
           defaultJumpFoot UR = RightFoot
           -- if foot-alternation is not established, e.g. we just did a LR jump,
           -- or it's the very start of the chart, err towards bracketing
+          -- XXX: what is this doing here?
+          -- XXX: the foot should either be the bracket foot, or Nothing at all
           newLastFoot = maybe (defaultJumpFoot jump) alternate $ lastFoot s'
           lastArrows = lastArrowLR s'
           bracketArrows LD = [L,D]
@@ -165,7 +179,7 @@ analyzeStep s (A arrow)
     -- to figure out which, commit the stream so far, and begin a new stream
     -- whose footing will retroactively determine how to foot this step.
     -- also, unlike jumps, this step gets counted as part of the next stream.
-    | lastStep s == Just arrow = stream (commitStream s) { lastJack = Just arrow }
+    | lastStep s == Just arrow = stream (commitStream Nothing s) { lastJack = Just arrow }
     -- a normal streamy step.
     | otherwise = stream s
     where foot = maybe LeftFoot alternate $ lastFoot s
@@ -184,10 +198,8 @@ analyzeStep s (A arrow)
                          lastArrowLR = rememberFoot foot arrow $ lastArrowLR s,
                          stepsAndJumps = stepsAndJumps s + 1 }
 
--- the above function flips step before comparing,
--- so this starts the chart on the left foot, actually
 analyze :: [Step] -> AnalysisState
-analyze = commitStream . foldl analyzeStep (S 0 0 0 0 0 0 0 0 Nothing Nothing False Nothing [] ([],[]) ([],[]))
+analyze = commitStream Nothing . foldl analyzeStep (S 0 0 0 0 0 0 0 0 Nothing Nothing False Nothing False [] ([],[]) ([],[]))
 
 -- turns a line of stepchart, eg "0100", into a Step, e.g. "D"
 -- in stepchart-ese: 1 = tap; 2 = hold; 3 = hold release; 4 = roll; M = mine

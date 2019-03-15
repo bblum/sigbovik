@@ -1,0 +1,15 @@
+7,5,1,0,0,0,0,1
+#TITLE:Test;
+#NOTES:
+	dance-single:
+	test:
+	Edit:
+	1:
+	:
+1000
+0101 // bracket ok
+1000 // must be L
+0100 // R
+0001 // L(x)
+0100 // R
+0011 // cannot bracket this
