@@ -11,6 +11,6 @@
 1001 // no chance
 0110 // no chance
 0011 // LR jump resets footing so any bracket is possible here
-0001
 1000
+0001
 ;
