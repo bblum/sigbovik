@@ -46,6 +46,7 @@ urlcolor=urlc,
 \usepackage{harmony}
 \usepackage{marvosym}
 \usepackage{multirow}
+\usepackage{xspace}
 \usepackage[nameinlink,nosort]{cleveref}
 \usepackage{xeCJK}
 \usepackage[usenames,dvipsnames]{xcolor}
@@ -70,6 +71,7 @@ urlcolor=urlc,
 \definecolor{urlc} {RGB}{128,64,0}
 
 \setCJKmainfont{HeiseiMinStd-W5}[Path = ./]
+\setmonofont{Inconsolata-Regular}[Path = ./]
 % This Deep Tex Voodoo is from
 %   <http://www.latex-community.org/forum/viewtopic.php?f=5&t=2072>
 % It's purpose is to make \lstinline normal size, without affecting
@@ -169,10 +171,31 @@ Put simply, whenever two arrow-shaped obstacles proceed simultaneously towards t
 (see \cite{turniness}),
 while a novice player might think they must step with both feet at once, one for each arrow,
 experts often find it more convenient (i.e., less overall foot motion) to use whichever single foot is closer at the time
-to hit both arrows by stepping across the metal bracket enclosing the corners of each panel
-(thereby triggering one sensor with the heel and one with the little bitty toesies), hence ``bracket jump''.
-In case my verbal explanation is not up to snuff, I have also included in \Cref{fig:how-2-bracket}
+to hit both arrows by
+triggering one arrow's sensor with the heel and the other with the little bitty toesies.
+Pads are typically constructed with a small triangular metal bracket at the corner of each arrow panel,
+as shown in \Cref{fig:bracker-detail},
+which the bridge of the foot must cross to achieve this, hence the name ``bracket jump''.
+In case my prose explanation is not up to snuff, I also show in \Cref{fig:how-2-bracket}
 a high-quality graphics render of a player's typical foot positions during a down+right bracket jump (henceforth ``DR'', et cetera).
+
+The reader, or stepper,
+may notice the extreme angle of footing depicted in the latter figure,
+which is necessary to reliably trigger both pad sensors.
+Accordingly, this maneuver is comfortable (and hence preferable to a normal jump)
+only if the player is already facing in roughly the same direction \cite{turniness}.
+%after stepping any preceding patterns.
+The next section will attempt to codify (ahem) when
+preceding patterns encourage the player to bracket rather than jump,
+and thereby identify how ``bracket jumpy'' each chart is.
+
+\begin{figure}[t]
+	\begin{center}
+		\includegraphics[width=0.48\textwidth]{jims-pix.jpg}
+	\end{center}
+	\caption{Detail of metal corner brackets, this paper's namesake. Photo credit {\tt JIM}.}
+	\label{fig:bracker-detail}
+\end{figure}
 
 \begin{figure}[h]
 	\begin{center}
@@ -182,12 +205,104 @@ a high-quality graphics render of a player's typical foot positions during a dow
 	\label{fig:how-2-bracket}
 \end{figure}
 
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Analyzing Bracket-Jumpiness}
+\label{sec:analyzing}
 
+I extended the crossoveriness et cetera algorithm from \cite{crossoveriness} to reason about jumps,
+which previously it treated all identically,
+ignoring the arrows involved and allowing the player to reset her footing as desired.
+Now, it considers LD, LU, DR, and UR jumps as potentially bracketable,
+allowing the player to continue a stream of alternating feet uninterrupted through.
+
+\textit{Confession.}
+When I was first brainstorming this project,
+I had some grand visions of unifying the turniness algorithm \cite{turniness}---which
+accounts for U/D steps to figure out how far the player must turn each step,
+but has no idea which way the player is actually facing at any given time---with
+the crossoveriness one
+(cited just above; cmon how much do you want me to repeat these, gimme a break)---which
+totally ignores U/D steps and just figures out which arrows the left and right feet must each step---in
+some theoretically beautiful way to produce the unquestionably perfect footing sequence for each jump.
+%
+However, as I was considering how to incorporate features from last time's algorithm,
+potentially allowing crossover brackets (\Cref{sec:xover-brackers})
+and footswitch brackets (\Cref{sec:fs-brackers}),
+I realized that ultimately there would be no restrictions on what jumps were bracketable;
+the algorithm would oops simply twist and turn as much as necessary to bracket everything,
+and this paper would become ``Which ITG Stepcharts Have the Most Jumps?'', and like who wants to read that.
+
+One may think to simply try either bracketing each jump or not
+and seeing what combination gives the minimum turniness result,
+but since whether to bracket each jump or not affects subsequent steps' footing,
+each choice cannot in general be solved independently,
+and I hope you can see where this is going.
+Now the last time I tried to solve an exponentially-sized problem, it took me 7 years
+(and I still ended up with a pile of heuristics after all anyway)
+\cite{landslide-thesis},
+so considering I started this project a week before the deadline,
+I instead to just code up a bunch of ad-hoc rules to handle all the different bracket jump patterns
+that occurred to me to write test cases for.
+
+As before, the code is available at \url{https://github.com/bblum/sigbovik/blob/master/itg/code/ITG.hs}.
+To give an idea of how much its elegance has been despoiled % hi william
+since the last version:
+98 lines of Haskell (which computed crossovers, footswitches, jacks, doubleswitches, \textit{and} crossover footswitches)
+has grown to 248 lines (just to handle this one new feature),
+and the once-simple datatype definition of
+
+\newcommand\hilight[2]{\color{#1}#2\color{black}\xspace}
+\definecolor{pink}{RGB}{128,0,192}
+\definecolor{orange}{RGB}{192,96,0}
+\definecolor{olivegreen}{RGB}{0,127,32}
+\definecolor{brickred}{RGB}{192,0,0}
+\definecolor{commentblue}{RGB}{0,128,192}
+
+\begin{center}
+	\texttt{\hilight{orange}{data}~\hilight{olivegreen}{Step} =
+	\hilight{brickred}{L} |
+	\hilight{brickred}{D} |
+	\hilight{brickred}{U} |
+	\hilight{brickred}{R} |
+	\hilight{brickred}{Jump}}
+\end{center}
+
+has become:
+
+
+\begin{center}
+	\begin{tabular}{l}
+	\texttt{\hilight{orange}{data}~\hilight{olivegreen}{Arrow} =
+	\hilight{brickred}{L} |
+	\hilight{brickred}{D} |
+	\hilight{brickred}{U} |
+	\hilight{brickred}{R}} \\
+	\texttt{\hilight{orange}{data}~\hilight{olivegreen}{Jump} =
+	\hilight{brickred}{LD} |
+	\hilight{brickred}{LU} |
+	\hilight{brickred}{DR} |
+	\hilight{brickred}{UR} |
+	\hilight{brickred}{LR} |
+	\hilight{brickred}{DU} |
+	\hilight{brickred}{Other}} \\
+	\texttt{\hilight{orange}{data}~\hilight{olivegreen}{Step} =
+	\hilight{brickred}{A} \hilight{olivegreen}{Arrow} |
+	\hilight{brickred}{J} \hilight{olivegreen}{Jump}} \\
+	\texttt{\hilight{orange}{data}~\hilight{olivegreen}{Foot} =
+	\hilight{brickred}{LeftFoot} |
+	\hilight{brickred}{RightFoot}} \\
+	\end{tabular}
+\end{center}
+
+In lieu of an algorithm listing, I'll simply show some of those most notable test cases in pictures and explain in prose how I handle them.
+
+
+\subsection{Basic Examples}
+
+Figure \Cref{fig:bracket-example}(a) shows a simple example where every jump (blue)
+can be bracketed by the right foot,
+alternating with 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -214,19 +329,62 @@ a high-quality graphics render of a player's typical foot positions during a dow
 
 % conclusion: BJJ% is sa better measure of chart funness than BJS%?
 
-\section{Future Work}
+\section{Never Work}
+
+The only thing that impresses the research community more than overdelivering on your future work promises
+is to overdeliver twice; hence, I shamelessly reuse the joke of this section name from last time.
+
+\subsection{Crossover Brackets}
+\label{sec:xover-brackers}
+
+\subsection{Footswitch Brackets}
+\label{sec:fs-brackers}
+
+I put this section here only just so I could have something to forward-reference back in \Cref{sec:analyzing}.
+I always wanted to do that, you know?
+% TODO: put a pict anyway? if you find one
+
+\subsection{UI}
 
 It would be cool to integrate this (and the preceding two algorithms \cite{turniness,crossoveriness})
-into Simply Love \cite{simplylove}, or whatever the prevailing stepmania theme may be in the future.
-Currently, as shown in \Cref{fig:songpreview}, % TODO
+into
+%Simply Love \cite{simplylove}, or whatever
+the community's prevailing stepmania theme.
+%may be in the future.
+Currently, as shown in \Cref{fig:songpreview}(a),
 the song preview screen wastes considerable space displaying the count of more irrelevant chart aspects
 such as mines (now used primarily for signaling the presence of footswitches)
 and hands (now mostly stepped with the feet by bracketing anyways).
-I bet the community might actually pay attention to my work -- the holy grail of research, honestly --
-if the premier dance game theme could tell precisely how technical a chart was in such modern terms.
+I bet the community might actually pay attention to my work---the holy grail of research, honestly---if
+the premier dance game theme showed precisely how technical a chart was, as in (b).
+
+\begin{figure}[t]
+	\begin{tabular}{c}
+	\includegraphics[width=0.46\textwidth]{song-info.png} \\
+		(a) Current state-of-the-art.
+		\\
+		\\
+	\includegraphics[width=0.46\textwidth]{song-info-better.png} \\
+		(b) Artist's conception.
+	\end{tabular}
+	\caption{Song info preview panel for a recent bracket jump-heavy stepchart \cite{divine}.}
+	\label{fig:songpreview}
+\end{figure}
+
+\subsection{Obligatory Machine Learning Section}
+
+I guess you could skip all this fiddly ``algorithm'' stuff by
+hopping on the pads yourself for a few rounds, playing a variety of technical charts,
+and just training a neural network based on how you stepped the patterns.
+It would probably even learn to fake crossovers more at the ends of songs than at the beginnings,
+where you're more likely to be physically tired.
+But like, do you really want that kind of bias in your dataset?
+
+Remember kids, friends don't let friends use ML for problems that are more fun to solve by hand.
 
 \section{Conclusion}
 
+I never know what to put down here. Much love to the community..!
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
