@@ -96,12 +96,13 @@ In Which They Milk the \\
 「A Boring Follow-Up Paper to \\
 ``Which ITG Stepcharts are Turniest?'' \\
 Titled, ``Which ITG Stepcharts are Crossoveriest and/or Footswitchiest?''」\\
-Series for All Its Worth in Publication Count After All \\
+Series for All Its Worth in Publication Count After All, or: \\
 %That `Boring' Stuff Was Part of the Title, BTW. \\
 %So was that. And that, and this too. \\
 %You got it all, right? \\
 %Or Just, ``More Boring Crap about ITG'', for Short. \\
 %Oh, That Was Also Part of the Title.
+Hit Me With An Encore
 }
 % \subtitle{\em The Randomly-Scoped Lambda Calculus}
 % \subtitle{Subtitle Text, if any}
@@ -138,8 +139,14 @@ and have moved on to break the old model's one-foot-per-arrow assumption to allo
 I paraphrase their main conclusion as follows:
 
 \begin{center}
-	\includegraphics[width=0.42\textwidth]{using-my-turn.png}
+	\includegraphics[width=0.38\textwidth]{using-my-turn.png}
 \end{center}
+
+\begin{figure}[t]
+	\hspace{-2em}\includegraphics[angle=270,width=0.54\textwidth]{../2/paper.pdf}
+	\caption{(yeah i reused this joke from last time ok deal)}
+	\label{fig:you-stutid-fuckass}
+\end{figure}
 
 All good researchers know that when rise the standards for software or hardware performance
 (or stepchart trickiness, as the case may be),
@@ -153,12 +160,6 @@ theyll totally see through this
 (TODO: maybe email the PC chair for advice?
 (FIXME: make sure to remove these comments before the camera-ready deadline!!))),
 extending it to handle these new so-called ``bracket'' jumps.
-
-\begin{figure}[t]
-	\hspace{-2em}\includegraphics[angle=270,width=0.54\textwidth]{../2/paper.pdf}
-	\caption{(yeah i reused this joke from last time ok deal)}
-	\label{fig:you-stutid-fuckass}
-\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -311,29 +312,95 @@ alternating with
 
 \section{Evaluation}
 
+The experimental corpus has grown even more since last time, now comprising 17253 stepcharts from 181 packs.
+Of note, all three Technical Showcase packs
+(collaborative community packs where all authors were encouraged to submit their freshest beats and judged on complexity)
+were released in the last two years,
+which have proved to be important sources of diverse bracket-jump patterns for this research.
+I would also have liked to re-rank the crossoveriest and footswitchiest charts from last time to include these submissions,
+but I frankly don't have time.
+The results spreadsheet of bracket jump counts
+(as well as more crossovers et cetera for packs released since last time)
+is available for your browsing pleasure at
+\url{https://tinyurl.com/bracketiest}.
+
+I pose two evaluation questions, to be answered in the following subsections respectively.
+\begin{enumerate}
+	\item Which songs, packs, and/or step-cartographers are bracket jumpiest?
+	\item Is bracket jumps the new crossovers or something?
+\end{enumerate}
+
+\subsection{Bracket Jumpiness}
+
+% TODO: define BJJ% and BJS%
+
+\subsection{Historical Trends}
+
 % TODO: be like, we set out to prove that ppl are using bracker jumps more often lately
+
+% temporal analysis of pack age vs bracker density
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Discussion}
 
-% TODO tings to talk about
+Many old charts written without regard to jump patterning allow for many of their jumps to be bracketed anyway.
+I noticed an old stepchart for One-Winged Angel \cite{owa} ranking high in the list of overall total bracket jumps,
+with 182,
+simply because it's long and has a lot of steps,
+but upon playing, the patterns definitely do not feel intentional,
+and it even includes a section of stream with wholly unbracketable jumps interspersed.
+\Cref{fig:discussion}(a) shows this section;
+in this stream, the player would expect to step the red and blue arrows with her right foot and the lime ones with her left,
+but note how the jumps (hint: all in blue)
+occur as a mix of left and right arrows, with even a UD ``candle'' jump making an appearance.
+However, it measures an unremarkable 9 BJS\% and 38 BJJ\%---I just wanted to feature it
+as an example of what non-bracketable jump stream looks like.
 
-% authors seem to know it's easy to overdo -- see, "Stupid" and "I'm sorry" as chart authors in some of the top charts
+Authors seem to realize when their charts are too bracket jumpy for comfort:
+several of the charts appearing in the highest ranks of the spreadsheet had their step author field filled in as ``Stupid'' or ``I'm sorry''.
+In fact, I personally found the charts with 100 BJJ\%, i.e., \textit{all} jumps appearing therein were bracketable,
+to be more tasteful than those with more total BJS\% but a few normal jumps as well.
+I'd hypothesize this is because to achieve 100 BJJ\% requires a certain intentionality,
+resulting in better chart design overall
+(note that such charts necessarily include no LR or DU jumps whatsoever).
+Either that, or the more uncomfortable ones include certain extremely turny/candley/doublesteppy patterns
+around their brackets that causes the algorithm to count them as normal jumps instead.
+Anyway, \Cref{fig:discussion}(b) shows the chart with most bracket jumps (35) among ones with 100 BJJ\%,
+which I tried out for myself and found quite enjoyable \cite{e-paradise}.
+Amusingly, Encore \cite{encore}
+features a Hard chart in addition to its Challenge,
+which former ranks second place to Electrical Paradise among 100 BJJ\%s with 29 brackets.
+Upon inspection, I found this chart identical to the Challenge (shown in \Cref{fig:xb}(a)),
+only the crossover brackets
+(to be discussed later in \Cref{sec:xover-brackers})
+had been replaced by easier, normal ones.
 
-% many old charts written without regard to jump patterning can be bracker anyway, see OWA (which just makes the list bc it's long)
-% - have a figure of OWA in the strema that shows the *non* bracketable stream jumps
-% - make a test case that captures these and shows indeed they are not brackets
-
-% temporal analysis of pack age vs bracker density
-
-% other charts of note
-% - chicago timing / electrical paradise: bracketiest chart where *ALL* jumps are brackets (BJJ%=100) -- quite tasteful actually!
-% - encore is 2nd place lmao
-
-% conclusion: BJJ% is sa better measure of chart funness than BJS%?
-
-% TODO: make sure to say somewhere, step-cartography
+\begin{figure}[t]
+	\begin{center}
+	\begin{tabular}{cc}
+	\begin{tabular}{c}
+		\includegraphics[width=0.16\textwidth]{disco-owa.png}
+		\\
+		(a) One-Winged Angel, \\ 14 \cite{owa} %\\
+		%(10, Tech. Showcase 3)
+	\end{tabular}
+		&
+	\begin{tabular}{c}
+		\includegraphics[width=0.16\textwidth]{disco-paradise.png}
+		\\
+		(b) Electrical Paradise, \\ 12 \cite{e-paradise} %\\
+		%(12, Tech. Showcase 1)
+	\end{tabular}
+	\end{tabular}
+	\end{center}
+	%\caption{Why I gotta write a overall caption, just read the prose on this one.}
+	\caption{Example charts with
+	(a) ``retro'' style jump-stream which, largely, cannot be bracketed,
+	and
+	(b) very intentionally many bracket jumps.}
+	\label{fig:discussion}
+\end{figure}
 
 \section{Never Work}
 
@@ -354,7 +421,7 @@ Such jumps could instead just be stepped with both feet as normal,
 possibly inducing doublesteps or jacks,
 and indeed that is how the algorithm presently handles them.
 
-However, ambitious step-cartographers have recently experimented with encouraging the player to bracket jumps while crossed-over.
+However, ambitious stepchart authors have recently experimented with encouraging the player to bracket jumps while crossed-over.
 Such charts attempt to force, or at least hint, these jumps to be bracketed
 via additional stepchart elements: in \Cref{fig:xb}(a), mines on the left arrow force the player to remove her left foot in preparation for the crossover (and being in the middle of fast stream, further discourages doublestepping),
 and in \Cref{fig:xb}(b), extending one of the arrows as a hold encourages the player to bracket the subsequent jump with the other foot.
@@ -365,18 +432,20 @@ which would truly be a wonder to identify programmatically.
 
 \begin{figure}[t]
 	\begin{center}
+	\begin{tabular}{cc}
 	\begin{tabular}{c}
 		\includegraphics[width=0.16\textwidth]{xb-encore.png}
 		\\
-		(a) Encore \cite{encore} %\\
+		(a) Encore, 12 \\ \cite{encore} %\\
 		%(12, Tech. Showcase 1)
 	\end{tabular}
-	\quad
+		&
 	\begin{tabular}{c}
 		\includegraphics[width=0.16\textwidth]{xb-atariwave.png}
 		\\
-		(a) Atariwave \cite{atariwave} %\\
+		(a) Atariwave, 10 \\ \cite{atariwave} %\\
 		%(10, Tech. Showcase 3)
+	\end{tabular}
 	\end{tabular}
 	\end{center}
 	\caption{Crossover bracket jumps must be signaled via either (a) mines or (b) holds to remove ambiguity.}
