@@ -185,6 +185,8 @@ which is necessary to reliably trigger both pad sensors.
 Accordingly, this maneuver is comfortable (and hence preferable to a normal jump)
 only if the player is already facing in roughly the same direction \cite{turniness}.
 %after stepping any preceding patterns.
+Note also that the two ``candle jumps'', LR and DU, are not possible to bracket,
+unless your foot size is (physically) beyond the scope of this work.
 The next section will attempt to codify (ahem) when
 preceding patterns encourage the player to bracket rather than jump,
 and thereby identify how ``bracket jumpy'' each chart is.
@@ -238,9 +240,9 @@ and seeing what combination gives the minimum turniness result,
 but since whether to bracket each jump or not affects subsequent steps' footing,
 each choice cannot in general be solved independently,
 and I hope you can see where this is going.
-Now the last time I tried to solve an exponentially-sized problem, it took me 7 years
-(and I still ended up with a pile of heuristics after all anyway)
-\cite{landslide-thesis},
+Now, the last time I tried to solve an exponentially-sized problem, it took me 7 years
+\cite{landslide-thesis}
+(and I still ended up with a pile of heuristics after all anyway),
 so considering I started this project a week before the deadline,
 I instead to just code up a bunch of ad-hoc rules to handle all the different bracket jump patterns
 that occurred to me to write test cases for.
@@ -248,7 +250,8 @@ that occurred to me to write test cases for.
 As before, the code is available at \url{https://github.com/bblum/sigbovik/blob/master/itg/code/ITG.hs}.
 To give an idea of how much its elegance has been despoiled % hi william
 since the last version:
-98 lines of Haskell (which computed crossovers, footswitches, jacks, doubleswitches, \textit{and} crossover footswitches)
+% TODO: figure out these numbers without counting comments
+98 lines of Haskell (which computed crossovers, footswitches, jacks, doublesteps, \textit{and} crossover footswitches)
 has grown to 248 lines (just to handle this one. new. feature),
 and the once-simple datatype definition of
 
@@ -270,7 +273,7 @@ and the once-simple datatype definition of
 
 has become:
 
-
+\vspace{-1em} % dont know why this is necessary
 \begin{center}
 	\begin{tabular}{l}
 	\texttt{\hilight{orange}{data}~\hilight{olivegreen}{Arrow} =
@@ -308,6 +311,7 @@ alternating with
 
 \section{Evaluation}
 
+% TODO: be like, we set out to prove that ppl are using bracker jumps more often lately
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -329,6 +333,8 @@ alternating with
 
 % conclusion: BJJ% is sa better measure of chart funness than BJS%?
 
+% TODO: make sure to say somewhere, step-cartography
+
 \section{Never Work}
 
 The only thing that impresses the research community more than overdelivering on your future work promises
@@ -337,12 +343,53 @@ is to overdeliver twice; hence, I shamelessly reuse the joke of this section nam
 \subsection{Crossover Brackets}
 \label{sec:xover-brackers}
 
+Whereas with normal crossovers (e.g., in the sequence L-U-R, stepping the R with the left foot),
+the player's foot can pretty much point whichever way she finds most comfortable;
+however,
+crossover brackets (e.g., in the sequence L-U-DR...),
+the player's foot must point backwards (...stepping the DR's R with her left heel and D with toes),
+inducing extra turniness.%
+\footnote{The other way, e.g. stepping the D with the left heel and R with toes, while your right foot is fixed on U, is extremely uncomfortable at speed. Trust me on this one.}
+Such jumps could instead just be stepped with both feet as normal,
+possibly inducing doublesteps or jacks,
+and indeed that is how the algorithm presently handles them.
+
+However, ambitious step-cartographers have recently experimented with encouraging the player to bracket jumps while crossed-over.
+Such charts attempt to force, or at least hint, these jumps to be bracketed
+via additional stepchart elements: in \Cref{fig:xb}(a), mines on the left arrow force the player to remove her left foot in preparation for the crossover (and being in the middle of fast stream, further discourages doublestepping),
+and in \Cref{fig:xb}(b), extending one of the arrows as a hold encourages the player to bracket the subsequent jump with the other foot.
+In (b)'s case, the player must also switch feet on each of the non-hold arrows,
+effectively making these crossover-footswitch-brackets,
+which would truly be a wonder to identify programmatically.
+% these can be cheated anyway
+
+\begin{figure}[t]
+	\begin{center}
+	\begin{tabular}{c}
+		\includegraphics[width=0.16\textwidth]{xb-encore.png}
+		\\
+		(a) Encore \cite{encore} %\\
+		%(12, Tech. Showcase 1)
+	\end{tabular}
+	\quad
+	\begin{tabular}{c}
+		\includegraphics[width=0.16\textwidth]{xb-atariwave.png}
+		\\
+		(a) Atariwave \cite{atariwave} %\\
+		%(10, Tech. Showcase 3)
+	\end{tabular}
+	\end{center}
+	\caption{Crossover bracket jumps must be signaled via either (a) mines or (b) holds to remove ambiguity.}
+	\label{fig:xb}
+\end{figure}
+
 \subsection{Footswitch Brackets}
 \label{sec:fs-brackers}
 
 I put this section here only just so I could have something to forward-reference back in \Cref{sec:analyzing}.
 I always wanted to do that, you know?
-I mean, footswitch brackets are also a real thing, but still. $\bar{~~}$\textbackslash\_(ツ)\_/$\bar{~~}$
+I mean, footswitch brackets are %also
+a real thing, but still. $\bar{~~}$\textbackslash\_(ツ)\_/$\bar{~~}$
 % not-to-to: put a pict anyway? if you find one
 % actually, joke comes off better w/o
 
@@ -380,7 +427,7 @@ hopping on the pads yourself for a few rounds, playing a variety of technical ch
 and just training a neural network based on how you stepped the patterns.
 It would probably even learn to fake crossovers more at the ends of songs than at the beginnings,
 where you're more likely to be physically tired.
-But like, do you really want that kind of bias in your dataset?
+And like, do you really want that kind of bias in your dataset?
 
 Remember kids, friends don't let friends use ML for problems that are more fun to solve by hand.
 
