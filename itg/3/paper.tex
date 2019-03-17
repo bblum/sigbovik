@@ -167,7 +167,7 @@ extending it to handle these new so-called ``bracket'' jumps.
 
 % TODO: go through this paper and make every *other* instance of "bracket-jump" hyphenated
 
-What, then, is a bracket jump (which I shall \textit{not}, henceforth, abbreviate for brevity)?
+What, then, is a bracket-jump (which I shall \textit{not}, henceforth, abbreviate for brevity)?
 Put simply, whenever two arrow-shaped obstacles proceed simultaneously towards the protagonist directional indicator targets
 (see \cite{turniness}),
 while a novice player might think they must step with both feet at once, one for each arrow,
@@ -178,7 +178,7 @@ Pads are typically constructed with a small triangular metal bracket at the corn
 as shown in \Cref{fig:bracker-detail},
 which the bridge of the foot must cross to achieve this, hence the name ``bracket jump''.
 In case my prose explanation is not up to snuff, I also show in \Cref{fig:how-2-bracket}
-a high-quality graphics render of a player's typical foot positions during a down+right bracket jump (henceforth ``DR'', et cetera).
+a high-quality graphics render of a player's typical foot positions during a down+right bracket-jump (henceforth ``DR'', et cetera).
 
 The reader, or stepper,
 may notice the extreme angle of footing depicted in the latter figure,
@@ -202,15 +202,15 @@ and thereby identify how ``bracket jumpy'' each chart is.
 
 \begin{figure}[h]
 	\begin{center}
-		\includegraphics[width=0.48\textwidth]{how-2-bracket.jpg}
+		\includegraphics[width=0.3625\textwidth]{how-2-bracket.jpg}
 	\end{center}
-	\caption{Down+right bracket jump real-world example.}
+	\caption{Down+right bracket-jump real-world example.}
 	\label{fig:how-2-bracket}
 \end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Analyzing Bracket-Jumpiness}
+\section{Algorithm Design}
 \label{sec:analyzing}
 
 I extended the crossoveriness et cetera algorithm from \cite{crossoveriness} to reason about jumps,
@@ -251,9 +251,8 @@ that occurred to me to write test cases for.
 As before, the code is available at \url{https://github.com/bblum/sigbovik/blob/master/itg/code/ITG.hs}.
 To give a sense of how much its elegance has been despoiled % hi william
 since the last version:
-% TODO: figure out these numbers without counting comments
-98 lines of Haskell (which computed crossovers, footswitches, jacks, doublesteps, \textit{and} crossover footswitches)
-has grown to 248 lines (just to handle this one. new. feature),
+62 lines of Haskell (which computed crossovers, footswitches, jacks, doublesteps, \textit{and} crossover footswitches)
+has grown to 156 lines (just to handle this one. new. feature),
 and the once-simple datatype definition of
 
 \newcommand\hilight[2]{\color{#1}#2\color{black}\xspace}
@@ -299,16 +298,105 @@ has become the unwieldy:
 	\end{tabular}
 \end{center}
 
-In lieu of an algorithm listing, I'll simply show some of those most notable test cases in pictures and explain in prose how I handle them.
+The general gist is that in addition to tracking which foot stepped the last arrow and optimizing for alternating feet,
+we also track which arrow(s) each foot was last on,
+and whenever we encounter a LD/LU/DR/UR jump, bracket it if both:
+\begin{enumerate}
+	\item The last foot is opposite the foot required for the jump (e.g. L for LD), and
+	\item The last foot's last note(s) does not intersect the arrows involved in the jump (i.e., R not on D preceding LD).
+\end{enumerate}
+In lieu of a detailed algorithm listing, I'll simply show some of those most notable test cases in pictures and explain in prose how the implementation must handle them,
+which was pretty much my implementation strategy to begin with.
 
+\Cref{fig:tests} shows a bunch of patterns with a bracketable jump,
+and each subfigure in \Cref{fig:tests2} shows a corresponding unbracketable case.
+%with a similar pattern.
+Whenever two jumps are pictured in the same unit test, we are concerned with whether the latter one is bracketable.
+I'll now explain how the algorithm handles each case.
 
-\subsection{Basic Examples}
+\begin{figure}[t]
+	\begin{center}
+	\begin{tabular}{ccc}
+		\includegraphics[width=0.14\textwidth]{test-basic-yes.png} & 
+		\includegraphics[width=0.14\textwidth]{test-footswitch-bracket-yes.png} &
+		\includegraphics[width=0.14\textwidth]{test-reset-footing-yes.png} \\
+		(a) All 4 OK
+		&
+		(b) LD, UR OK
+		&
+		(c) UR OK
+		\\
+		\\
+		\includegraphics[width=0.14\textwidth]{test-propagate-through-ud-yes.png} &
+		\includegraphics[width=0.14\textwidth]{test-reset-subsequent-stream-yes.png} &
+		\includegraphics[width=0.14\textwidth]{test-footswitch-jack-yes.png} \\
+		(d) LD OK
+		&
+		(e) UR, LU OK
+		&
+		(f) DR, LD OK
+	\end{tabular}
+	\end{center}
+	\caption{Examples of bracketable jumps.}
+	\label{fig:tests}
+\end{figure}
+\begin{figure}[t]
+	\begin{center}
+	\begin{tabular}{ccc}
+		\includegraphics[width=0.14\textwidth]{test-basic-no.png} &
+		\includegraphics[width=0.14\textwidth]{test-footswitch-bracket-no.png} &
+		\includegraphics[width=0.14\textwidth]{test-reset-footing-no.png} \\
+		(a) 2nd, 4th NG
+		&
+		(b) DR NG
+		&
+		(c) UR NG
+		\\
+		\\
+		\includegraphics[width=0.14\textwidth]{test-propagate-through-ud-no.png} &
+		\includegraphics[width=0.14\textwidth]{test-reset-subsequent-stream-no.png} &
+		\includegraphics[width=0.14\textwidth]{test-footswitch-jack-also-yes.png} \\
+		(d) LU NG
+		&
+		(e) 2nd UR NG
+		&
+		(f) Trick question
+	\end{tabular}
+	\end{center}
+	\caption{Examples of unbracketable jumps,
+	each corresponding to the similar pattern in \Cref{fig:tests}.}
+	\label{fig:tests2}
+\end{figure}
 
-Figure \Cref{fig:bracket-example}(a) shows a simple example where every jump (blue)
-can be bracketed by the right foot,
-alternating with 
+\renewcommand{\theenumi}{\alph{enumi}}
+\begin{enumerate}
+	\item In the OK case, the right foot can bracket every jump (condition 1),
+		as the left foot is always on a different arrow than the jump (condition 2).
+		In the NG case, condition 2 is violated for the second and fourth jumps.
+	\item Version of (a) testing that preceding bracket-jumps also contribute to condition 2.
+		The NG case would be a footswitch bracket requiring rather uncomfortable footing angles.
+	\item In OK, LR cannot be bracketed, but clears the prior footings so UR can.
+		In NG, LR can be bracketed, meaning UR cannot while still alternating feet (condition 1).
+	\item DU jumps can never be bracketed, but can be stepped facing either direction, and this must respect prior footings.
+		In both cases DU is stepped with right foot U, which allows bracketing LD but not LU thereafter.
+	\item In OK, the crossover does not interfere with either bracket and the player can alternate feet throughout.
+		In NG, either doublestepping or jumping normally is required
+		(or a future-work crossover bracket; see \Cref{sec:xover-brackers}).
+	\item In OK, the player easily footswitches on U.
+		In the corresponding case, the player can actually just jack U instead, stepping it twice with her left foot
+		before bracketing DR again with her right.
+\end{enumerate}
+\renewcommand{\theenumi}{\arabic{enumi}}
 
-\subsection{Wackier Examples}
+These examples are available as {\tt test-bracket-*.sm} unit tests in the code repository.
+Hopefully armed with this understanding of the bracket jumping rules, let's now move on to real-world stepcharts.
+
+% non bracket jumps reset the lastarrowLR
+
+% no footswitch bracket - angles of yr ankles hurt
+% propagate thru UD
+% tiebreak preceding stream
+% retroactively cancel if last stream hadta switch
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -334,17 +422,17 @@ is available for your browsing pleasure at
 
 I pose two evaluation questions, to be answered in the following subsections respectively.
 \begin{enumerate}
-	\item Which songs, packs, and/or step-cartographers are bracket jumpiest?
+	\item Which songs, packs, and/or step-cartographers are bracket-jumpiest?
 	\item Is bracket jumps the new crossovers or something?
 \end{enumerate}
 
-\subsection{Bracket Jumpiness}
+\subsection{Bracket-Jumpiness}
 \label{sec:bjness}
 
 I measured the overal bracketiness of each chart in two ways,
 first,
 by comparing the number of bracket jumps against the total number of steps,
-or the \textit{bracket jump step percentage} (BJS\%);
+or the \textit{bracket-jump step percentage} (BJS\%);
 second,
 by comparing against the total number of jumps only,
 or the \textit{bracket jump jump percentage} (BJJ\%).
@@ -359,11 +447,10 @@ which put up a handful of false positives in the 100\% ranks.}
 Note that the aforementioned recent Technical Showcase pack series put up three bracketiest charts in the BJJ\% category;
 meanwhile, the UPS packs, known for their gimmicks and general lack of respect for player comfort,
 secure several top spots on the BJS\% board.
-For comparison's sake, the overall BJJ\% of the entire corpus is 20\% (93k/470k),
+For comparison's sake, the overall BJJ\% of the entire corpus is 19.8\% (93k/470k),
 meaning that roughly 1 in 5 randomly-patterned jumps are by chance bracketable.
 The overall BJS\% (a thoroughly less meaningful statistic) is 0.7\%.
 
-% TODO check margins
 \begin{table}[t]
 	\begin{center}
 		\small
@@ -382,7 +469,7 @@ The overall BJS\% (a thoroughly less meaningful statistic) is 0.7\%.
 		%420 & Paa			& UPS 4			& 263 & 34\% \\
 	\end{tabular}
 	\end{center}
-	\caption{Charts of each difficulty with the highest bracket jump density among all steps (BJS\%).}
+	\caption{Charts of each difficulty with the highest bracket-jump density among all steps (BJS\%).}
 	\label{tab:bjs}
 \end{table}
 \begin{table}[t]
@@ -418,7 +505,7 @@ and \Cref{tab:author-bjs,tab:author-bjj} the top 10 authors
 For the packs, I also list the release year of each;
 note how despite the relatively even spread of years in BJS\%,
 2018 dominates the BJJ\% leaderboard,
-suggesting that older charts' bracket jumps arose by chance simply from having a lot of jumps to begin with.
+suggesting that older charts' bracket-jumps arose by chance simply from having a lot of jumps to begin with.
 I'll come back to this point in \Cref{sec:eval-years}.
 In honorable mentionth place is chart author Halogen-, whose 11 charts contain 154 jumps, \textit{none} of which are bracketable.
 What a purist!
@@ -468,55 +555,10 @@ What a purist!
 	\label{tab:pack-bjj}
 \end{table}
 
-\begin{table}[t]
-	\begin{center}
-		\small
-	\begin{tabular}{l|r|r}
-		\bf Author name & \bf \#charts & \bf BJS\% \\
-		\hline
-		Paul J Kim & 45 & 9.9 \\
-		sssmsm & 45 & 4.4 \\
-		Liam & 11 & 3.4 \\
-		Snooze & 22 & 2.5 \\
-		M. Emirzian & 26 & 2.2 \\
-		bblum & 40 & 1.9 \\
-		Ninevolt & 10 & 1.7 \\
-		B. Vergara & 95 & 1.6 \\
-		C. Emirzian & 18 & 1.6 \\
-		B. Dinh & 10 & 1.6 \\
-		Renard & 51 & 1.5 \\
-	\end{tabular}
-	\end{center}
-	\caption{Step cartographers who write charts densest in bracket jumps.}
-	\label{tab:author-bjs}
-\end{table}
-
-\begin{table}[t]
-	\begin{center}
-		\small
-	\begin{tabular}{l|r|r}
-		\bf Author name & \bf \#charts & \bf BJJ\% \\
-		\hline
-		Paul J Kim & 45 & 71.8 \\
-		Rust & 97 & 51.7 \\
-		bblum & 40 & 49.3 \\
-		Liam & 11 & 44.5 \\
-		Snooze & 22 & 38.1 \\
-		Rems & 10 & 36.5 \\
-		sssmsm & 45 & 32.9 \\
-		Loak & 19 & 31.7 \\
-		Little Matt & 42 & 31.4 \\
-		Paparazzi & 10 & 29.6 \\
-	\end{tabular}
-	\end{center}
-	\caption{Step cartographers whose jumps are most bracketable.}
-	\label{tab:author-bjj}
-\end{table}
-
 \subsection{Historical Trends}
 \label{sec:eval-years}
 
-I sought to prove \cite{dril}'s claim that bracket jumps have skyrocketed in popularity in the most recent years of stepchart-making,
+I sought to prove \cite{dril}'s claim that bracket-jumps have skyrocketed in popularity in the most recent years of stepchart-making,
 %I decided to do this
 by finding the progression of bracketiness across past years of stepchart packs.
 However,
@@ -544,6 +586,51 @@ but keep it for BJJ\%, which overall jump count has no bearing on.
 For the two pictured distributions, their confidence intervals do not include 0,
 i.e., a flat line representing no growth,
 so I conclude bracket jumps' increased popularity is statistically significant.
+
+\begin{table}[t]
+	\begin{center}
+		\small
+	\begin{tabular}{l|r|r}
+		\bf Author name & \bf \#charts & \bf BJS\% \\
+		\hline
+		Paul J Kim & 45 & 9.9 \\
+		sssmsm & 45 & 4.4 \\
+		Liam & 11 & 3.4 \\
+		Snooze & 22 & 2.5 \\
+		M. Emirzian & 26 & 2.2 \\
+		bblum & 40 & 1.9 \\
+		Ninevolt & 10 & 1.7 \\
+		B. Vergara & 95 & 1.6 \\
+		C. Emirzian & 18 & 1.6 \\
+		B. Dinh & 10 & 1.6 \\
+		Renard & 51 & 1.5 \\
+	\end{tabular}
+	\end{center}
+	\caption{Step cartographers who write charts densest in bracket-jumps.}
+	\label{tab:author-bjs}
+\end{table}
+
+\begin{table}[t]
+	\begin{center}
+		\small
+	\begin{tabular}{l|r|r}
+		\bf Author name & \bf \#charts & \bf BJJ\% \\
+		\hline
+		Paul J Kim & 45 & 71.8 \\
+		Rust & 97 & 51.7 \\
+		bblum & 40 & 49.3 \\
+		Liam & 11 & 44.5 \\
+		Snooze & 22 & 38.1 \\
+		Rems & 10 & 36.5 \\
+		sssmsm & 45 & 32.9 \\
+		Loak & 19 & 31.7 \\
+		Little Matt & 42 & 31.4 \\
+		Paparazzi & 10 & 29.6 \\
+	\end{tabular}
+	\end{center}
+	\caption{Step cartographers whose jumps are most bracketable.}
+	\label{tab:author-bjj}
+\end{table}
 
 %% more sigfigs values provided
 % the 95% CI for step (excluding <=2012) is _(0.032,0.139)_
@@ -607,12 +694,12 @@ so I conclude bracket jumps' increased popularity is statistically significant.
 	\begin{tabular}{c}
 		\includegraphics[width=0.42\textwidth]{step_plot.pdf}
 		\\
-		(a) BJS\% across years ($\beta$ = 0.085\%, CI = \{0.032,0.14\}).
+		(a) BJS\% across years ($\beta$ = 0.085\%/yr, CI = \{0.032,0.14\}).
 		\\
 		\\
 		\includegraphics[width=0.42\textwidth]{jump_plot.pdf}
 		\\
-		(a) BJJ\% across years ($\beta$ = 1.30\%, CI = \{0.40,2.21\}).
+		(a) BJJ\% across years ($\beta$ = 1.30\%/yr, CI = \{0.40,2.21\}).
 	\end{tabular}
 	\caption{Linear best fit of bracket jumps' popularity across the years of ITG's history.
 	Grey area depicts 95\% CI.}
@@ -622,7 +709,7 @@ so I conclude bracket jumps' increased popularity is statistically significant.
 \textit{Bias.}
 This analysis is prone to selection bias in my own pack downloading habits:
 supposing I suddenly became more interested in playing brackety charts recently,
-that would certainly influence how many bracket jumps appeared each year in this corpus.
+that would certainly influence how many bracket-jumps appeared each year in this corpus.
 However, I believe the BJJ\% measurement adequately compensates for this,
 for if I suddenly became interested in stamina instead of technical and added a bunch of 10-minute trance packs,
 that would impact only BJS\%.
@@ -665,12 +752,12 @@ leading me to trust the BJJ\% test.
 	%\caption{Why I gotta write a overall caption, just read the prose on this one.}
 	\caption{Example real-world charts with
 	(a) false negative jumps that mines render bracketable after all,
-	(b) jumps whose footing is affected by preceding holds,
+	(b) jumps whose footing is affected by preceding holds fixing one foot in place,
 	%false negative jumps forced to bracket by preceding holds, % XXX: this is a lie!! bonus pts if anyone spots it. i don't actually know why the alg didn't classify
 	(c) brackets the chart author was sorry about,
 	(d) ``retro'' style unbracketable jump-stream, %which, largely, cannot be bracketed,
 	and
-	(e) very intentionally many true bracket jumps from the BJJ\% category winner.}
+	(e) intentionally many true bracket jumps from the BJJ\% category winner.}
 	\label{fig:discussion}
 \end{figure*}
 
@@ -693,7 +780,7 @@ note here the DUR bracket-triple-jumps in the third measure,
 which the algorithm currently cannot process.
 
 Many old charts written without regard to jump patterning allow for many of their jumps to be bracketed anyway.
-I noticed an old stepchart for One-Winged Angel \cite{owa} ranking high in the list of overall total bracket jumps,
+I noticed an old stepchart for One-Winged Angel \cite{owa} ranking high in the list of overall total bracket-jumps,
 with 182,
 simply because it's long and has a lot of steps,
 but upon playing, the patterns definitely do not feel intentional,
@@ -714,7 +801,7 @@ resulting in better chart design overall
 (note that such charts necessarily include no LR or DU jumps whatsoever).
 Either that, or the more uncomfortable ones include certain extremely turny/candley/doublesteppy patterns
 around their brackets that causes the algorithm to count them as normal jumps instead.
-Anyway, \Cref{fig:discussion}(e) shows the chart with most bracket jumps (35) among ones with 100 BJJ\%,
+Anyway, \Cref{fig:discussion}(e) shows the chart with most bracket-jumps (35) among ones with 100 BJJ\%,
 which I tried out for myself and found quite enjoyable \cite{e-paradise}.
 Amusingly, Encore \cite{encore}
 features a Hard chart in addition to its Challenge,
@@ -728,6 +815,33 @@ having been replaced by easier, normal ones.
 
 The only thing that impresses the research community more than overdelivering on your future work promises
 is to overdeliver twice; hence, I shamelessly reuse the joke of this section name from last time.
+
+\subsection{UI}
+
+It would be cool to integrate this (and the preceding two algorithms \cite{turniness,crossoveriness})
+into
+%Simply Love \cite{simplylove}, or whatever
+the community's prevailing stepmania theme.
+%may be in the future.
+Currently, as shown in \Cref{fig:songpreview}(a),
+the song preview screen wastes considerable space displaying the count of irrelevant chart aspects
+such as mines (now used primarily for signaling the presence of footswitches)
+and hands (now mostly stepped with the feet by bracketing anyways).
+I bet the community might actually pay attention to my work---the holy grail of research, honestly---if
+popular themes used it to show precisely how technical a chart was, as in (b).
+
+\begin{figure}[t]
+	\begin{tabular}{c}
+	\includegraphics[width=0.46\textwidth]{song-info.png} \\
+		(a) Current state-of-the-art.
+		\\
+		\\
+	\includegraphics[width=0.46\textwidth]{song-info-better.png} \\
+		(b) Artist's conception.
+	\end{tabular}
+	\caption{Song info preview panel for a recent bracket jump-heavy stepchart \cite{divine}.}
+	\label{fig:songpreview}
+\end{figure}
 
 \subsection{Crossover Brackets}
 \label{sec:xover-brackers}
@@ -743,7 +857,7 @@ Such jumps could instead just be stepped with both feet as normal,
 possibly inducing doublesteps or jacks,
 and indeed that is how the algorithm presently handles them.
 
-However, ambitious stepchart authors have recently experimented with encouraging the player to bracket jumps while crossed-over.
+However, ambitious stepchart authors have recently experimented with encouraging the player to bracket-jumps while crossed-over.
 Such charts attempt to force, or at least hint, these jumps to be bracketed
 via additional stepchart elements: in \Cref{fig:xb}(a), mines on the left arrow force the player to remove her left foot in preparation for the crossover (and being in the middle of fast stream, further discourages doublestepping),
 and in \Cref{fig:xb}(b), extending one of the arrows as a hold encourages the player to bracket the subsequent jump with the other foot.
@@ -774,7 +888,7 @@ I think it is fair to leave out of the algorithm too for now.
 	\end{tabular}
 	\end{tabular}
 	\end{center}
-	\caption{Crossover bracket jumps must be signaled via either (a) mines or (b) holds to remove ambiguity.}
+	\caption{Crossover bracket-jumps must be signaled via either (a) mines or (b) holds to remove ambiguity.}
 	\label{fig:xb}
 \end{figure}
 
@@ -789,33 +903,6 @@ a real thing, but still. $\bar{~~}$\textbackslash\_(ツ)\_/$\bar{~~}$
 % not-to-to: put a pict anyway? if you find one
 % actually, joke comes off better w/o
 
-\subsection{UI}
-
-It would be cool to integrate this (and the preceding two algorithms \cite{turniness,crossoveriness})
-into
-%Simply Love \cite{simplylove}, or whatever
-the community's prevailing stepmania theme.
-%may be in the future.
-Currently, as shown in \Cref{fig:songpreview}(a),
-the song preview screen wastes considerable space displaying the count of irrelevant chart aspects
-such as mines (now used primarily for signaling the presence of footswitches)
-and hands (now mostly stepped with the feet by bracketing anyways).
-I bet the community might actually pay attention to my work---the holy grail of research, honestly---if
-popular themes used it to show precisely how technical a chart was, as in (b).
-
-\begin{figure}[t]
-	\begin{tabular}{c}
-	\includegraphics[width=0.46\textwidth]{song-info.png} \\
-		(a) Current state-of-the-art.
-		\\
-		\\
-	\includegraphics[width=0.46\textwidth]{song-info-better.png} \\
-		(b) Artist's conception.
-	\end{tabular}
-	\caption{Song info preview panel for a recent bracket jump-heavy stepchart \cite{divine}.}
-	\label{fig:songpreview}
-\end{figure}
-
 \subsection{Obligatory Machine Learning Section}
 
 I guess you could skip all this fiddly ``algorithm'' stuff by
@@ -829,14 +916,14 @@ Remember kids, friends don't let friends use ML for problems that are more fun t
 
 \section{Conclusion}
 
-% TODO: is it true.
-Bracket jumps is, in fact, the new crossovers or something.
+Bracket jumps is, in fact, statistically significantly, the new crossovers or something.
 %I never know what to put down here. Much love to the community..!
 
 \acks
 
 neuropantser (Michael T. Lawson) provided invaluable eleventh-hour (literally) advice
 on \Cref{sec:eval-years}'s statistical analysis, up to and including making the graphs for me.
+Greg Hanneman unknowingly helped copy-edit my hyphenation.
 And much love to the SIGBOVIK community.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

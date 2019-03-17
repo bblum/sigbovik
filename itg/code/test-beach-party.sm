@@ -1,0 +1,22 @@
+12,3,0,0,0,0,0,8
+#TITLE:Test;
+#NOTES:
+	dance-single:
+	test:
+	Edit:
+	1:
+	:
+0011
+1100
+0011
+MMMM // ideally, this should clear the right foot off of U
+1010 // so this could bracker -- ideally making the result 9, not 8
+0101 // ...this one will bracker either way
+1010
+0001
+1000
+0010
+1100
+0011
+1100
+;
