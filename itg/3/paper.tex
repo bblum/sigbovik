@@ -529,8 +529,105 @@ before then to give meaningful sample sizes for each year.
 I also decided to exclude tournament packs such as ECFA from this analysis,
 which curate existing stepcharts written possibly long ago.
 
+\textit{Statistical significance.}
+Stepcharts thus dated, I then summed the total steps, jumps, and brackets published in each year,
+and analyzed the resulting overall BJS\% and BJJ\% as a linear regression.
+\Cref{fig:stats} shows the best-fit and 95\% confidence intervals,
+plotted in R \cite{r-lang} with ggplot \cite{ggplot}.
+For BJS\%, the $\le$2012 bucket actually produced the highest data point (at 11.8\%);
+I suspect this simply represents the fact that jumps were more popular overall during ITG's nascency
+(as corroborated by \Cref{tab:pack-bjs}).
+Owing to this and also to its nature as an aggregation over nearly a decade (which spoils the linear model anyway),
+I chose to exclude it from BJS\%,
+but keep it for BJJ\%, which overall jump count has no bearing on.
+(Its linear fit has $\beta$ = 0.012\%, CI = \{-0.08,+0.10\}, not significant.)
+For the two pictured distributions, their confidence intervals do not include 0,
+i.e., a flat line representing no growth,
+so I conclude bracket jumps' increased popularity is statistically significant.
 
+%% more sigfigs values provided
+% the 95% CI for step (excluding <=2012) is _(0.032,0.139)_
+% the 95% CI for jump (including all years) is _(0.396,2.208)_
+% step (not all years): 0.085
+% jump: 1.302
+% step (all years): 0.012 with a 95% CI of (-0.080, 0.104) (edited)
 
+%%%% ggplot code provided by neuropantser
+% # set up data vectors
+% bracket_jump = 100*c(0.1816545127,0.1614241831,0.1486753945,0.1755102041,0.1593747466,0.2210173322,0.2676218299,0.2333917477)
+% year_jump = 2012:2019
+% 
+% bracket_step = 100*c(0.005698341736,0.003965042926,0.00499281212,0.005327880519,0.006349085019,0.007480904624,0.01087723206)
+% year_step = 2013:2019
+% 
+% # run linear models (and manually output the 95% CIs)
+% step_lin = summary(lm(bracket_step~year_step))
+% print(sprintf("95 pct CI for step: (%s,%s)",step_lin$coefficients[2,1]-1.96*step_lin$coefficients[2,2],
+%               step_lin$coefficients[2,1]+1.96*step_lin$coefficients[2,2]))
+% jump_lin = summary(lm(bracket_jump~year_jump))
+% print(sprintf("95 pct CI for jump: (%s,%s)",jump_lin$coefficients[2,1]-1.96*jump_lin$coefficients[2,2],
+%               jump_lin$coefficients[2,1]+1.96*jump_lin$coefficients[2,2]))
+% 
+% # plot the linear trends
+% library(ggplot2)
+% 
+% # directory to store plots -- CHANGE THIS to where you want them stored
+% plotdir = "C:/Users/mtlawson/Pictures/stuff"
+% 
+% # create temp dataset with bracket_jump variables
+% plotdata = data.frame(year_jump,bracket_jump)
+% # construct plot
+% jump = (ggplot()
+%         + geom_point(data=plotdata,aes(x=year_jump,y=bracket_jump),alpha=0.7,col='red')
+%         + geom_smooth(data=plotdata,aes(x=year_jump,y=bracket_jump),method='lm',alpha=0.4)
+%         + xlab("Year")
+%         + ylab("Brackets-Vs-Jumps Pct")
+%         + scale_x_continuous(breaks=year_jump)
+%         + theme_classic())
+% # output to pdf (can switch to PNG or other desired filetype)
+% pdf(file=sprintf("%s/jump_plot.pdf",plotdir))
+% print(jump)
+% dev.off()
+% # create temp dataset with bracket_step variables
+% plotdata = data.frame(year_step,bracket_step)
+% # construct plot
+% step = (ggplot()
+%         + geom_point(data=plotdata,aes(x=year,y=bracket_step),alpha=0.7,col='red')
+%         + geom_smooth(data=plotdata,aes(x=year,y=bracket_step),method='lm',alpha=0.4)
+%         + xlab("Year")
+%         + ylab("Brackets-Vs-Steps Pct")
+%         + scale_x_continuous(breaks=year_step)
+%         + theme_classic())
+% # output to pdf (can switch to PNG or other desired filetype)
+% pdf(file=sprintf("%s/step_plot.pdf",plotdir))
+% print(step)
+% dev.off()
+
+\begin{figure}[t]
+	\begin{tabular}{c}
+		\includegraphics[width=0.42\textwidth]{step_plot.pdf}
+		\\
+		(a) BJS\% across years ($\beta$ = 0.085\%, CI = \{0.032,0.14\}).
+		\\
+		\\
+		\includegraphics[width=0.42\textwidth]{jump_plot.pdf}
+		\\
+		(a) BJJ\% across years ($\beta$ = 1.30\%, CI = \{0.40,2.21\}).
+	\end{tabular}
+	\caption{Linear best fit of bracket jumps' popularity across the years of ITG's history.
+	Grey area depicts 95\% CI.}
+	\label{fig:stats}
+\end{figure}
+
+\textit{Bias.}
+This analysis is prone to selection bias in my own pack downloading habits:
+supposing I suddenly became more interested in playing brackety charts recently,
+that would certainly influence how many bracket jumps appeared each year in this corpus.
+However, I believe the BJJ\% measurement adequately compensates for this,
+for if I suddenly became interested in stamina instead of technical and added a bunch of 10-minute trance packs,
+that would impact only BJS\%.
+As far as I know, I show no preference for more or less jumpy charts overall than the community average,
+leading me to trust the BJJ\% test.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
