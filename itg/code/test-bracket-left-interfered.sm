@@ -8,7 +8,7 @@
 	:
 1000
 0100
-0101 // no, right foot is on D already
+1100 // no, right foot is on D already
 0010
 1000
 ;
