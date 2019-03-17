@@ -169,7 +169,7 @@ extending it to handle these new so-called ``bracket'' jumps.
 
 What, then, is a bracket-jump (which I shall \textit{not}, henceforth, abbreviate for brevity)?
 Put simply, whenever two arrow-shaped obstacles proceed simultaneously towards the protagonist directional indicator targets
-(see \cite{turniness}),
+\cite{turniness},
 while a novice player might think they must step with both feet at once, one for each arrow,
 experts often find it more convenient (i.e., less overall foot motion) to use whichever single foot is closer at the time
 to hit both arrows by
@@ -217,7 +217,7 @@ I extended the crossoveriness et cetera algorithm from \cite{crossoveriness} to 
 which previously it treated all identically,
 ignoring the arrows involved and allowing the player to reset her footing as desired.
 Now, it considers LD, LU, DR, and UR jumps as potentially bracketable,
-allowing the player to continue a stream of alternating feet uninterrupted through.
+allowing the player to continue a stream of alternating feet uninterrupted therethrough.
 
 \textit{Confession.}
 When I was first brainstorming this project,
@@ -305,7 +305,7 @@ and whenever we encounter a LD/LU/DR/UR jump, bracket it if both:
 	\item The last foot is opposite the foot required for the jump (e.g. L for LD), and
 	\item The last foot's last note(s) does not intersect the arrows involved in the jump (i.e., R not on D preceding LD).
 \end{enumerate}
-In lieu of a detailed algorithm listing, I'll simply show some of those most notable test cases in pictures and explain in prose how the implementation must handle them,
+In lieu of a detailed algorithm listing, I'll simply show some of those most notable test cases in pictures and explain in prose how a player would typically step them,
 which was pretty much my implementation strategy to begin with.
 
 \Cref{fig:tests} shows a bunch of patterns with a bracketable jump,
@@ -375,7 +375,7 @@ I'll now explain how the algorithm handles each case.
 		In the NG case, condition 2 is violated for the second and fourth jumps.
 	\item Version of (a) testing that preceding bracket-jumps also contribute to condition 2.
 		The NG case would be a footswitch bracket requiring rather uncomfortable footing angles.
-	\item In OK, LR cannot be bracketed, but clears the prior footings so UR can.
+	\item In OK, DR cannot be bracketed, but clears the prior footings so UR can.
 		In NG, LR can be bracketed, meaning UR cannot while still alternating feet (condition 1).
 	\item DU jumps can never be bracketed, but can be stepped facing either direction, and this must respect prior footings.
 		In both cases DU is stepped with right foot U, which allows bracketing LD but not LU thereafter.
@@ -507,7 +507,7 @@ note how despite the relatively even spread of years in BJS\%,
 2018 dominates the BJJ\% leaderboard,
 suggesting that older charts' bracket-jumps arose by chance simply from having a lot of jumps to begin with.
 I'll come back to this point in \Cref{sec:eval-years}.
-In honorable mentionth place is chart author Halogen-, whose 11 charts contain 154 jumps, \textit{none} of which are bracketable.
+In honorable mentionth place is chart author \mbox{Halogen--,} whose 11 charts contain 154 jumps, \textit{none} of which are bracketable.
 What a purist!
 
 \begin{table}[t]
@@ -558,7 +558,7 @@ What a purist!
 \subsection{Historical Trends}
 \label{sec:eval-years}
 
-I sought to prove \cite{dril}'s claim that bracket-jumps have skyrocketed in popularity in the most recent years of stepchart-making,
+I sought to prove \cite{dril}'s claim that bracket-jumps' popularity has skyrocketed in recent years of stepchart-making,
 %I decided to do this
 by finding the progression of bracketiness across past years of stepchart packs.
 However,
@@ -566,7 +566,7 @@ actually assigning a firm release date to every pack on my hard drive turned out
 even involving archive.org for one step.
 I'll spare you the details, but you can peruse them in the second spreadsheet of the dataset linked at the start of this section.
 Ultimately, all packs older than 2013 had to be grouped together,
-as no pack collection website, facebook group, or laptop filesystem could accurately date enough packs
+as no pack collection website, facebook group, or laptop filesystem metadata could accurately date enough packs
 before then to give meaningful sample sizes for each year.
 I also decided to exclude tournament packs such as ECFA from this analysis,
 which curate existing stepcharts written possibly long ago.
@@ -581,7 +581,7 @@ I suspect this simply represents the fact that jumps were more popular overall d
 (as corroborated by \Cref{tab:pack-bjs}).
 Owing to this and also to its nature as an aggregation over nearly a decade (which spoils the linear model anyway),
 I chose to exclude it from BJS\%,
-but keep it for BJJ\%, which overall jump count has no bearing on.
+but kept it for BJJ\%, which overall jump count has no bearing on.
 (Its linear fit has $\beta$ = 0.012\%, CI = \{-0.08,+0.10\}, not significant.)
 For the two pictured distributions, their confidence intervals do not include 0,
 i.e., a flat line representing no growth,
