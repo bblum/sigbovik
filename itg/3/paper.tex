@@ -223,9 +223,9 @@ allowing the player to continue a stream of alternating feet uninterrupted throu
 When I was first brainstorming this project,
 I had some grand visions of unifying the turniness algorithm \cite{turniness}---which
 accounts for U/D steps to figure out how far the player must turn each step,
-but has no idea which way the player is actually facing at any given time---with
+but has no idea which way she is actually facing at any given time---with
 the crossoveriness one
-(cited just above; cmon how much do you want me to repeat these, gimme a break)---which
+(cited just above; cmon how much do you want me to repeat these same two citations, gimme a break)---which
 totally ignores U/D steps and just figures out which arrows the left and right feet must each step---in
 some theoretically beautiful way to produce the unquestionably perfect footing sequence for each jump.
 %
@@ -234,7 +234,7 @@ potentially allowing crossover brackets (\Cref{sec:xover-brackers})
 and footswitch brackets (\Cref{sec:fs-brackers}),
 I realized that ultimately there would be no restrictions on what jumps were bracketable;
 the algorithm would oops simply twist and turn as much as necessary to bracket everything,
-and this paper would become ``Which ITG Stepcharts Have the Most Jumps?'', and like who wants to read that.
+and this paper would become just ``Which ITG Stepcharts Have the Most Jumps?'', and like who wants to read that.
 
 One may think to simply try either bracketing each jump or not
 and seeing what combination gives the minimum turniness result,
@@ -245,11 +245,11 @@ Now, the last time I tried to solve an exponentially-sized problem, it took me 7
 \cite{landslide-thesis}
 (and I still ended up with a pile of heuristics after all anyway),
 so considering I started this project a week before the deadline,
-I instead to just code up a bunch of ad-hoc rules to handle all the different bracket jump patterns
+I opted instead to just code up a bunch of ad-hoc rules to handle all the different bracket jump patterns
 that occurred to me to write test cases for.
 
 As before, the code is available at \url{https://github.com/bblum/sigbovik/blob/master/itg/code/ITG.hs}.
-To give an idea of how much its elegance has been despoiled % hi william
+To give a sense of how much its elegance has been despoiled % hi william
 since the last version:
 % TODO: figure out these numbers without counting comments
 98 lines of Haskell (which computed crossovers, footswitches, jacks, doublesteps, \textit{and} crossover footswitches)
@@ -272,7 +272,7 @@ and the once-simple datatype definition of
 	\hilight{brickred}{Jump}}
 \end{center}
 
-has become:
+has become the unwieldy:
 
 \vspace{-1em} % dont know why this is necessary
 \begin{center}
@@ -308,21 +308,29 @@ Figure \Cref{fig:bracket-example}(a) shows a simple example where every jump (bl
 can be bracketed by the right foot,
 alternating with 
 
+\subsection{Wackier Examples}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Evaluation}
 
-The experimental corpus has grown even more since last time, now comprising 17253 stepcharts from 181 packs.
+The experimental corpus has grown even more since last time, now comprising %17253
+17340 % with ups 4
+stepcharts from 182 packs.
 Of note, all three Technical Showcase packs
-(collaborative community packs where all authors were encouraged to submit their freshest beats and judged on complexity)
+(collaborative packs where the community at large was encouraged to submit their freshest beats and judged on complexity)
 were released in the last two years,
 which have proved to be important sources of diverse bracket-jump patterns for this research.
 I would also have liked to re-rank the crossoveriest and footswitchiest charts from last time to include these submissions,
 but I frankly don't have time.
 The results spreadsheet of bracket jump counts
-(as well as more crossovers et cetera for packs released since last time)
+(as well as more crossovers, footswitches, et cetera for charts newer than the last paper)
 is available for your browsing pleasure at
 \url{https://tinyurl.com/bracketiest}.
+
+% command used to generate the sheet
+% used "|" as sed delimiter bc others appear in song names
+% IFS=$'\n'; for i in `find ~/stepmania/Songs/ | grep '\.sm$'`; do cat "$i" | ./ITG 2>&1 | sed "s|^|$i\t|"; done > ../3/results/results.txt
 
 I pose two evaluation questions, to be answered in the following subsections respectively.
 \begin{enumerate}
@@ -331,18 +339,261 @@ I pose two evaluation questions, to be answered in the following subsections res
 \end{enumerate}
 
 \subsection{Bracket Jumpiness}
+\label{sec:bjness}
 
-% TODO: define BJJ% and BJS%
+I measured the overal bracketiness of each chart in two ways,
+first,
+by comparing the number of bracket jumps against the total number of steps,
+or the \textit{bracket jump step percentage} (BJS\%);
+second,
+by comparing against the total number of jumps only,
+or the \textit{bracket jump jump percentage} (BJJ\%).
+The BJS\% indicates a chart's overall density of steps requiring the player to step across the brackets
+(which depends on how jumpy the chart is to begin with),
+whereas the BJJ\% measures perhaps the author's intentionality in patterning their jumps either as brackets,
+or as random where just some of them happen to be bracketable.
+
+\Cref{tab:bjs} shows the leaderboard for the former metric, and \Cref{tab:bjj} the latter.%
+\footnote{When measuring BJJ\% I excluded charts with fewer than 10 jumps in total,
+which put up a handful of false positives in the 100\% ranks.}
+Note that the aforementioned recent Technical Showcase pack series put up three bracketiest charts in the BJJ\% category;
+meanwhile, the UPS packs, known for their gimmicks and general lack of respect for player comfort,
+secure several top spots on the BJS\% board.
+For comparison's sake, the overall BJJ\% of the entire corpus is 20\% (93k/470k),
+meaning that roughly 1 in 5 randomly-patterned jumps are by chance bracketable.
+The overall BJS\% (a thoroughly less meaningful statistic) is 0.7\%.
+
+% TODO check margins
+\begin{table}[t]
+	\begin{center}
+		\small
+	\begin{tabular}{r|l|l|r|r}
+		\bf Ft. & \bf Name & \bf Pack & \bf \#BJ & \bf BJS\% \\
+		\hline
+		10 & SOBA			& Squeaky Beds \&c.	& 366 & 83\% \\
+		11 & Get Off of My Way		& UPS 3			& 115 & 28\% \\
+		12 & Hardware Store		& Keyboard Coll. III	& 207 & 23\% \\
+		13 & Firestorm			& BemaniBeats 3		& 153 & 31\% \\
+		14 & Bounce			& UPS 2			& 126 & 21\% \\
+		15 & Ikaros Dynamite!!!!	& UPS 2			& 238 & 34\% \\
+		16 & Mermaid Island		& Tachyon Alpha		& 346 & 49\% \\
+		17 & Toccata \& Fugue		& CuoReNeRo M.P.	& 255 & 24\% \\
+		% this chart is ALL jumps so it's kinda false positive
+		%420 & Paa			& UPS 4			& 263 & 34\% \\
+	\end{tabular}
+	\end{center}
+	\caption{Charts of each difficulty with the highest bracket jump density among all steps (BJS\%).}
+	\label{tab:bjs}
+\end{table}
+\begin{table}[t]
+	\begin{center}
+		\small
+	\begin{tabular}{r|l|l|r|r}
+		\bf Ft. & \bf Name & \bf Pack & \bf \#BJ & \bf BJJ\% \\
+		\hline
+		 9 & Drifting Away		& UPS 4			&  26 &  88\% \\
+		10 & SOBA			& Squeaky Beds \&c.	& 366 &  99\% \\
+		11 & Save Miracles		& ECFA 2019		&  42 &  95\% \\
+		12 & Electrical Paradise	& Chic. Timing Auth.	&  35 & 100\% \\
+		12 & Encore			& Tech. Showcase	&  29 & 100\% \\
+		12 & Nemeton			& Subluminal		&  12 & 100\% \\
+		13 & Decadent Dandy		& Tech. Showcase 3	&  12 & 100\% \\
+		14 & Nageki no Ki		& Valex's M.4-A.A. 8	& 116 &  94\% \\
+		15 & Beach Party		& Tech. Showcase 2	& 162 &  80\% \\
+		16 & Mermaid Island		& Tachyon Alpha		& 346 &  79\% \\
+		17 & Zombie Sunset		& Jummy Jawns 2		& 325 &  88\% \\
+		69 & koopa bling		& UPS 4			&  39 &  98\% \\
+	\end{tabular}
+	\end{center}
+	\caption{Charts of each difficulty with the highest percentage of their total jumps bracketable (BJJ\%).
+	All participants of the 3-way tie for 12-footers are listed.}
+	%filtered by having at least 10 jumps to begin with.}
+	\label{tab:bjj}
+\end{table}
+
+Next up is bracket jumpiness by pack and by author.
+\Cref{tab:pack-bjs,tab:pack-bjj} show the top 10 packs in both bracketiness metrics,
+and \Cref{tab:author-bjs,tab:author-bjj} the top 10 authors
+(filtered by having written at least 10 charts).
+For the packs, I also list the release year of each;
+note how despite the relatively even spread of years in BJS\%,
+2018 dominates the BJJ\% leaderboard,
+suggesting that older charts' bracket jumps arose by chance simply from having a lot of jumps to begin with.
+I'll come back to this point in \Cref{sec:eval-years}.
+In honorable mentionth place is chart author Halogen-, whose 11 charts contain 154 jumps, \textit{none} of which are bracketable.
+What a purist!
+
+\begin{table}[t]
+	\begin{center}
+		\small
+	\begin{tabular}{l|r|r|r}
+		\bf Pack name & \bf Year & \bf \#charts & \bf BJS\% \\
+		\hline
+		Keyboard Collaboration III		& $\le$2012	&  17 & 12.4\% \\
+		Squeaky Beds and Leaky Faucets		& 2018	& 125 &  4.9\% \\
+		Keyboard Collaboration I		& $\le$2012	&  12 &  3.6\% \\
+		CuoReNeRo MeGaPacK			& N/A	& 460 &  3.3\% \\
+		Mute Sims X2 WIP			& 2018	&  12 &  3.0\% \\
+		r2112					& 2007	&  60 &  2.7\% \\
+		Technical Showcase 3			& 2018	& 196 &  2.7\% \\
+		FoxyMix 4 - Nuclear Overdrive		& $\le$2012	&  67 &  2.6\% \\
+		Technical Showcase 2			& 2017	&  80 &  2.6\% \\
+		Gensokyo Midnight			& $\le$2012 	&  77 &  2.5\% \\
+	\end{tabular}
+	\end{center}
+	\caption{Song packs densest in bracket jumps.}
+	\label{tab:pack-bjs}
+\end{table}
+
+% sorry about my sigfig discrepancies between this and the by-chart table but like, latex and margins yknow
+\begin{table}[t]
+	\begin{center}
+		\small
+	\begin{tabular}{l|r|r|r}
+		\bf Pack name & \bf Year & \bf \#charts & \bf BJJ\% \\
+		\hline
+		Feelin' Rusty 3			& 2018	&  51 & 50.2\% \\
+		Squeaky Beds and Leaky Faucets	& 2018	& 125 & 46.7\% \\
+		TYLR's Technical Difficulties	& 2018	&  33 & 44.9\% \\
+		Technical Showcase 3		& 2018	& 196 & 41.7\% \\
+		Mute Sims X2 WIP		& 2018	&  12 & 40.9\% \\
+		Jimmy Jawns 2			& 2015	&  55 & 39.7\% \\
+		Technical Showcase 2		& 2017	&  80 & 38.2\% \\
+		Keyboard Collaboration III	& $\le$2012	&  17 & 38.1\% \\
+		Chicago Timing Authority	& 2018	&  33 & 36.3\% \\
+		DVogan's Tech Support 2		& 2018	&  32 & 36.1\% \\
+	\end{tabular}
+	\end{center}
+	\caption{Song packs with the most jumps bracketable.}
+	\label{tab:pack-bjj}
+\end{table}
+
+\begin{table}[t]
+	\begin{center}
+		\small
+	\begin{tabular}{l|r|r}
+		\bf Author name & \bf \#charts & \bf BJS\% \\
+		\hline
+		Paul J Kim & 45 & 9.9 \\
+		sssmsm & 45 & 4.4 \\
+		Liam & 11 & 3.4 \\
+		Snooze & 22 & 2.5 \\
+		M. Emirzian & 26 & 2.2 \\
+		bblum & 40 & 1.9 \\
+		Ninevolt & 10 & 1.7 \\
+		B. Vergara & 95 & 1.6 \\
+		C. Emirzian & 18 & 1.6 \\
+		B. Dinh & 10 & 1.6 \\
+		Renard & 51 & 1.5 \\
+	\end{tabular}
+	\end{center}
+	\caption{Step cartographers who write charts densest in bracket jumps.}
+	\label{tab:author-bjs}
+\end{table}
+
+\begin{table}[t]
+	\begin{center}
+		\small
+	\begin{tabular}{l|r|r}
+		\bf Author name & \bf \#charts & \bf BJJ\% \\
+		\hline
+		Paul J Kim & 45 & 71.8 \\
+		Rust & 97 & 51.7 \\
+		bblum & 40 & 49.3 \\
+		Liam & 11 & 44.5 \\
+		Snooze & 22 & 38.1 \\
+		Rems & 10 & 36.5 \\
+		sssmsm & 45 & 32.9 \\
+		Loak & 19 & 31.7 \\
+		Little Matt & 42 & 31.4 \\
+		Paparazzi & 10 & 29.6 \\
+	\end{tabular}
+	\end{center}
+	\caption{Step cartographers whose jumps are most bracketable.}
+	\label{tab:author-bjj}
+\end{table}
 
 \subsection{Historical Trends}
+\label{sec:eval-years}
 
-% TODO: be like, we set out to prove that ppl are using bracker jumps more often lately
+I sought to prove \cite{dril}'s claim that bracket jumps have skyrocketed in popularity in the most recent years of stepchart-making,
+%I decided to do this
+by finding the progression of bracketiness across past years of stepchart packs.
+However,
+actually assigning a firm release date to every pack on my hard drive turned out to be a feat of internet archaeology unto itself,
+even involving archive.org for one step.
+I'll spare you the details, but you can peruse them in the second spreadsheet of the dataset linked at the start of this section.
+Ultimately, all packs older than 2013 had to be grouped together,
+as no pack collection website, facebook group, or laptop filesystem could accurately date enough packs
+before then to give meaningful sample sizes for each year.
+I also decided to exclude tournament packs such as ECFA from this analysis,
+which curate existing stepcharts written possibly long ago.
 
-% temporal analysis of pack age vs bracker density
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Discussion}
+
+% TODO: check figure placement
+\begin{figure*}[t]
+	\begin{center}
+	\begin{tabular}{c}
+		\includegraphics[width=0.16\textwidth]{disco-beachparty.png}
+		\\
+		(a) Beach Party, \\ 15 \cite{beachparty} %\\
+	\end{tabular}
+	\begin{tabular}{c}
+		\includegraphics[width=0.16\textwidth]{disco-koopa.png}
+		\\
+		(b) koopa bling, \\ 69 \cite{koopa} %\\
+	\end{tabular}
+	\begin{tabular}{c}
+		\includegraphics[width=0.16\textwidth]{disco-zombiesunet.png}
+		\\
+		(c) Zombie Sunset, \\ 17 \cite{zombie} %\\
+	\end{tabular}
+	\begin{tabular}{c}
+		\includegraphics[width=0.16\textwidth]{disco-owa.png}
+		\\
+		(d) 1-Winged Angel, \\ 14 \cite{owa} %\\
+	\end{tabular}
+	\begin{tabular}{c}
+		\includegraphics[width=0.16\textwidth]{disco-paradise.png}
+		\\
+		(e) Electrical Paradise, \\ 12 \cite{e-paradise} %\\
+	\end{tabular}
+	\end{center}
+	%\caption{Why I gotta write a overall caption, just read the prose on this one.}
+	\caption{Example real-world charts with
+	(a) false negative jumps that mines render bracketable after all,
+	(b) jumps whose footing is affected by preceding holds,
+	%false negative jumps forced to bracket by preceding holds, % XXX: this is a lie!! bonus pts if anyone spots it. i don't actually know why the alg didn't classify
+	(c) brackets the chart author was sorry about,
+	(d) ``retro'' style unbracketable jump-stream, %which, largely, cannot be bracketed,
+	and
+	(e) very intentionally many true bracket jumps from the BJJ\% category winner.}
+	\label{fig:discussion}
+\end{figure*}
+
+I confirmed in stepmania the bracketiness of each of \Cref{sec:bjness}'s high scorers,
+and happily observed no false positives (i.e., all charts seemed to intend the player to bracket),
+surprising myself for the 3rd time running at the accuracy of the algorithm.
+I did observe some false negatives, i.e., jumps seeming intended to be bracketed that the algorithm wouldn't catch.
+In Beach Party \cite{beachparty}, shown in \Cref{fig:discussion}(a),
+the ``mine jump'' forces the player to reset her footing,
+removing the right foot's initial presence on U to allow LU to be bracketed.
+This would actually be pretty easy to fix (just have the algorithm parse mines like, at all)
+but it's the day of the deadline and I already ran the experiment, so.
+Another class of false positives showed up in koopa bling \cite{koopa} (\Cref{fig:discussion}(b)),
+where one foot is fixed to a hold, affecting the footing of subsequent jumps.%
+\footnote{The algorithm actually foots them correctly in this chart by sheer luck (an even number of preceding doublesteps maintains footing parity),
+but these would be harder to handle in general.}
+For kicks, I also show the source of the ``I'm sorry'' stepchart description in \Cref{fig:discussion}(c),
+from Zombie Sunset \cite{zombie} (\Cref{tab:bjj});
+note here the DUR bracket-triple-jumps in the third measure,
+which the algorithm currently cannot process.
 
 Many old charts written without regard to jump patterning allow for many of their jumps to be bracketed anyway.
 I noticed an old stepchart for One-Winged Angel \cite{owa} ranking high in the list of overall total bracket jumps,
@@ -350,9 +601,9 @@ with 182,
 simply because it's long and has a lot of steps,
 but upon playing, the patterns definitely do not feel intentional,
 and it even includes a section of stream with wholly unbracketable jumps interspersed.
-\Cref{fig:discussion}(a) shows this section;
+\Cref{fig:discussion}(d) shows this section;
 in this stream, the player would expect to step the red and blue arrows with her right foot and the lime ones with her left,
-but note how the jumps (hint: all in blue)
+but note how the jumps (hint: all in blue arrows, unless you're reading this on dead trees)
 occur as a mix of left and right arrows, with even a UD ``candle'' jump making an appearance.
 However, it measures an unremarkable 9 BJS\% and 38 BJJ\%---I just wanted to feature it
 as an example of what non-bracketable jump stream looks like.
@@ -366,41 +617,15 @@ resulting in better chart design overall
 (note that such charts necessarily include no LR or DU jumps whatsoever).
 Either that, or the more uncomfortable ones include certain extremely turny/candley/doublesteppy patterns
 around their brackets that causes the algorithm to count them as normal jumps instead.
-Anyway, \Cref{fig:discussion}(b) shows the chart with most bracket jumps (35) among ones with 100 BJJ\%,
+Anyway, \Cref{fig:discussion}(e) shows the chart with most bracket jumps (35) among ones with 100 BJJ\%,
 which I tried out for myself and found quite enjoyable \cite{e-paradise}.
 Amusingly, Encore \cite{encore}
 features a Hard chart in addition to its Challenge,
 which former ranks second place to Electrical Paradise among 100 BJJ\%s with 29 brackets.
-Upon inspection, I found this chart identical to the Challenge (shown in \Cref{fig:xb}(a)),
+Upon inspection, I found this chart identical to the Challenge (upcoming in \Cref{fig:xb}(a)),
 only the crossover brackets
 (to be discussed later in \Cref{sec:xover-brackers})
-had been replaced by easier, normal ones.
-
-\begin{figure}[t]
-	\begin{center}
-	\begin{tabular}{cc}
-	\begin{tabular}{c}
-		\includegraphics[width=0.16\textwidth]{disco-owa.png}
-		\\
-		(a) One-Winged Angel, \\ 14 \cite{owa} %\\
-		%(10, Tech. Showcase 3)
-	\end{tabular}
-		&
-	\begin{tabular}{c}
-		\includegraphics[width=0.16\textwidth]{disco-paradise.png}
-		\\
-		(b) Electrical Paradise, \\ 12 \cite{e-paradise} %\\
-		%(12, Tech. Showcase 1)
-	\end{tabular}
-	\end{tabular}
-	\end{center}
-	%\caption{Why I gotta write a overall caption, just read the prose on this one.}
-	\caption{Example charts with
-	(a) ``retro'' style jump-stream which, largely, cannot be bracketed,
-	and
-	(b) very intentionally many bracket jumps.}
-	\label{fig:discussion}
-\end{figure}
+having been replaced by easier, normal ones.
 
 \section{Never Work}
 
@@ -429,6 +654,10 @@ In (b)'s case, the player must also switch feet on each of the non-hold arrows,
 effectively making these crossover-footswitch-brackets,
 which would truly be a wonder to identify programmatically.
 % these can be cheated anyway
+Note however the high measure counter in both, meaning these occur quite late in the song;
+both charts first spend some time ``teaching'' the player both to expect bracket jumps
+and how it intends to signal crossovers in general---so if a human is not expected to understand them at first glance,
+I think it is fair to leave out of the algorithm too for now.
 
 \begin{figure}[t]
 	\begin{center}
@@ -455,7 +684,8 @@ which would truly be a wonder to identify programmatically.
 \subsection{Footswitch Brackets}
 \label{sec:fs-brackers}
 
-I put this section here only just so I could have something to forward-reference back in \Cref{sec:analyzing}.
+I put this section here only just so I could have something to forward-reference back in \Cref{sec:analyzing},
+but not to actually write anything.
 I always wanted to do that, you know?
 I mean, footswitch brackets are %also
 a real thing, but still. $\bar{~~}$\textbackslash\_(ツ)\_/$\bar{~~}$
@@ -502,8 +732,15 @@ Remember kids, friends don't let friends use ML for problems that are more fun t
 
 \section{Conclusion}
 
-I never know what to put down here. Much love to the community..!
+% TODO: is it true.
+Bracket jumps is, in fact, the new crossovers or something.
+%I never know what to put down here. Much love to the community..!
 
+\acks
+
+neuropantser (Michael T. Lawson) provided invaluable eleventh-hour (literally) advice
+on \Cref{sec:eval-years}'s statistical analysis, up to and including making the graphs for me.
+And much love to the SIGBOVIK community.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
