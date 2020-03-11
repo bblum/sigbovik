@@ -7,31 +7,30 @@ use crate::sim::{
 // it just finds where the cdf crosses 0.5 or whatever
 pub struct CdfBisect {
     bisect_point: f64,
-    earliest_bug_seen: Option<usize>,
+    earliest_bug_seen: usize,
 }
 
 impl CdfBisect {
     // TODO: make these `new()`s take a &SimulationState
     // so you can initialize using pdf.len and falsepos prob and so on
-    pub fn new() -> Self {
-        Self::new_with_bisect_point(0.5) // probably suboptimal
+    pub fn new(s: &SimulationState) -> Self {
+        Self::new_with_bisect_point(s, 0.5) // probably suboptimal
     }
 
-    pub fn new_with_bisect_point(bisect_point: f64) -> Self {
-        Self { bisect_point, earliest_bug_seen: None }
+    pub fn new_with_bisect_point(s: &SimulationState, bisect_point: f64) -> Self {
+        Self {
+            bisect_point,
+            // never test the last commit
+            earliest_bug_seen: s.pdf.len() - 1,
+        }
     }
 }
 
 impl BisectStrategy for CdfBisect {
-    fn select_commit(&mut self, state: &SimulationState) -> usize {
-        let res = find_first_eq_or_greater(&state.cdf, self.bisect_point);
-        if Some(res) == self.earliest_bug_seen {
+    fn select_commit(&mut self, s: &SimulationState) -> usize {
+        let res = find_first_eq_or_greater(&s.cdf, self.bisect_point);
+        if res == self.earliest_bug_seen {
             assert!(res > 0, "saw bug on commit 0 -> should be 100% already");
-            res - 1
-        } else if res == state.cdf.len() - 1 {
-            // never test the last commit
-            // TODO: simplify this by just initializing earliest_bug_seen to len.
-            // pending the refactor of the TODO above
             res - 1
         } else {
             res
@@ -40,12 +39,10 @@ impl BisectStrategy for CdfBisect {
 
     fn notify_result(&mut self, result: BisectAttempt) {
         if result.bug_repros {
-            match self.earliest_bug_seen {
-                Some(i) if i < result.commit => {}, // progress
-                Some(i) if i == result.commit => panic!("tested known bug twice"),
-                _ => {
-                    self.earliest_bug_seen = Some(result.commit);
-                }
+            if result.commit < self.earliest_bug_seen {
+                self.earliest_bug_seen = result.commit;
+            } else if result.commit == self.earliest_bug_seen {
+                panic!("tested known buggy commit twice");
             }
         }
     }
