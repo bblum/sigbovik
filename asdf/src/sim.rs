@@ -1,13 +1,14 @@
 use float_cmp::approx_eq;
 use rand::Rng;
-use std::f64::EPSILON;
 
+const EPSILON: f64 = 0.00001;
 
 pub trait BisectStrategy {
     fn select_commit(&mut self, state: &SimulationState) -> usize;
     fn notify_result(&mut self, result: BisectAttempt);
 }
 
+#[derive(Clone)]
 pub struct SimulationState {
     pub pdf: Vec<f64>,
     pub cdf: Vec<f64>,
@@ -63,7 +64,7 @@ impl SimulationState {
     fn assert_consistent(&self) {
         assert_eq!(self.pdf.len(), self.cdf.len());
         // i guess? i don't really understand this stuff
-        let eps = self.pdf.len() as f64 * EPSILON;
+        let eps = EPSILON;
         let mut sum = 0.0;
         for (i, &p) in self.pdf.iter().enumerate() {
             sum += p;
@@ -77,6 +78,74 @@ impl SimulationState {
         // assert!(approx_eq!(f64, sum, 1.0, epsilon = eps));
     }
 
+    fn adjust_pdf_repro(&mut self, commit: usize) {
+        // Test failed! bug definitely present here.
+        // TODO: rewrite this part using bayes' rule, prove it's equivalent
+        // this is the amount of the probability space that will go to 1
+        let bisected_cdf = self.cdf[commit];
+        for i in 0..self.pdf.len() {
+            if i <= commit {
+                // adjust commits before and including the buggy commit
+                // any of them might have introduced the bug
+                // all pdfs before the test point currently sum to bisected_cdf
+                // now we want it to sum to 1. so multiply by 1/bisected_cdf
+                self.pdf[i] /= bisected_cdf;
+            } else {
+                // adjust commits after this buggy commit down to 0
+                // they won't have introduced it
+                self.pdf[i] = 0.0;
+            }
+        }
+        self.refresh_cdf();
+    }
+
+    fn adjust_pdf_no_repro(&mut self, commit: usize) {
+        // Test passed... bug maybe absent, maybe not.
+
+        // this is the amount of the probability space probably withOUT the bug now
+        let bisected_cdf = self.cdf[commit];
+        // apply bayes' rule.
+        // P(A|B) = P(B|A) P(A) / P(B) where
+        // P(bug <= commit | test passed) =
+        // P(test passed | bug <= commit) --> false negative rate
+        // P(bug <= commit) --> bisected_cdf
+        // P(test passed) --> (FNR * bisected_cdf) + (1 * (1 - bisected_cdf))
+        let p_b_given_a = self.false_negative_rate;
+        let p_a = bisected_cdf;
+        let p_b = (self.false_negative_rate * bisected_cdf) + (1.0 - bisected_cdf);
+        let p_bug_before = p_b_given_a * p_a / p_b;
+        // adjust commits before & including the probably-not-buggy commit down
+        for i in 0..=commit {
+            // everything here summed to `bisected_cdf` before.
+            // now we want it to sum to `p_bug_before`.
+            // so, multiply by p_bug_before / bisected_cdf.
+            // since bisected_cdf is actually a factor within p_bug_before (p_a),
+            // that's equivalent to just multiplying by p_b_given_a / p_b.
+            self.pdf[i] *= p_b_given_a / p_b;
+        }
+
+        // adjust commits including & after to go down, i.e. be "probably not buggy"
+        // now "A" is "bug introduced in or after this commit". "B" is the same.
+        let p_b_given_a = 1.0;
+        let p_a = 1.0 - bisected_cdf;
+        let p_bug_in_or_after = p_b_given_a * p_a / p_b;
+        for i in commit+1..self.pdf.len() {
+            // everything here summed to `1 - bisected_cdf` before.
+            // now we want it to sum to `p_bug_after`.
+            // as above, `1 - bisected_cdf` is a factor of `p_bug_in_or_after`.
+            self.pdf[i] *= p_b_given_a / p_b;
+        }
+
+        self.refresh_cdf();
+        // check consistency of the first half
+        // let eps = commit as f64 * EPSILON;
+        // assert!(approx_eq!(f64, self.cdf[commit], p_bug_before, epsilon = eps));
+        // also this
+        let total_p = p_bug_before + p_bug_in_or_after;
+        let eps = self.pdf.len() as f64 * EPSILON;
+        assert!(approx_eq!(f64, total_p, 1.0, epsilon = eps));
+    }
+
     fn simulate_step(&mut self, commit: usize) -> BisectAttempt {
         assert!(commit < self.pdf.len());
         let bug_present = commit >= self.buggy_commit;
@@ -86,74 +155,26 @@ impl SimulationState {
             false
         };
         if bug_repros {
-            // Test failed! bug definitely present here.
-            // TODO: rewrite this part using bayes' rule, prove it's equivalent
-            // this is the amount of the probability space that will go to 1
-            let bisected_cdf = self.cdf[commit];
-            for i in 0..self.pdf.len() {
-                if i <= commit {
-                    // adjust commits before and including the buggy commit
-                    // any of them might have introduced the bug
-                    // all pdfs before the test point currently sum to bisected_cdf
-                    // now we want it to sum to 1. so multiply by 1/bisected_cdf
-                    self.pdf[i] /= bisected_cdf;
-                } else {
-                    // adjust commits after this buggy commit down to 0
-                    // they won't have introduced it
-                    self.pdf[i] = 0.0;
-                }
-            }
-            self.refresh_cdf();
+            self.adjust_pdf_repro(commit);
         } else {
-            // Test passed... bug maybe absent, maybe not.
-
-            // this is the amount of the probability space probably withOUT the bug now
-            let bisected_cdf = self.cdf[commit];
-            // apply bayes' rule.
-            // P(A|B) = P(B|A) P(A) / P(B) where
-            // P(bug <= commit | test passed) =
-            // P(test passed | bug <= commit) --> false negative rate
-            // P(bug <= commit) --> bisected_cdf
-            // P(test passed) --> (FNR * bisected_cdf) + (1 * (1 - bisected_cdf))
-            let p_b_given_a = self.false_negative_rate;
-            let p_a = bisected_cdf;
-            let p_b = (self.false_negative_rate * bisected_cdf) + (1.0 - bisected_cdf);
-            let p_bug_before = p_b_given_a * p_a / p_b;
-            // adjust commits before & including the probably-not-buggy commit down
-            for i in 0..=commit {
-                // everything here summed to `bisected_cdf` before.
-                // now we want it to sum to `p_bug_before`.
-                // so, multiply by p_bug_before / bisected_cdf.
-                // since bisected_cdf is actually a factor within p_bug_before (p_a),
-                // that's equivalent to just multiplying by p_b_given_a / p_b.
-                self.pdf[i] *= p_b_given_a / p_b;
-            }
-
-            // adjust commits including & after to go down, i.e. be "probably not buggy"
-            // now "A" is "bug introduced in or after this commit". "B" is the same.
-            let p_b_given_a = 1.0;
-            let p_a = 1.0 - bisected_cdf;
-            let p_bug_in_or_after = p_b_given_a * p_a / p_b;
-            for i in commit+1..self.pdf.len() {
-                // everything here summed to `1 - bisected_cdf` before.
-                // now we want it to sum to `p_bug_after`.
-                // as above, `1 - bisected_cdf` is a factor of `p_bug_in_or_after`.
-                self.pdf[i] *= p_b_given_a / p_b;
-            }
-
-            self.refresh_cdf();
-            // check consistency of the first half
-            // let eps = commit as f64 * EPSILON;
-            // assert!(approx_eq!(f64, self.cdf[commit], p_bug_before, epsilon = eps));
-            // also this
-            let total_p = p_bug_before + p_bug_in_or_after;
-            let eps = self.pdf.len() as f64 * EPSILON;
-            assert!(approx_eq!(f64, total_p, 1.0, epsilon = eps));
+            self.adjust_pdf_no_repro(commit);
         }
         let res = BisectAttempt { commit, bug_repros };
         self.history.push(res);
         self.assert_consistent();
         res
+    }
+
+    pub fn hypothetical_repro_pdf(&self, commit: usize) -> Vec<f64> {
+        let mut c = self.clone();
+        c.adjust_pdf_repro(commit);
+        c.pdf
+    }
+
+    pub fn hypothetical_no_repro_pdf(&self, commit: usize) -> Vec<f64> {
+        let mut c = self.clone();
+        c.adjust_pdf_no_repro(commit);
+        c.pdf
     }
 
     fn best_commit(&self) -> (usize, f64) {

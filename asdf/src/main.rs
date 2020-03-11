@@ -1,10 +1,12 @@
 mod cdfbisect;
 mod sim;
 mod naive;
+mod curious;
 
 use cdfbisect::CdfBisect;
 use naive::NaiveBinarySearch;
 use sim::SimulationState;
+use curious::MaximizePdf;
 
 fn main() {
     // let s = SimulationState::new(65536, 0.0);
@@ -18,6 +20,11 @@ fn main() {
 
     let s = SimulationState::new(8, 0.5);
     let c = CdfBisect::new(&s);
+    let res = s.simulate_til_confident(c, 0.99);
+    println!("{:?}", res);
+
+    let s = SimulationState::new(8, 0.5);
+    let c = MaximizePdf {};
     let res = s.simulate_til_confident(c, 0.99);
     println!("{:?}", res);
 }
