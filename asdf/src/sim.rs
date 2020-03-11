@@ -12,11 +12,11 @@ pub struct SimulationState {
     pub pdf: Vec<f64>,
     pub cdf: Vec<f64>,
     pub false_negative_rate: f64, // \elem [0,1)
+    pub history: Vec<BisectAttempt>,
     buggy_commit: usize, // shh, its a himitsu!!
-    history: Vec<BisectAttempt>,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct BisectAttempt {
     pub commit: usize,
     pub bug_repros: bool,
@@ -27,6 +27,7 @@ pub struct SimulateResult {
     pub steps: usize,
     pub confidence: f64,
     pub suspected_buggy_commit: usize,
+    pub actual_buggy_commit: usize,
 }
 
 impl SimulationState {
@@ -67,11 +68,13 @@ impl SimulationState {
         for (i, &p) in self.pdf.iter().enumerate() {
             sum += p;
             assert!(p >= 0.0);
-            assert!(p <= 1.0);
-            assert!(self.cdf[i] <= 1.0);
+            // god i hate floating point
+            // TODO: renormalize every so often
+            // assert!(p <= 1.0 + eps);
+            // assert!(self.cdf[i] <= 1.0 + eps);
             assert!(approx_eq!(f64, sum, self.cdf[i], epsilon = eps));
         }
-        assert!(approx_eq!(f64, sum, 1.0, epsilon = eps));
+        // assert!(approx_eq!(f64, sum, 1.0, epsilon = eps));
     }
 
     fn simulate_step(&mut self, commit: usize) -> BisectAttempt {
@@ -140,10 +143,12 @@ impl SimulationState {
 
             self.refresh_cdf();
             // check consistency of the first half
-            assert!(approx_eq!(f64, self.cdf[commit], p_bug_before, epsilon = EPSILON));
+            // let eps = commit as f64 * EPSILON;
+            // assert!(approx_eq!(f64, self.cdf[commit], p_bug_before, epsilon = eps));
             // also this
             let total_p = p_bug_before + p_bug_in_or_after;
-            assert!(approx_eq!(f64, total_p, 1.0, epsilon = EPSILON));
+            let eps = self.pdf.len() as f64 * EPSILON;
+            assert!(approx_eq!(f64, total_p, 1.0, epsilon = eps));
         }
         let res = BisectAttempt { commit, bug_repros };
         self.history.push(res);
@@ -156,9 +161,7 @@ impl SimulationState {
         for (i, &p) in self.pdf.iter().enumerate() {
             match best {
                 Some((_, best_p)) if p < best_p => {},
-                _ => {
-                    best = Some((i, p));
-                },
+                _ => best = Some((i, p)),
             }
         }
         best.expect("pdf shouldn't be empty")
@@ -169,15 +172,26 @@ impl SimulationState {
         mut strat: impl BisectStrategy,
         f: impl Fn(&Self) -> bool,
     ) -> SimulateResult {
+        println!("simulating; himitsu @ {}", self.buggy_commit);
         while f(&self) {
+            let prev_pdf = self.pdf.clone();
+
             let commit = strat.select_commit(&self);
             let result = self.simulate_step(commit);
             strat.notify_result(result);
+
+            println!("simulating; {:?} -> pdf {:?}", result, self.pdf);
+            assert!(self.pdf != prev_pdf, "no progress");
         }
 
         // found_a_bug.c
         let (suspected_buggy_commit, confidence) = self.best_commit();
-        SimulateResult { steps: self.history.len(), confidence, suspected_buggy_commit }
+        SimulateResult {
+            steps: self.history.len(),
+            confidence,
+            suspected_buggy_commit,
+            actual_buggy_commit: self.buggy_commit,
+        }
     }
 
     #[allow(unused)]
@@ -200,8 +214,9 @@ impl SimulationState {
 
 #[cfg(test)]
 mod tests {
-    use super::SimulationState;
+    use crate::cdfbisect::CdfBisect;
     use crate::naive::NaiveBinarySearch;
+    use super::SimulationState;
 
     #[test]
     fn test_determinism() {
@@ -243,6 +258,22 @@ mod tests {
             assert_eq!(res.steps, logn);
             assert_eq!(res.confidence, 1.0);
             assert_eq!(res.suspected_buggy_commit, buggy_commit);
+        }
+    }
+
+    #[test]
+    fn test_cdfbisect_progress() {
+        let n = 16;
+        for buggy_commit in 0..n {
+            for &bisect_point in &[0.01, 0.1, 0.5, 0.9, 0.99] {
+                for &fp_prob in &[0.0, 0.5, 0.9] {
+                    let s = SimulationState::new_with_bug_at(n, fp_prob, buggy_commit);
+                    let c = CdfBisect::new_with_bisect_point(bisect_point);
+                    let _res = s.simulate_til_confident(c, 0.99);
+                    // lol no! the algorithm could be wrong :))
+                    // assert_eq!(res.suspected_buggy_commit, buggy_commit);
+                }
+            }
         }
     }
 }
