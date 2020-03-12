@@ -11,13 +11,7 @@ pub struct CdfBisect {
 }
 
 impl CdfBisect {
-    // TODO: make these `new()`s take a &SimulationState
-    // so you can initialize using pdf.len and falsepos prob and so on
-    pub fn new(s: &SimulationState) -> Self {
-        Self::new_with_bisect_point(s, 0.5) // probably suboptimal
-    }
-
-    pub fn new_with_bisect_point(s: &SimulationState, bisect_point: f64) -> Self {
+    pub fn new(s: &SimulationState, bisect_point: f64) -> Self {
         Self {
             bisect_point,
             // never test the last commit

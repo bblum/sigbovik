@@ -303,7 +303,7 @@ mod tests {
             for &bisect_point in &[0.01, 0.1, 0.5, 0.9, 0.99] {
                 for &fp_prob in &[0.0, 0.5, 0.9] {
                     let s = SimulationState::new_with_bug_at(n, fp_prob, buggy_commit);
-                    let c = CdfBisect::new_with_bisect_point(&s, bisect_point);
+                    let c = CdfBisect::new(&s, bisect_point);
                     let _res = s.simulate_til_confident(c, 0.99);
                     // lol no! the algorithm could be wrong :))
                     // assert_eq!(res.suspected_buggy_commit, buggy_commit);
