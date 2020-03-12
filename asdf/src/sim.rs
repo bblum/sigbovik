@@ -55,9 +55,28 @@ impl SimulationState {
 
     fn refresh_cdf(&mut self) {
         self.cdf[0] = self.pdf[0];
-        for i in 1..self.pdf.len() {
+        let n = self.pdf.len();
+        for i in 1..n {
+            // TODO figure out why this assertion/shortcut doesn't work
+            // if i < n - 1 && self.cdf[i] /* old value */ == self.cdf[n-1] {
+            //     assert_eq!(self.pdf[i+1], 0.0);
+            //     assert_eq!(self.cdf[i], self.cdf[self.cdf.len()-1]);
+            //     // optimization
+            //     break;
+            // }
             self.cdf[i] = self.cdf[i-1] + self.pdf[i];
         }
+    }
+
+    fn is_known_buggy_commit(&self, i: usize) -> bool {
+        // if false negatives are possible, the only way we can be sure commit `i`
+        // doesn't introduce the bug is if a test on commit `j < i` repros it. so we
+        // should never expect to see the pdf go from 0 back up to nonzero -- if it's 0,
+        // it means the bug was encountered before, and all subsequent commits' pdfs
+        // will also be 0. `assert_consistent` checks this property; see `bug_seen`.
+        // n.b. this is used for assertions and optimizations (not functionality) so
+        // when we're in deterministic mode we just don't ever return true here.
+        self.false_negative_rate != 0.0 && self.pdf[i] == 0.0
     }
 
     fn assert_consistent(&self) {
@@ -65,9 +84,15 @@ impl SimulationState {
         // i guess? i don't really understand this stuff
         let eps = self.pdf.len() as f64 * EPSILON;
         let mut sum = 0.0;
+        let mut bug_seen = false;
         for (i, &p) in self.pdf.iter().enumerate() {
             sum += p;
             assert!(p >= 0.0);
+            if bug_seen {
+                assert!(self.is_known_buggy_commit(i));
+            } else if self.is_known_buggy_commit(i) {
+                bug_seen = true;
+            }
             // god i hate floating point
             // TODO: renormalize every so often
             // assert!(p <= 1.0 + eps);
@@ -92,11 +117,15 @@ impl SimulationState {
             let bisected_cdf = self.cdf[commit];
             for i in 0..self.pdf.len() {
                 if i <= commit {
+                    assert!(!self.is_known_buggy_commit(i), "tested known buggy commit");
                     // adjust commits before and including the buggy commit
                     // any of them might have introduced the bug
                     // all pdfs before the test point currently sum to bisected_cdf
                     // now we want it to sum to 1. so multiply by 1/bisected_cdf
                     self.pdf[i] /= bisected_cdf;
+                } else if self.is_known_buggy_commit(i) {
+                    // optimization
+                    break;
                 } else {
                     // adjust commits after this buggy commit down to 0
                     // they won't have introduced it
@@ -121,6 +150,7 @@ impl SimulationState {
             let p_bug_before = p_b_given_a * p_a / p_b;
             // adjust commits before & including the probably-not-buggy commit down
             for i in 0..=commit {
+                assert!(!self.is_known_buggy_commit(i), "tested known buggy commit");
                 // everything here summed to `bisected_cdf` before.
                 // now we want it to sum to `p_bug_before`.
                 // so, multiply by p_bug_before / bisected_cdf.
@@ -135,6 +165,10 @@ impl SimulationState {
             let p_a = 1.0 - bisected_cdf;
             let p_bug_in_or_after = p_b_given_a * p_a / p_b;
             for i in commit+1..self.pdf.len() {
+                if self.is_known_buggy_commit(i) {
+                    // optimization
+                    break;
+                }
                 // everything here summed to `1 - bisected_cdf` before.
                 // now we want it to sum to `p_bug_after`.
                 // as above, `1 - bisected_cdf` is a factor of `p_bug_in_or_after`.
