@@ -206,7 +206,7 @@ impl SimulationState {
         mut strat: impl BisectStrategy,
         f: impl Fn(&Self) -> bool,
     ) -> SimulateResult {
-        println!("simulating; himitsu @ {}", self.buggy_commit);
+        // println!("simulating; himitsu @ {}", self.buggy_commit);
         while f(&self) {
             let prev_pdf = self.pdf.clone();
 
@@ -214,7 +214,7 @@ impl SimulationState {
             let result = self.simulate_step(commit);
             strat.notify_result(result);
 
-            println!("simulating; {:?} -> pdf {:?}", result, self.pdf);
+            // println!("simulating; {:?} -> pdf {:?}", result, self.pdf);
             assert!(self.pdf != prev_pdf, "no progress");
         }
 
