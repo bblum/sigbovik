@@ -1,8 +1,4 @@
-use crate::sim::{
-    BisectAttempt,
-    BisectStrategy,
-    SimulationState,
-};
+use crate::sim::*;
 
 // it just finds where the cdf crosses 0.5 or whatever
 pub struct LinearSearch {

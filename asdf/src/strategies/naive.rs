@@ -1,8 +1,4 @@
-use crate::sim::{
-    BisectAttempt,
-    BisectStrategy,
-    SimulationState,
-};
+use crate::sim::*;
 
 // TODO handle contradiction -- keep a history of past "known good" his and los
 pub struct NaiveBinarySearch {
