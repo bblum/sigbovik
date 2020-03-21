@@ -244,6 +244,51 @@ impl SimulationState {
     ) -> SimulateResult {
         self.simulate_while(strat, |state| state.best_commit().1 < confidence_threshold)
     }
+
+    #[allow(unused)]
+    pub fn last_cdf_index_not_exceeding(&self, target_value: f64) -> usize {
+        find::find_last_not_exceeding(&self.cdf, target_value)
+    }
+
+    pub fn first_cdf_index_eq_or_greater(&self, target_value: f64) -> usize {
+        find::find_first_eq_or_greater(&self.cdf, target_value)
+    }
+}
+
+mod find {
+    pub fn find_last_not_exceeding<T: PartialOrd>(v: &[T], target_value: T) -> usize {
+        assert!(v.len() > 0);
+        let mut lo = 0;
+        let mut hi = v.len();
+        loop {
+            let mid = (lo + hi) / 2;
+            if v[mid] > target_value {
+                hi = mid;
+            } else {
+                lo = mid;
+            }
+            if lo == v.len() - 1 || lo == hi || lo == hi - 1 && v[hi] > target_value {
+                return lo;
+            }
+        }
+    }
+
+    pub fn find_first_eq_or_greater<T: PartialOrd>(v: &[T], target_value: T) -> usize {
+        assert!(v.len() > 0);
+        let mut lo = 0;
+        let mut hi = v.len();
+        loop {
+            let mid = (lo + hi) / 2;
+            if v[mid] < target_value {
+                lo = mid;
+            } else {
+                hi = mid;
+            }
+            if hi == lo || hi == lo + 1 && v[lo] < target_value {
+                return hi;
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -251,6 +296,34 @@ mod tests {
     use crate::strategies::*;
     use super::SimulationState;
 
+    #[test]
+    fn test_reverse_lookup() {
+        use super::find::*;
+
+        assert_eq!(find_last_not_exceeding(&[1, 3, 5], 0), 0);
+        assert_eq!(find_last_not_exceeding(&[1, 3, 5], 1), 0);
+        assert_eq!(find_last_not_exceeding(&[1, 3, 5], 2), 0);
+        assert_eq!(find_last_not_exceeding(&[1, 3, 5], 3), 1);
+        assert_eq!(find_last_not_exceeding(&[1, 3, 5], 4), 1);
+        assert_eq!(find_last_not_exceeding(&[1, 3, 5], 5), 2);
+        assert_eq!(find_last_not_exceeding(&[1, 3, 5], 6), 2);
+
+        assert_eq!(find_last_not_exceeding(&[1], 0), 0);
+        assert_eq!(find_last_not_exceeding(&[1], 1), 0);
+        assert_eq!(find_last_not_exceeding(&[1], 2), 0);
+
+        assert_eq!(find_first_eq_or_greater(&[1, 3, 5], 0), 0);
+        assert_eq!(find_first_eq_or_greater(&[1, 3, 5], 1), 0);
+        assert_eq!(find_first_eq_or_greater(&[1, 3, 5], 2), 1);
+        assert_eq!(find_first_eq_or_greater(&[1, 3, 5], 3), 1);
+        assert_eq!(find_first_eq_or_greater(&[1, 3, 5], 4), 2);
+        assert_eq!(find_first_eq_or_greater(&[1, 3, 5], 5), 2);
+        assert_eq!(find_first_eq_or_greater(&[1, 3, 5], 6), 3);
+
+        assert_eq!(find_first_eq_or_greater(&[1], 0), 0);
+        assert_eq!(find_first_eq_or_greater(&[1], 1), 0);
+        assert_eq!(find_first_eq_or_greater(&[1], 2), 1);
+    }
     #[test]
     fn test_determinism() {
         // power of 2 num_commits makes floats work well
@@ -327,4 +400,5 @@ mod tests {
             assert_eq!(res.steps, expected_steps);
         }
     }
+
 }
