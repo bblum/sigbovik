@@ -1,6 +1,7 @@
 mod cdfbisect;
 mod linear;
 mod naive;
+mod random;
 
 pub use cdfbisect::CdfBisect;
 pub use linear::LinearSearch;
