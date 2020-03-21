@@ -3,8 +3,9 @@ use std::fs::File;
 use rand::Rng;
 
 mod cdfbisect;
-mod sim;
+mod linear;
 mod naive;
+mod sim;
 
 use cdfbisect::CdfBisect;
 use sim::SimulationState;
