@@ -10,6 +10,7 @@ pub struct LinearSearch {
 }
 
 impl LinearSearch {
+    #[cfg_attr(not(test), allow(unused))]
     pub fn new(s: &SimulationState) -> Self {
         Self {
             earliest_known_buggy_commit: s.pdf.len() - 1,
@@ -18,7 +19,7 @@ impl LinearSearch {
 }
 
 impl BisectStrategy for LinearSearch {
-    fn select_commit(&mut self, s: &SimulationState) -> usize {
+    fn select_commit(&mut self, _: &SimulationState) -> usize {
         assert_ne!(self.earliest_known_buggy_commit, 0, "bug already found");
         self.earliest_known_buggy_commit - 1
     }

@@ -2,12 +2,10 @@ use std::io::Write;
 use std::fs::File;
 use rand::Rng;
 
-mod cdfbisect;
-mod linear;
-mod naive;
+mod strategies;
 mod sim;
 
-use cdfbisect::CdfBisect;
+use strategies::CdfBisect;
 use sim::SimulationState;
 
 fn output(f: &mut File, s: String) {

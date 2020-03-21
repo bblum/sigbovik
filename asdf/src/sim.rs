@@ -214,7 +214,7 @@ impl SimulationState {
             let result = self.simulate_step(commit);
             strat.notify_result(result);
 
-             println!("simulating; {:?} -> pdf {:?}", result, self.pdf);
+            // println!("simulating; {:?} -> pdf {:?}", result, self.pdf);
             assert!(self.pdf != prev_pdf, "no progress");
         }
 
@@ -248,9 +248,7 @@ impl SimulationState {
 
 #[cfg(test)]
 mod tests {
-    use crate::cdfbisect::CdfBisect;
-    use crate::linear::LinearSearch;
-    use crate::naive::NaiveBinarySearch;
+    use crate::strategies::*;
     use super::SimulationState;
 
     #[test]
