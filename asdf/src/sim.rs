@@ -8,6 +8,7 @@ pub trait BisectStrategy {
     fn notify_result(&mut self, result: BisectAttempt);
 }
 
+#[derive(Clone)]
 pub struct SimulationState {
     pub pdf: Vec<f64>,
     pub cdf: Vec<f64>,
@@ -68,6 +69,7 @@ impl SimulationState {
         }
     }
 
+    // TODO: clean this up by just storing the value for `k`.
     fn is_known_buggy_commit(&self, i: usize) -> bool {
         // if false negatives are possible, the only way we can be sure commit `i`
         // doesn't introduce the bug is if a test on commit `j < i` repros it. so we
@@ -102,40 +104,36 @@ impl SimulationState {
         // assert!(approx_eq!(f64, sum, 1.0, epsilon = eps));
     }
 
-    fn simulate_step(&mut self, commit: usize) -> BisectAttempt {
-        assert!(commit < self.pdf.len());
-        let bug_present = commit >= self.buggy_commit;
-        let bug_repros = if bug_present {
-            rand::thread_rng().gen_range(0.0, 1.0) > self.false_negative_rate
-        } else {
-            false
-        };
-        if bug_repros {
-            // Test failed! bug definitely present here.
-            // TODO: rewrite this part using bayes' rule, prove it's equivalent
-            // this is the amount of the probability space that will go to 1
-            let bisected_cdf = self.cdf[commit];
-            for i in 0..self.pdf.len() {
-                if i <= commit {
-                    assert!(!self.is_known_buggy_commit(i), "tested known buggy commit");
-                    // adjust commits before and including the buggy commit
-                    // any of them might have introduced the bug
-                    // all pdfs before the test point currently sum to bisected_cdf
-                    // now we want it to sum to 1. so multiply by 1/bisected_cdf
-                    self.pdf[i] /= bisected_cdf;
-                } else if self.is_known_buggy_commit(i) {
-                    // optimization
-                    break;
-                } else {
-                    // adjust commits after this buggy commit down to 0
-                    // they won't have introduced it
-                    self.pdf[i] = 0.0;
-                }
-            }
-            self.refresh_cdf();
-        } else {
-            // Test passed... bug maybe absent, maybe not.
+    // TODO use this in the bayes rule app below
+    pub fn blind_a_priori_repro_prob(&self, commit: usize) -> f64 {
+        self.cdf[commit] * (1.0 - self.false_negative_rate)
+    }
 
+    fn adjust_pdf_bug_repros(&mut self, commit: usize) {
+        // TODO: rewrite this part using bayes' rule, prove it's equivalent
+        // this is the amount of the probability space that will go to 1
+        let bisected_cdf = self.cdf[commit];
+        for i in 0..self.pdf.len() {
+            if i <= commit {
+                assert!(!self.is_known_buggy_commit(i), "tested known buggy commit");
+                // adjust commits before and including the buggy commit
+                // any of them might have introduced the bug
+                // all pdfs before the test point currently sum to bisected_cdf
+                // now we want it to sum to 1. so multiply by 1/bisected_cdf
+                self.pdf[i] /= bisected_cdf;
+            } else if self.is_known_buggy_commit(i) {
+                // optimization
+                break;
+            } else {
+                // adjust commits after this buggy commit down to 0
+                // they won't have introduced it
+                self.pdf[i] = 0.0;
+            }
+        }
+        self.refresh_cdf();
+    }
+
+    fn adjust_pdf_no_repro(&mut self, commit: usize) {
             // this is the amount of the probability space probably withOUT the bug now
             let bisected_cdf = self.cdf[commit];
             // apply bayes' rule.
@@ -183,6 +181,35 @@ impl SimulationState {
             let total_p = p_bug_before + p_bug_in_or_after;
             let eps = self.pdf.len() as f64 * EPSILON;
             assert!(approx_eq!(f64, total_p, 1.0, epsilon = eps));
+    }
+
+    // TODO write tests for these
+    pub fn hypothetical_pdf_bug_repros(&self, commit: usize) -> Vec<f64> {
+        let mut self2 = self.clone();
+        self2.adjust_pdf_bug_repros(commit);
+        self2.pdf
+    }
+
+    pub fn hypothetical_pdf_no_repro(&self, commit: usize) -> Vec<f64> {
+        let mut self2 = self.clone();
+        self2.adjust_pdf_no_repro(commit);
+        self2.pdf
+    }
+
+    fn simulate_step(&mut self, commit: usize) -> BisectAttempt {
+        assert!(commit < self.pdf.len());
+        let bug_present = commit >= self.buggy_commit;
+        let bug_repros = if bug_present {
+            rand::thread_rng().gen_range(0.0, 1.0) > self.false_negative_rate
+        } else {
+            false
+        };
+        if bug_repros {
+            // Test failed! bug definitely present here.
+            self.adjust_pdf_bug_repros(commit);
+        } else {
+            // Test passed... bug maybe absent, maybe not.
+            self.adjust_pdf_no_repro(commit);
         }
         let res = BisectAttempt { commit, bug_repros };
         self.history.push(res);
@@ -324,6 +351,7 @@ mod tests {
         assert_eq!(find_first_eq_or_greater(&[1], 1), 0);
         assert_eq!(find_first_eq_or_greater(&[1], 2), 1);
     }
+
     #[test]
     fn test_determinism() {
         // power of 2 num_commits makes floats work well
@@ -352,6 +380,19 @@ mod tests {
         assert_eq!(s.pdf, vec![0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0]);
         assert_eq!(s.cdf, vec![0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0]);
         //                                         ^^^
+    }
+
+    #[test]
+    fn test_blind() {
+        let s = SimulationState::new(8, 0.0);
+        for i in 0..8 {
+            assert_eq!(s.blind_a_priori_repro_prob(i), 0.125 * (i + 1) as f64);
+        }
+
+        let s = SimulationState::new(8, 0.5);
+        for i in 0..8 {
+            assert_eq!(s.blind_a_priori_repro_prob(i), 0.0625 * (i + 1) as f64);
+        }
     }
 
     #[test]
