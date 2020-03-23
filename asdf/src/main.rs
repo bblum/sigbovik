@@ -4,6 +4,7 @@ use rand::Rng;
 
 mod strategies;
 mod sim;
+mod test;
 
 use strategies::CdfBisect;
 use sim::SimulationState;

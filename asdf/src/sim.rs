@@ -37,7 +37,7 @@ impl SimulationState {
         Self::new_with_bug_at(num_commits, false_negative_rate, buggy_commit)
     }
 
-    fn new_with_bug_at(num_commits: usize, false_negative_rate: f64, buggy_commit: usize) -> Self {
+    pub fn new_with_bug_at(num_commits: usize, false_negative_rate: f64, buggy_commit: usize) -> Self {
         assert!(num_commits > 0, "excuse me?");
         assert!(buggy_commit < num_commits, "bug not in range");
         assert!(false_negative_rate >= 0.0, "you clown");
@@ -196,6 +196,13 @@ impl SimulationState {
         self2.pdf
     }
 
+    pub fn hypothetical_expected_entropy(&self, commit: usize) -> f64 {
+        let p = self.blind_a_priori_repro_prob(commit);
+        let entropy_repro    = entropy(&self.hypothetical_pdf_bug_repros(commit));
+        let entropy_no_repro = entropy(&self.hypothetical_pdf_no_repro(commit));
+        (p * entropy_repro) + ((1.0 - p) * entropy_no_repro)
+    }
+
     fn simulate_step(&mut self, commit: usize) -> BisectAttempt {
         assert!(commit < self.pdf.len());
         let bug_present = commit >= self.buggy_commit;
@@ -274,59 +281,59 @@ impl SimulationState {
 
     #[allow(unused)]
     pub fn last_cdf_index_not_exceeding(&self, target_value: f64) -> usize {
-        find::find_last_not_exceeding(&self.cdf, target_value)
+        find_last_not_exceeding(&self.cdf, target_value)
     }
 
     pub fn first_cdf_index_eq_or_greater(&self, target_value: f64) -> usize {
-        find::find_first_eq_or_greater(&self.cdf, target_value)
+        find_first_eq_or_greater(&self.cdf, target_value)
     }
 }
 
-mod find {
-    pub fn find_last_not_exceeding<T: PartialOrd>(v: &[T], target_value: T) -> usize {
-        assert!(v.len() > 0);
-        let mut lo = 0;
-        let mut hi = v.len();
-        loop {
-            let mid = (lo + hi) / 2;
-            if v[mid] > target_value {
-                hi = mid;
-            } else {
-                lo = mid;
-            }
-            if lo == v.len() - 1 || lo == hi || lo == hi - 1 && v[hi] > target_value {
-                return lo;
-            }
+fn entropy(pdf: &[f64]) -> f64 {
+    let n = pdf.len() as f64;
+    pdf.iter().map(|&p| -p * p.log2() / n).sum()
+}
+
+pub fn find_last_not_exceeding<T: PartialOrd>(v: &[T], target_value: T) -> usize {
+    assert!(v.len() > 0);
+    let mut lo = 0;
+    let mut hi = v.len();
+    loop {
+        let mid = (lo + hi) / 2;
+        if v[mid] > target_value {
+            hi = mid;
+        } else {
+            lo = mid;
+        }
+        if lo == v.len() - 1 || lo == hi || lo == hi - 1 && v[hi] > target_value {
+            return lo;
         }
     }
+}
 
-    pub fn find_first_eq_or_greater<T: PartialOrd>(v: &[T], target_value: T) -> usize {
-        assert!(v.len() > 0);
-        let mut lo = 0;
-        let mut hi = v.len();
-        loop {
-            let mid = (lo + hi) / 2;
-            if v[mid] < target_value {
-                lo = mid;
-            } else {
-                hi = mid;
-            }
-            if hi == lo || hi == lo + 1 && v[lo] < target_value {
-                return hi;
-            }
+pub fn find_first_eq_or_greater<T: PartialOrd>(v: &[T], target_value: T) -> usize {
+    assert!(v.len() > 0);
+    let mut lo = 0;
+    let mut hi = v.len();
+    loop {
+        let mid = (lo + hi) / 2;
+        if v[mid] < target_value {
+            lo = mid;
+        } else {
+            hi = mid;
+        }
+        if hi == lo || hi == lo + 1 && v[lo] < target_value {
+            return hi;
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::strategies::*;
-    use super::SimulationState;
+    use super::*;
 
     #[test]
     fn test_reverse_lookup() {
-        use super::find::*;
-
         assert_eq!(find_last_not_exceeding(&[1, 3, 5], 0), 0);
         assert_eq!(find_last_not_exceeding(&[1, 3, 5], 1), 0);
         assert_eq!(find_last_not_exceeding(&[1, 3, 5], 2), 0);
@@ -350,6 +357,24 @@ mod tests {
         assert_eq!(find_first_eq_or_greater(&[1], 0), 0);
         assert_eq!(find_first_eq_or_greater(&[1], 1), 0);
         assert_eq!(find_first_eq_or_greater(&[1], 2), 1);
+    }
+
+    #[test]
+    fn test_entropy() {
+        let v2  = vec![0.5, 0.5];
+        let v4a = vec![0.25, 0.25, 0.25, 0.25];
+        let v4b = vec![0.12, 0.12, 0.25, 0.51];
+        let v4c = vec![0.10, 0.10, 0.20, 0.60];
+        let v4d = vec![0.01, 0.02, 0.03, 0.94];
+
+        for v in &[&v2, &v4a, &v4b, &v4c, &v4d] {
+            assert_eq!(v.iter().sum::<f64>(), 1.0);
+        }
+
+        assert_eq!(entropy(&v2), entropy(&v4a));
+        assert!(entropy(&v4b) < entropy(&v4a));
+        assert!(entropy(&v4c) < entropy(&v4b));
+        assert!(entropy(&v4d) < entropy(&v4c));
     }
 
     #[test]
@@ -396,50 +421,33 @@ mod tests {
     }
 
     #[test]
-    fn test_simulate_deterministic_naive() {
-        let logn = 6;
-        let n = 1 << logn;
-        for buggy_commit in 0..n {
-            let s = SimulationState::new_with_bug_at(n, 0.0, buggy_commit);
-            let nb = NaiveBinarySearch::new(&s);
-            let res = s.simulate_til_confident(nb, 1.0);
-            assert_eq!(res.steps, logn);
-            assert_eq!(res.confidence, 1.0);
-            assert_eq!(res.suspected_buggy_commit, buggy_commit);
+    fn test_pdf_monotonicity() {
+        fn assert_monotonic(pdf: &[f64]) {
+            let mut last_p = 0.0;
+            let mut k_seen = false;
+            for &p in pdf {
+                if p < last_p {
+                    assert!(!k_seen);
+                    k_seen = true;
+                }
+                if k_seen {
+                    assert_eq!(p, 0.0);
+                }
+            }
         }
-    }
 
-    #[test]
-    fn test_cdfbisect_progress() {
-        let n = 16;
+        let n = 64;
         for buggy_commit in 0..n {
-            for &bisect_point in &[0.01, 0.1, 0.5, 0.9, 0.99] {
-                for &fp_prob in &[0.0, 0.5, 0.9] {
-                    let s = SimulationState::new_with_bug_at(n, fp_prob, buggy_commit);
-                    let c = CdfBisect::new(&s, bisect_point);
-                    let _res = s.simulate_til_confident(c, 0.99);
-                    // lol no! the algorithm could be wrong :))
-                    // assert_eq!(res.suspected_buggy_commit, buggy_commit);
+            for &fp_prob in &[0.0, 0.1, 0.5, 0.9] {
+                let mut s = SimulationState::new_with_bug_at(n, fp_prob, buggy_commit);
+                assert_monotonic(&s.pdf);
+                // TODO: clean up this "never test pdf[n-1]" thing.
+                // allow 64 to be the answer & testing 63 to make sense.
+                for i in 2..n {
+                    s.simulate_step(n-i);
+                    assert_monotonic(&s.pdf);
                 }
             }
         }
     }
-
-    #[test]
-    fn test_linear_dumbness() {
-        let n = 16;
-        for buggy_commit in 0..n {
-            println!("asdf: {}", buggy_commit);
-            let s = SimulationState::new_with_bug_at(n, 0.0, buggy_commit);
-            let c = LinearSearch::new(&s);
-            let res = s.simulate_til_confident(c, 0.99);
-            println!("asdf: steps was {}", res.steps);
-            assert_eq!(res.suspected_buggy_commit, buggy_commit);
-            // it searches backwards
-            // bug @ 0 takes same steps to confirm as bug @ 1. otherwise normal
-            let expected_steps = n - std::cmp::max(buggy_commit, 1);
-            assert_eq!(res.steps, expected_steps);
-        }
-    }
-
 }
