@@ -134,56 +134,56 @@ impl SimulationState {
     }
 
     fn adjust_pdf_no_repro(&mut self, commit: usize) {
-            // this is the amount of the probability space probably withOUT the bug now
-            let bisected_cdf = self.cdf[commit];
-            // apply bayes' rule.
-            // P(A|B) = P(B|A) P(A) / P(B) where
-            // P(bug <= commit | test passed) =
-            // P(test passed | bug <= commit) --> false negative rate
-            // P(bug <= commit) --> bisected_cdf
-            // P(test passed) --> (FNR * bisected_cdf) + (1 * (1 - bisected_cdf))
-            let p_b_given_a = self.false_negative_rate;
-            let p_a = bisected_cdf;
-            let p_b = (self.false_negative_rate * bisected_cdf) + (1.0 - bisected_cdf);
-            let p_bug_before = p_b_given_a * p_a / p_b;
-            // adjust commits before & including the probably-not-buggy commit down
-            for i in 0..=commit {
-                assert!(!self.is_known_buggy_commit(i), "tested known buggy commit");
-                // everything here summed to `bisected_cdf` before.
-                // now we want it to sum to `p_bug_before`.
-                // so, multiply by p_bug_before / bisected_cdf.
-                // since bisected_cdf is actually a factor within p_bug_before (p_a),
-                // that's equivalent to just multiplying by p_b_given_a / p_b.
-                self.pdf[i] *= p_b_given_a / p_b;
-            }
+        // this is the amount of the probability space probably withOUT the bug now
+        let bisected_cdf = self.cdf[commit];
+        // apply bayes' rule.
+        // P(A|B) = P(B|A) P(A) / P(B) where
+        // P(bug <= commit | test passed) =
+        // P(test passed | bug <= commit) --> false negative rate
+        // P(bug <= commit) --> bisected_cdf
+        // P(test passed) --> (FNR * bisected_cdf) + (1 * (1 - bisected_cdf))
+        let p_b_given_a = self.false_negative_rate;
+        let p_a = bisected_cdf;
+        let p_b = (self.false_negative_rate * bisected_cdf) + (1.0 - bisected_cdf);
+        let p_bug_before = p_b_given_a * p_a / p_b;
+        // adjust commits before & including the probably-not-buggy commit down
+        for i in 0..=commit {
+            assert!(!self.is_known_buggy_commit(i), "tested known buggy commit");
+            // everything here summed to `bisected_cdf` before.
+            // now we want it to sum to `p_bug_before`.
+            // so, multiply by p_bug_before / bisected_cdf.
+            // since bisected_cdf is actually a factor within p_bug_before (p_a),
+            // that's equivalent to just multiplying by p_b_given_a / p_b.
+            self.pdf[i] *= p_b_given_a / p_b;
+        }
 
-            // adjust commits including & after to go down, i.e. be "probably not buggy"
-            // now "A" is "bug introduced in or after this commit". "B" is the same.
-            let p_b_given_a = 1.0;
-            let p_a = 1.0 - bisected_cdf;
-            let p_bug_in_or_after = p_b_given_a * p_a / p_b;
-            for i in commit+1..self.pdf.len() {
-                if self.is_known_buggy_commit(i) {
-                    // optimization
-                    break;
-                }
-                // everything here summed to `1 - bisected_cdf` before.
-                // now we want it to sum to `p_bug_after`.
-                // as above, `1 - bisected_cdf` is a factor of `p_bug_in_or_after`.
-                self.pdf[i] *= p_b_given_a / p_b;
+        // adjust commits including & after to go down, i.e. be "probably not buggy"
+        // now "A" is "bug introduced in or after this commit". "B" is the same.
+        let p_b_given_a = 1.0;
+        let p_a = 1.0 - bisected_cdf;
+        let p_bug_in_or_after = p_b_given_a * p_a / p_b;
+        for i in commit+1..self.pdf.len() {
+            if self.is_known_buggy_commit(i) {
+                // optimization
+                break;
             }
+            // everything here summed to `1 - bisected_cdf` before.
+            // now we want it to sum to `p_bug_after`.
+            // as above, `1 - bisected_cdf` is a factor of `p_bug_in_or_after`.
+            self.pdf[i] *= p_b_given_a / p_b;
+        }
 
-            self.refresh_cdf();
-            // check consistency of the first half
-            // let eps = commit as f64 * EPSILON;
-            // assert!(approx_eq!(f64, self.cdf[commit], p_bug_before, epsilon = eps));
-            // also this
-            let total_p = p_bug_before + p_bug_in_or_after;
-            let eps = self.pdf.len() as f64 * EPSILON;
-            assert!(approx_eq!(f64, total_p, 1.0, epsilon = eps));
+        self.refresh_cdf();
+        // this is the amount of the probability space probably withOUT the bug now
+        // check consistency of the first half
+        // let eps = commit as f64 * EPSILON;
+        // assert!(approx_eq!(f64, self.cdf[commit], p_bug_before, epsilon = eps));
+        // also this
+        let total_p = p_bug_before + p_bug_in_or_after;
+        let eps = self.pdf.len() as f64 * EPSILON;
+        assert!(approx_eq!(f64, total_p, 1.0, epsilon = eps));
     }
 
-    // TODO write tests for these
     pub fn hypothetical_pdf_bug_repros(&self, commit: usize) -> Vec<f64> {
         let mut self2 = self.clone();
         self2.adjust_pdf_bug_repros(commit);
@@ -197,6 +197,10 @@ impl SimulationState {
     }
 
     pub fn hypothetical_expected_entropy(&self, commit: usize) -> f64 {
+        // TODO refactor/restructure to allow this
+        assert!(commit < self.pdf.len() - 1, "do not bisect at last commit");
+        assert!(self.pdf[commit+1] > 0.0, "do not bisect at known buggy commit");
+
         let p = self.blind_a_priori_repro_prob(commit);
         let entropy_repro    = entropy(&self.hypothetical_pdf_bug_repros(commit));
         let entropy_no_repro = entropy(&self.hypothetical_pdf_no_repro(commit));
@@ -291,7 +295,7 @@ impl SimulationState {
 
 fn entropy(pdf: &[f64]) -> f64 {
     let n = pdf.len() as f64;
-    pdf.iter().map(|&p| -p * p.log2() / n).sum()
+    pdf.into_iter().filter(|&&p| p != 0.0).map(|&p| -p * p.log2() / n).sum()
 }
 
 pub fn find_last_not_exceeding<T: PartialOrd>(v: &[T], target_value: T) -> usize {
@@ -420,12 +424,30 @@ mod tests {
         }
     }
 
+    // runs a function on a bunch of different possible legal pdfs
+    fn run_pdf_invariant_test(n: usize, fn_probs: &[f64], f: impl Fn(&SimulationState)) {
+        for buggy_commit in 0..n {
+            println!("asdf testing buggy commit @ {}", buggy_commit);
+            for &fn_prob in fn_probs {
+                println!("==== asdf simulating, bc {} fn {} ====", buggy_commit, fn_prob);
+                let mut s = SimulationState::new_with_bug_at(n, fn_prob, buggy_commit);
+                f(&s);
+                // TODO: clean up this "never test pdf[n-1]" thing.
+                // allow 64 to be the answer & testing 63 to make sense.
+                for i in 2..n {
+                    s.simulate_step(n-i);
+                    f(&s);
+                }
+            }
+        }
+    }
+
     #[test]
     fn test_pdf_monotonicity() {
-        fn assert_monotonic(pdf: &[f64]) {
+        run_pdf_invariant_test(16, &[0.0, 0.1, 0.5, 0.99], |s| {
             let mut last_p = 0.0;
             let mut k_seen = false;
-            for &p in pdf {
+            for &p in &s.pdf {
                 if p < last_p {
                     assert!(!k_seen);
                     k_seen = true;
@@ -434,20 +456,45 @@ mod tests {
                     assert_eq!(p, 0.0);
                 }
             }
-        }
+        })
+    }
 
-        let n = 64;
-        for buggy_commit in 0..n {
-            for &fp_prob in &[0.0, 0.1, 0.5, 0.9] {
-                let mut s = SimulationState::new_with_bug_at(n, fp_prob, buggy_commit);
-                assert_monotonic(&s.pdf);
-                // TODO: clean up this "never test pdf[n-1]" thing.
-                // allow 64 to be the answer & testing 63 to make sense.
-                for i in 2..n {
-                    s.simulate_step(n-i);
-                    assert_monotonic(&s.pdf);
+    // this test validates `strategies::MaxExpectedEntropy`'s reliance on binary search
+    // to find the bisect point of minimum expected entropy, instead of linear
+    #[test]
+    fn test_expected_entropy_has_unique_local_minimum() {
+        // 34 may seem like a weird `n`, but 32 was not sufficient to discover
+        // the need for comparing `diff > EPSILON` instead of `diff > 0.0`.
+        // 34 was the min such `n` that did it. after that, behaves the same up to 128.
+        // also, don't include deterministic case in fnprobs; it's too fiddly.
+        run_pdf_invariant_test(34, &[0.1, 0.5, 0.99], |s| {
+            let mut any_diff = false;
+            let mut diff_ever_negative = false;
+            let mut diff_ever_positive = false;
+
+            let mut last_e = s.hypothetical_expected_entropy(0);
+            for i in 1..s.pdf.len()-1 {
+                if s.pdf[i+1] == 0.0 {
+                    // don't test the last buggy commit
+                    break;
+                }
+                let e = s.hypothetical_expected_entropy(i);
+                let diff = e - last_e;
+                last_e = e;
+
+                any_diff = true;
+                if diff < -EPSILON {
+                    diff_ever_negative = true;
+                }
+                if diff > EPSILON {
+                    diff_ever_positive = true;
+                } else {
+                    assert!(!diff_ever_positive, "found a 2nd valley");
                 }
             }
-        }
+            if any_diff {
+                assert!(diff_ever_negative || diff_ever_positive, "flat entropy");
+            }
+        })
     }
 }
