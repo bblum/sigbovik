@@ -2,6 +2,7 @@ use std::io::Write;
 use std::fs::File;
 use rand::Rng;
 
+mod entropy;
 mod strategies;
 mod sim;
 mod test;
