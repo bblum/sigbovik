@@ -1,7 +1,5 @@
-use float_cmp::approx_eq;
 use rand::Rng;
 use std::f64::EPSILON;
-
 
 pub trait BisectStrategy {
     fn select_commit(&mut self, state: &SimulationState) -> usize;
@@ -53,23 +51,34 @@ impl SimulationState {
             buggy_commit,
             history: vec![],
         };
+        // renormalize pdf not needed at this moment
         res.refresh_cdf();
         res.assert_consistent();
         res
     }
 
+    // purely because floating point is terrible
+    fn renormalize_pdf(&mut self) {
+        let sum: f64 = self.in_range_pdf().iter().sum();
+        for i in self.lower_bound..self.upper_bound {
+            self.pdf[i] /= sum;
+        }
+    }
+
     fn refresh_cdf(&mut self) {
-        self.cdf[0] = self.pdf[0];
-        let n = self.pdf.len();
-        for i in 1..n {
-            // TODO figure out why this assertion/shortcut doesn't work
-            // if i < n - 1 && self.cdf[i] /* old value */ == self.cdf[n-1] {
-            //     assert_eq!(self.pdf[i+1], 0.0);
-            //     assert_eq!(self.cdf[i], self.cdf[self.cdf.len()-1]);
-            //     // optimization
-            //     break;
-            // }
+        if self.lower_bound > 0 {
+            assert_eq!(self.cdf[self.lower_bound-1], 0.0);
+        }
+        self.cdf[self.lower_bound] = self.pdf[self.lower_bound];
+        for i in self.lower_bound+1..self.upper_bound {
             self.cdf[i] = self.cdf[i-1] + self.pdf[i];
+        }
+        // ugh
+        let one = self.cdf[self.upper_bound-1];
+        self.assert_kinda_equals_one(one);
+        for i in self.upper_bound..self.cdf.len() {
+            // renormalize because epsilon tightens as the pdf size tightens
+            self.cdf[i] = one;
         }
     }
 
@@ -85,35 +94,40 @@ impl SimulationState {
         &self.pdf[self.lower_bound..self.upper_bound]
     }
 
+    // [VII 2014]
+    pub fn epsilon(&self) -> f64 {
+        (self.upper_bound - self.lower_bound) as f64 * EPSILON
+    }
+
+    fn assert_kinda_equals_one(&self, x: f64) {
+        assert!(self.epsilon() > 0.0);
+        assert!(x > 1.0 - self.epsilon());
+        assert!(x < 1.0 + self.epsilon());
+    }
+
     fn assert_consistent(&self) {
         assert_eq!(self.pdf.len(), self.cdf.len());
         assert!(self.lower_bound < self.upper_bound, "whered the bug go?");
 
-        // i guess? i don't really understand this stuff
-        let eps = self.pdf.len() as f64 * EPSILON;
-
         if self.lower_bound + 1 == self.upper_bound {
             // termination condition; pdf should be 1 here
-            // TODO renormalize
-            // assert!(self.pdf[self.lower_bound] > 1.0 - eps);
+            self.assert_kinda_equals_one(self.pdf[self.lower_bound]);
         }
 
         let mut sum = 0.0;
         for (i, &p) in self.pdf.iter().enumerate() {
             sum += p;
             assert!(p >= 0.0);
-            if !self.in_range(i) {
-                assert_eq!(self.pdf[i], 0.0);
+            if self.in_range(i) {
+                assert!(self.pdf[i] > 0.0);
             } else {
-                // assert!(self.pdf[i] > 0.0);
+                assert_eq!(self.pdf[i], 0.0);
             }
-            // god i hate floating point
-            // TODO: renormalize every so often
-            // assert!(p <= 1.0 + eps);
-            // assert!(self.cdf[i] <= 1.0 + eps);
-            assert!(approx_eq!(f64, sum, self.cdf[i], epsilon = eps));
+            assert!(p < 1.0 + self.epsilon());
+            // i had to renormalize >=upper bound, in refresh_cdf, to make this work!!
+            assert!(self.cdf[i] < 1.0 + self.epsilon());
         }
-        // assert!(approx_eq!(f64, sum, 1.0, epsilon = eps));
+        self.assert_kinda_equals_one(sum);
     }
 
     // TODO use this in the bayes rule app somehow
@@ -140,8 +154,9 @@ impl SimulationState {
                 self.pdf[i] = 0.0;
             }
         }
-        self.upper_bound = commit + 1;
+        self.renormalize_pdf();
         self.refresh_cdf();
+        self.upper_bound = commit + 1;
     }
 
     fn adjust_pdf_no_repro(&mut self, commit: usize) {
@@ -181,19 +196,15 @@ impl SimulationState {
             self.pdf[i] *= p_b_given_a / p_b;
         }
 
-        // this is the amount of the probability space probably withOUT the bug now
-        // check consistency of the first half
-        // let eps = commit as f64 * EPSILON;
-        // assert!(approx_eq!(f64, self.cdf[commit], p_bug_before, epsilon = eps));
-        // also this
-        let total_p = p_bug_before + p_bug_in_or_after;
-        let eps = self.pdf.len() as f64 * EPSILON;
-        assert!(approx_eq!(f64, total_p, 1.0, epsilon = eps));
+        // TODO: figure out why this assertion still doesn't work even w/fancy epsilons
+        //self.assert_kinda_equals(self.cdf[commit], p_bug_before);
+        self.assert_kinda_equals_one(p_bug_before + p_bug_in_or_after);
 
+        self.renormalize_pdf();
+        self.refresh_cdf();
         if self.false_negative_rate == 0.0 {
             self.lower_bound = commit + 1;
         }
-        self.refresh_cdf();
     }
 
     pub fn hypothetical_pdf_bug_repros(&self, commit: usize) -> Vec<f64> {
