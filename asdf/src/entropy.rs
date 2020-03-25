@@ -43,7 +43,7 @@ mod tests {
         assert!(entropy(&v4d) < entropy(&v4c));
     }
 
-    // this test validates `strategies::MaxExpectedEntropy`'s reliance on binary search
+    // this test validates `strategies::MinExpectedEntropy`'s reliance on binary search
     // to find the bisect point of minimum expected entropy, instead of linear
     #[test]
     fn test_expected_entropy_has_unique_local_minimum() {

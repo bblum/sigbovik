@@ -1,14 +1,14 @@
 use crate::sim::*;
 
 // searches for the commit at which bisecting yields minimum expected entropy
-pub struct MaxExpectedEntropy {
+pub struct MinExpectedEntropy {
     earliest_bug_seen: usize,
 }
 
 // how to search for the point of min expected entropy?
 pub enum How { Linear, Binary }
 
-impl MaxExpectedEntropy {
+impl MinExpectedEntropy {
     pub fn new(s: &SimulationState) -> Self {
         Self {
             earliest_bug_seen: s.pdf.len() - 1,
@@ -16,7 +16,7 @@ impl MaxExpectedEntropy {
     }
 }
 
-impl BisectStrategy for MaxExpectedEntropy {
+impl BisectStrategy for MinExpectedEntropy {
     fn select_commit(&mut self, s: &SimulationState) -> usize {
         // can't use min_by_key b/c f64 !: Ord >_<
         let mut best = None;
