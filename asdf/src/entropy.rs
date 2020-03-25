@@ -7,6 +7,7 @@ fn entropy(pdf: &[f64]) -> f64 {
 
 impl SimulationState {
     pub fn hypothetical_expected_entropy(&self, commit: usize) -> f64 {
+        assert!(self.in_range(commit), "commit out of range");
         // TODO refactor/restructure to allow this
         assert!(commit < self.pdf.len() - 1, "do not bisect at last commit");
         assert!(self.pdf[commit+1] > 0.0, "do not bisect at known buggy commit");
@@ -50,18 +51,19 @@ mod tests {
         // 34 may seem like a weird `n`, but 32 was not sufficient to discover
         // the need for comparing `diff > EPSILON` instead of `diff > 0.0`.
         // 34 was the min such `n` that did it. after that, behaves the same up to 128.
-        // also, don't include deterministic case in fnprobs; it's too fiddly.
-        run_pdf_invariant_test(34, &[0.1, 0.5, 0.99], |s| {
+        run_pdf_invariant_test(34, 1, |s| {
+            if s.bug_found() {
+                assert!(s.false_negative_rate == 0.0 || s.upper_bound == 1);
+                // the search is over! there's no entropy left to move around.
+                return;
+            }
+
             let mut any_diff = false;
             let mut diff_ever_negative = false;
             let mut diff_ever_positive = false;
 
-            let mut last_e = s.hypothetical_expected_entropy(0);
-            for i in 1..s.pdf.len()-1 {
-                if s.pdf[i+1] == 0.0 {
-                    // don't test the last buggy commit
-                    break;
-                }
+            let mut last_e = s.hypothetical_expected_entropy(s.lower_bound);
+            for i in s.lower_bound+1..s.upper_bound-1 {
                 let e = s.hypothetical_expected_entropy(i);
                 let diff = e - last_e;
                 last_e = e;
@@ -77,7 +79,16 @@ mod tests {
                 }
             }
             if any_diff {
-                assert!(diff_ever_negative || diff_ever_positive, "flat entropy");
+                if !(diff_ever_negative || diff_ever_positive) {
+                    if s.false_negative_rate == 0.0 {
+                        // flat entropy is uniquely possible in this case
+                        // XXX: this can get tripped up by float imprecision
+                        // ...but it seems like for 34;1 it doesn't v0v
+                        assert_eq!(s.in_range_pdf(), &[1.0 / 3.0; 3]);
+                    } else {
+                        panic!("flat entropy");
+                    }
+                }
             }
         })
     }

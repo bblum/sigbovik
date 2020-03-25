@@ -13,6 +13,8 @@ pub struct SimulationState {
     pub pdf: Vec<f64>,
     pub cdf: Vec<f64>,
     pub false_negative_rate: f64, // \elem [0,1)
+    pub lower_bound: usize, // index of the first commit where pdf != 0
+    pub upper_bound: usize, // index of the first commit (> lower) where pdf = 0
     pub history: Vec<BisectAttempt>,
     buggy_commit: usize, // shh, its a himitsu!!
 }
@@ -46,6 +48,8 @@ impl SimulationState {
             pdf: vec![1.0 / num_commits as f64; num_commits],
             cdf: vec![0.0; num_commits], // computed below
             false_negative_rate,
+            lower_bound: 0,
+            upper_bound: num_commits,
             buggy_commit,
             history: vec![],
         };
@@ -69,31 +73,39 @@ impl SimulationState {
         }
     }
 
-    // TODO: clean this up by just storing the value for `k`.
-    fn is_known_buggy_commit(&self, i: usize) -> bool {
-        // if false negatives are possible, the only way we can be sure commit `i`
-        // doesn't introduce the bug is if a test on commit `j < i` repros it. so we
-        // should never expect to see the pdf go from 0 back up to nonzero -- if it's 0,
-        // it means the bug was encountered before, and all subsequent commits' pdfs
-        // will also be 0. `assert_consistent` checks this property; see `bug_seen`.
-        // n.b. this is used for assertions and optimizations (not functionality) so
-        // when we're in deterministic mode we just don't ever return true here.
-        self.false_negative_rate != 0.0 && self.pdf[i] == 0.0
+    pub fn in_range(&self, i: usize) -> bool {
+        i >= self.lower_bound && i < self.upper_bound
+    }
+
+    pub fn bug_found(&self) -> bool {
+        self.lower_bound + 1 == self.upper_bound
+    }
+
+    pub fn in_range_pdf(&self) -> &[f64] {
+        &self.pdf[self.lower_bound..self.upper_bound]
     }
 
     fn assert_consistent(&self) {
         assert_eq!(self.pdf.len(), self.cdf.len());
+        assert!(self.lower_bound < self.upper_bound, "whered the bug go?");
+
         // i guess? i don't really understand this stuff
         let eps = self.pdf.len() as f64 * EPSILON;
+
+        if self.lower_bound + 1 == self.upper_bound {
+            // termination condition; pdf should be 1 here
+            // TODO renormalize
+            // assert!(self.pdf[self.lower_bound] > 1.0 - eps);
+        }
+
         let mut sum = 0.0;
-        let mut bug_seen = false;
         for (i, &p) in self.pdf.iter().enumerate() {
             sum += p;
             assert!(p >= 0.0);
-            if bug_seen {
-                assert!(self.is_known_buggy_commit(i));
-            } else if self.is_known_buggy_commit(i) {
-                bug_seen = true;
+            if !self.in_range(i) {
+                assert_eq!(self.pdf[i], 0.0);
+            } else {
+                // assert!(self.pdf[i] > 0.0);
             }
             // god i hate floating point
             // TODO: renormalize every so often
@@ -104,36 +116,37 @@ impl SimulationState {
         // assert!(approx_eq!(f64, sum, 1.0, epsilon = eps));
     }
 
-    // TODO use this in the bayes rule app (over in sim.rs)
+    // TODO use this in the bayes rule app somehow
     pub fn blind_a_priori_repro_prob(&self, commit: usize) -> f64 {
         self.cdf[commit] * (1.0 - self.false_negative_rate)
     }
 
     fn adjust_pdf_bug_repros(&mut self, commit: usize) {
+        assert!(self.in_range(commit), "tested known buggy commit");
+        assert_ne!(commit, self.upper_bound - 1, "tested known buggy commit");
         // TODO: rewrite this part using bayes' rule, prove it's equivalent
         // this is the amount of the probability space that will go to 1
         let bisected_cdf = self.cdf[commit];
-        for i in 0..self.pdf.len() {
+        for i in self.lower_bound..self.upper_bound {
             if i <= commit {
-                assert!(!self.is_known_buggy_commit(i), "tested known buggy commit");
                 // adjust commits before and including the buggy commit
                 // any of them might have introduced the bug
                 // all pdfs before the test point currently sum to bisected_cdf
                 // now we want it to sum to 1. so multiply by 1/bisected_cdf
                 self.pdf[i] /= bisected_cdf;
-            } else if self.is_known_buggy_commit(i) {
-                // optimization
-                break;
             } else {
                 // adjust commits after this buggy commit down to 0
                 // they won't have introduced it
                 self.pdf[i] = 0.0;
             }
         }
+        self.upper_bound = commit + 1;
         self.refresh_cdf();
     }
 
     fn adjust_pdf_no_repro(&mut self, commit: usize) {
+        assert!(self.in_range(commit), "tested known buggy commit");
+        assert_ne!(commit, self.upper_bound - 1, "tested known buggy commit");
         // this is the amount of the probability space probably withOUT the bug now
         let bisected_cdf = self.cdf[commit];
         // apply bayes' rule.
@@ -147,8 +160,7 @@ impl SimulationState {
         let p_b = (self.false_negative_rate * bisected_cdf) + (1.0 - bisected_cdf);
         let p_bug_before = p_b_given_a * p_a / p_b;
         // adjust commits before & including the probably-not-buggy commit down
-        for i in 0..=commit {
-            assert!(!self.is_known_buggy_commit(i), "tested known buggy commit");
+        for i in self.lower_bound..=commit {
             // everything here summed to `bisected_cdf` before.
             // now we want it to sum to `p_bug_before`.
             // so, multiply by p_bug_before / bisected_cdf.
@@ -162,18 +174,13 @@ impl SimulationState {
         let p_b_given_a = 1.0;
         let p_a = 1.0 - bisected_cdf;
         let p_bug_in_or_after = p_b_given_a * p_a / p_b;
-        for i in commit+1..self.pdf.len() {
-            if self.is_known_buggy_commit(i) {
-                // optimization
-                break;
-            }
+        for i in commit+1..self.upper_bound {
             // everything here summed to `1 - bisected_cdf` before.
             // now we want it to sum to `p_bug_after`.
             // as above, `1 - bisected_cdf` is a factor of `p_bug_in_or_after`.
             self.pdf[i] *= p_b_given_a / p_b;
         }
 
-        self.refresh_cdf();
         // this is the amount of the probability space probably withOUT the bug now
         // check consistency of the first half
         // let eps = commit as f64 * EPSILON;
@@ -182,6 +189,11 @@ impl SimulationState {
         let total_p = p_bug_before + p_bug_in_or_after;
         let eps = self.pdf.len() as f64 * EPSILON;
         assert!(approx_eq!(f64, total_p, 1.0, epsilon = eps));
+
+        if self.false_negative_rate == 0.0 {
+            self.lower_bound = commit + 1;
+        }
+        self.refresh_cdf();
     }
 
     pub fn hypothetical_pdf_bug_repros(&self, commit: usize) -> Vec<f64> {
@@ -197,7 +209,6 @@ impl SimulationState {
     }
 
     fn simulate_step(&mut self, commit: usize) -> BisectAttempt {
-        assert!(commit < self.pdf.len());
         let bug_present = commit >= self.buggy_commit;
         let bug_repros = if bug_present {
             rand::thread_rng().gen_range(0.0, 1.0) > self.false_negative_rate
@@ -321,15 +332,21 @@ pub mod test_helpers {
     use super::*;
 
     // runs a function on a bunch of different possible legal pdfs
-    pub fn run_pdf_invariant_test(n: usize, fn_probs: &[f64], f: impl Fn(&SimulationState)) {
+    pub fn run_pdf_invariant_test(n: usize, step: usize, f: impl Fn(&SimulationState)) {
         for buggy_commit in 0..n {
-            for &fn_prob in fn_probs {
+            for &fn_prob in &[0.0, 0.1, 0.5, 0.99] {
                 let mut s = SimulationState::new_with_bug_at(n, fn_prob, buggy_commit);
+                println!("pdf test: fnprob {}; initial pdf: {:?}", fn_prob, s.pdf);
                 f(&s);
                 // TODO: clean up this "never test pdf[n-1]" thing.
                 // allow 64 to be the answer & testing 63 to make sense.
-                for i in 2..n {
-                    s.simulate_step(n-i);
+                for i in (0..n-1).step_by(step).rev() {
+                    if i < s.lower_bound {
+                        break;
+                    }
+                    s.simulate_step(i);
+                    println!("pdf test: fnprob {}; pdf after testing {}: {:?}",
+                             fn_prob, i, s.pdf);
                     f(&s);
                 }
             }
@@ -375,11 +392,6 @@ mod tests {
         assert_eq!(s.pdf, vec![0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125]);
         assert_eq!(s.cdf, vec![0.125, 0.250, 0.375, 0.500, 0.625, 0.750, 0.875, 1.000]);
 
-        // why would you test commit 7?? that gains no information. oh well
-        assert_eq!(s.simulate_step(7).bug_repros, true);
-        assert_eq!(s.pdf, vec![0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125]);
-        assert_eq!(s.cdf, vec![0.125, 0.250, 0.375, 0.500, 0.625, 0.750, 0.875, 1.000]);
-
         // don't test commit 1-2 bc that'll introduce float imprecision with 0.33 lmao
 
         assert_eq!(s.simulate_step(3).bug_repros, false);
@@ -399,6 +411,30 @@ mod tests {
     }
 
     #[test]
+    #[should_panic]
+    fn test_known_buggy_commit_above() {
+        let mut s = SimulationState::new_with_bug_at(8, 0.0, 5);
+        s.simulate_step(5);
+        s.simulate_step(6);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_known_buggy_commit_below() {
+        let mut s = SimulationState::new_with_bug_at(8, 0.0, 5);
+        s.simulate_step(4);
+        s.simulate_step(3);
+    }
+
+    #[test]
+    fn test_pdf_slice() {
+        let mut s = SimulationState::new_with_bug_at(8, 0.0, 5);
+        s.simulate_step(2);
+        s.simulate_step(5);
+        assert_eq!(s.in_range_pdf(), &[1.0 / 3.0; 3]);
+    }
+
+    #[test]
     fn test_blind() {
         let s = SimulationState::new(8, 0.0);
         for i in 0..8 {
@@ -413,7 +449,7 @@ mod tests {
 
     #[test]
     fn test_pdf_monotonicity() {
-        test_helpers::run_pdf_invariant_test(16, &[0.0, 0.1, 0.5, 0.99], |s| {
+        test_helpers::run_pdf_invariant_test(16, 1, |s| {
             let mut last_p = 0.0;
             let mut k_seen = false;
             for &p in &s.pdf {
