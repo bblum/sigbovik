@@ -124,7 +124,13 @@ impl SimulationState {
             sum += p;
             assert!(p >= 0.0);
             if self.in_range(i) {
-                assert!(self.pdf[i] > 0.0);
+                // it's possible for a p to get driven all the way down to 0
+                // by a very inefficient strategy..! (within rounding error, at least)
+                // better strategies will not "steal from the poor" so much.
+                // it took random-uniform w/ N>=44 to expose this, and when it did,
+                // i was 0 and pdf[1] was 4.0474 x 10^-320. wow!
+                // before that, of course, this assertion was just self.pdf[i] > 0.0
+                assert!(self.pdf[i] >= 0.0);
             } else {
                 assert_eq!(self.pdf[i], 0.0);
             }
@@ -267,6 +273,14 @@ impl SimulationState {
             let commit = strat.select_commit(&self);
             let result = self.simulate_step(commit);
             strat.notify_result(result);
+
+            if self.pdf[commit] < EPSILON {
+                // special case for random-uniform to dodge the no progress assert.
+                // see huge comment about it, above in assert_consistent.
+                // in this case, if you get p all the way down to 0.00...025, the
+                // minimum nonzero float, it turns into a fixed point to bisect on it.
+                continue;
+            }
 
             // println!("simulating; {:?} -> pdf {:?}", result, self.pdf);
             assert!(self.pdf != prev_pdf, "no progress");

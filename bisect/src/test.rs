@@ -2,6 +2,8 @@ use crate::sim::{BisectStrategy, SimulationState};
 use crate::strategies::*;
 
 // there's a progress assertion in the simulator we hope won't trip here
+// basically, we're testing a strategy is capable of driving the confidence
+// to some arbitrary threshold (e.g. five nines), no matter how slowly
 fn run_progress_test<S: BisectStrategy>(n: usize, f: impl Fn(&SimulationState) -> S) {
     for buggy_commit in 0..n {
         for &fp_prob in &[0.0, 0.5, 0.9] {
@@ -55,13 +57,13 @@ fn test_cdfbisect_progress() {
 
 #[test]
 fn test_naive_progress() {
-    run_progress_test(16, |s| NaiveBinarySearch::new(s, ConfusedHumanMode::ForgetEverything));
-    run_progress_test(16, |s| NaiveBinarySearch::new(s, ConfusedHumanMode::UsePreviousLow));
+    run_progress_test(64, |s| NaiveBinarySearch::new(s, ConfusedHumanMode::ForgetEverything));
+    run_progress_test(64, |s| NaiveBinarySearch::new(s, ConfusedHumanMode::UsePreviousLow));
 }
 
 #[test]
 fn test_linear_progress() {
-    run_progress_test(16, LinearSearch::new);
+    run_progress_test(64, LinearSearch::new);
 }
 
 #[test]
@@ -71,6 +73,7 @@ fn test_entropy_progress() {
 
 #[test]
 fn test_random_progress() {
-    run_progress_test(16, |s| ChooseRandomly::new(s, RandomMode::Uniformly));
-    run_progress_test(16, |s| ChooseRandomly::new(s, RandomMode::WeightedByCDF));
+    // 48 was min number to expose the 0 bug documented in assert_consistent.
+    run_progress_test(48, |s| ChooseRandomly::new(s, RandomMode::Uniformly));
+    run_progress_test(32, |s| ChooseRandomly::new(s, RandomMode::WeightedByCDF));
 }
