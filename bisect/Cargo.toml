@@ -1,5 +1,5 @@
 [package]
-name = "asdf"
+name = "bisect"
 version = "0.1.0"
 authors = ["ben blum <bblum0@gmail.com>"]
 edition = "2018"
@@ -8,5 +8,4 @@ edition = "2018"
 
 [dependencies]
 rand = "0.7.3"
-float-cmp = "0.6.0"
 streaming-stats = "0.2.3"
