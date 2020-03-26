@@ -7,7 +7,6 @@ pub struct NaiveBinarySearch {
 }
 
 impl NaiveBinarySearch {
-    #[cfg_attr(not(test), allow(unused))]
     pub fn new(s: &SimulationState) -> Self {
         Self {
             lo: 0,
