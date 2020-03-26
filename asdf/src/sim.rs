@@ -343,7 +343,7 @@ pub mod test_helpers {
     use super::*;
 
     // runs a function on a bunch of different possible legal pdfs
-    pub fn run_pdf_invariant_test(n: usize, step: usize, f: impl Fn(&SimulationState)) {
+    pub fn run_pdf_invariant_test(n: usize, f: impl Fn(&SimulationState)) {
         for buggy_commit in 0..n {
             for &fn_prob in &[0.0, 0.1, 0.5, 0.99] {
                 let mut s = SimulationState::new_with_bug_at(n, fn_prob, buggy_commit);
@@ -351,7 +351,7 @@ pub mod test_helpers {
                 f(&s);
                 // TODO: clean up this "never test pdf[n-1]" thing.
                 // allow 64 to be the answer & testing 63 to make sense.
-                for i in (0..n-1).step_by(step).rev() {
+                for i in (0..n-1).rev() {
                     if i < s.lower_bound {
                         break;
                     }
@@ -460,7 +460,7 @@ mod tests {
 
     #[test]
     fn test_pdf_monotonicity() {
-        test_helpers::run_pdf_invariant_test(16, 1, |s| {
+        test_helpers::run_pdf_invariant_test(64, |s| {
             let mut last_p = 0.0;
             let mut k_seen = false;
             for &p in &s.pdf {

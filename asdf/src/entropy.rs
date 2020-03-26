@@ -1,4 +1,6 @@
 use crate::sim::SimulationState;
+use std::f64::EPSILON;
+use std::collections::HashMap;
 
 fn entropy(pdf: &[f64]) -> f64 {
     let n = pdf.len() as f64;
@@ -18,13 +20,68 @@ impl SimulationState {
 
         (p * entropy_repro) + ((1.0 - p) * entropy_no_repro)
     }
+
+    pub fn min_expected_entropy_linear_search(&self) -> usize {
+        assert!(!self.bug_found(), "can't search when bug already found");
+        let mut last_e = self.hypothetical_expected_entropy(self.lower_bound);
+        for i in self.lower_bound+1..self.upper_bound-1 {
+            let e = self.hypothetical_expected_entropy(i);
+            if last_e < e - self.epsilon() {
+                // entropy is lower at i-1 than at i
+                // since it's guaranteed to have a unique local minimum, that was it
+                return i-1;
+            }
+            last_e = e;
+        }
+        // if we fall out of the loop, it's because the min was at the front!
+        // (or because there are only two commits left to test.)
+        self.upper_bound-2
+    }
+
+    pub fn min_expected_entropy_binary_search(&self) -> usize {
+        assert!(!self.bug_found(), "can't search when bug already found");
+        let mut min = self.lower_bound;
+        let mut max = self.upper_bound - 2;
+
+        // because we measure diff in e vs neighbors, we might ask for an `i` twice
+        let mut known_entropies = HashMap::new();
+        let mut measure_expected_entropy = move |i: usize| {
+            if let Some(&e) = known_entropies.get(&i) {
+                e
+            } else {
+                let e = self.hypothetical_expected_entropy(i);
+                known_entropies.insert(i, e);
+                e
+            }
+        };
+
+        while min < max {
+            // TODO: try weighting by cdf? maybe that's faster?
+            // (as the search
+            let mid = (min + max) / 2;
+            // div by two rounds towards min, so compare mid against mid+1.
+            let e0 = measure_expected_entropy(mid);
+            let e1 = measure_expected_entropy(mid + 1);
+            // TODO: be more robust about flat entropy; it's inconclusive
+            // so maybe check both sides. for now we'll bias towards the right
+            // because empirically i think we should get plateaus only on the left
+            // when p shrinks to very very tiny.
+            if e1 > e0 + self.epsilon() {
+                // positive derivative -- fall to the left
+                max = mid;
+            } else {
+                // negative (or zero) derivative -- fall to the right
+                min = mid + 1;
+            }
+        }
+        min
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use crate::sim::test_helpers::run_pdf_invariant_test;
-    use super::entropy;
-    use std::f64::EPSILON;
+    use super::*;
 
     #[test]
     fn test_entropy() {
@@ -51,7 +108,7 @@ mod tests {
         // 34 may seem like a weird `n`, but 32 was not sufficient to discover
         // the need for comparing `diff > EPSILON` instead of `diff > 0.0`.
         // 34 was the min such `n` that did it. after that, behaves the same up to 128.
-        run_pdf_invariant_test(34, 1, |s| {
+        run_pdf_invariant_test(34, |s| {
             if s.bug_found() {
                 assert!(s.false_negative_rate == 0.0 || s.upper_bound == 1);
                 // the search is over! there's no entropy left to move around.
@@ -90,6 +147,20 @@ mod tests {
                     }
                 }
             }
+        })
+    }
+
+    #[test]
+    fn test_search_for_intelligent_life_um_i_mean_min_entropy() {
+        run_pdf_invariant_test(32, |s| {
+            if s.bug_found() {
+                assert!(s.false_negative_rate == 0.0 || s.upper_bound == 1);
+                // the search is over! there's no entropy left to move around.
+                return;
+            }
+            let linear_result = s.min_expected_entropy_linear_search();
+            let binary_result = s.min_expected_entropy_binary_search();
+            assert_eq!(linear_result, binary_result);
         })
     }
 }
