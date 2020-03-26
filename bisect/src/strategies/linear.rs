@@ -14,6 +14,8 @@ impl LinearSearch {
 }
 
 impl BisectStrategy for LinearSearch {
+    fn name(&self) -> String { "linear".to_string() }
+
     fn select_commit(&mut self, s: &SimulationState) -> usize {
         assert_eq!(self.earliest_known_buggy_commit, s.upper_bound - 1, "drift");
         assert_ne!(self.earliest_known_buggy_commit, 0, "bug already found");

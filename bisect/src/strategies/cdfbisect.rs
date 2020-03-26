@@ -17,6 +17,8 @@ impl CdfBisect {
 }
 
 impl BisectStrategy for CdfBisect {
+    fn name(&self) -> String { format!("cdf_{}", self.bisect_point) }
+
     fn select_commit(&mut self, s: &SimulationState) -> usize {
         let res = s.first_cdf_index_eq_or_greater(self.bisect_point);
         if res == self.earliest_bug_seen {

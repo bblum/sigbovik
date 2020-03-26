@@ -2,6 +2,7 @@ use rand::Rng;
 use std::f64::EPSILON;
 
 pub trait BisectStrategy {
+    fn name(&self) -> String;
     fn select_commit(&mut self, state: &SimulationState) -> usize;
     fn notify_result(&mut self, result: BisectAttempt);
 }

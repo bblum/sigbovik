@@ -23,16 +23,21 @@ impl NaiveBinarySearch {
 }
 
 impl BisectStrategy for NaiveBinarySearch {
+    fn name(&self) -> String {
+        match self.memory {
+            Some(_) => "naive_memory".to_string(),
+            None => "naive_forgetful".to_string(),
+        }
+    }
+
     fn select_commit(&mut self, _s: &SimulationState) -> usize {
-        let res = if self.lo == self.hi {
+        if self.lo == self.hi {
             assert_ne!(self.lo, 0, "ok, but the bug has to be at 0 now yo");
             // human thinks they found the bug. keep poking to increase confidence.
             self.lo - 1
         } else {
             (self.lo + self.hi) / 2
-        };
-        println!("asdf selected {}; self state {:?}", res, self);
-        res
+        }
     }
 
     fn notify_result(&mut self, result: BisectAttempt) {

@@ -8,6 +8,8 @@ impl MinExpectedEntropy {
 }
 
 impl BisectStrategy for MinExpectedEntropy {
+    fn name(&self) -> String { "entropy".to_string() }
+
     fn select_commit(&mut self, s: &SimulationState) -> usize {
         s.min_expected_entropy_binary_search()
     }

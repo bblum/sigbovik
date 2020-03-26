@@ -11,6 +11,13 @@ impl ChooseRandomly {
 }
 
 impl BisectStrategy for ChooseRandomly {
+    fn name(&self) -> String {
+        match self.0 {
+            RandomMode::Uniformly => "rand_uniform".to_string(),
+            RandomMode::WeightedByCDF => "rand_cdf".to_string(),
+        }
+    }
+
     fn select_commit(&mut self, s: &SimulationState) -> usize {
         assert!(!s.bug_found());
         match self.0 {
