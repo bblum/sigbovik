@@ -63,6 +63,17 @@ impl BisectStrategy for NaiveBinarySearch {
 mod tests {
     use super::*;
 
+    impl NaiveBinarySearch {
+        fn probe_assert(&mut self, s: &SimulationState, commit: usize,
+                        bug_repros: bool, expected_lo: usize, expected_hi: usize)
+        {
+            assert_eq!(self.select_commit(s), commit);
+            self.notify_result(BisectAttempt { commit, bug_repros });
+            assert_eq!(self.lo, expected_lo);
+            assert_eq!(self.hi, expected_hi);
+        }
+    }
+
     #[test]
     fn test_naive_basic() {
         // we'll say the bug is secretly at 5
@@ -70,55 +81,31 @@ mod tests {
         let s = SimulationState::new(8, 0.0);
         let mut b = NaiveBinarySearch::new(&s, ConfusedHumanMode::ForgetEverything);
 
-        assert_eq!(b.select_commit(&s), 3);
-        b.notify_result(BisectAttempt { commit: 3, bug_repros: false });
-        assert_eq!(b.lo, 4);
-        assert_eq!(b.hi, 7);
-
-        assert_eq!(b.select_commit(&s), 5);
-        b.notify_result(BisectAttempt { commit: 5, bug_repros: true });
-        assert_eq!(b.lo, 4);
-        assert_eq!(b.hi, 5);
-
-        assert_eq!(b.select_commit(&s), 4);
-        b.notify_result(BisectAttempt { commit: 4, bug_repros: false });
-        assert_eq!(b.lo, 5);
-        assert_eq!(b.hi, 5);
+        b.probe_assert(&s, 3, false, 4, 7);
+        b.probe_assert(&s, 5, true,  4, 5);
+        b.probe_assert(&s, 4, false, 5, 5);
     }
 
-    fn setup_contradiction_test(how: ConfusedHumanMode) -> (SimulationState, NaiveBinarySearch) {
+    fn setup_contradiction_test(how: ConfusedHumanMode)
+        -> (SimulationState, NaiveBinarySearch)
+    {
         let s = SimulationState::new(8, 0.0);
         let mut b = NaiveBinarySearch::new(&s, how);
 
         // push the human to the end of the range with some negative flakes.
-        assert_eq!(b.select_commit(&s), 3);
-        b.notify_result(BisectAttempt { commit: 3, bug_repros: false });
-        assert_eq!(b.lo, 4);
-        assert_eq!(b.hi, 7);
+        b.probe_assert(&s, 3, false, 4, 7);
+        b.probe_assert(&s, 5, false, 6, 7);
+        b.probe_assert(&s, 6, false, 7, 7);
 
-        assert_eq!(b.select_commit(&s), 5);
-        b.notify_result(BisectAttempt { commit: 5, bug_repros: false });
-        assert_eq!(b.lo, 6);
-        assert_eq!(b.hi, 7);
-
-        assert_eq!(b.select_commit(&s), 6);
-        b.notify_result(BisectAttempt { commit: 6, bug_repros: false });
-        assert_eq!(b.lo, 7);
-        assert_eq!(b.hi, 7);
-
-        // now, asked to confirm, the human just probes to increase confidence on 7
-        assert_eq!(b.select_commit(&s), 6);
-        b.notify_result(BisectAttempt { commit: 6, bug_repros: true });
-        // at this point they realize something is up.
-        // what they do now depends on the strategy.
         (s, b)
     }
 
     #[test]
     fn test_naive_contradiction_forget() {
-        let (_, b) = setup_contradiction_test(ConfusedHumanMode::ForgetEverything);
-        assert_eq!(b.lo, 0);
-        assert_eq!(b.hi, 6);
+        let (s, mut b) = setup_contradiction_test(ConfusedHumanMode::ForgetEverything);
+        // now, asked to confirm, the human probes 6 to increase confidence on 7
+        // they realize something is up, and reset their lower bound to start over.
+        b.probe_assert(&s, 6, true, 0, 6);
 
         // it isn't interesting to test further since there's no persistent state
     }
@@ -126,26 +113,14 @@ mod tests {
     #[test]
     fn test_naive_contradiction_rewind() {
         let (s, mut b) = setup_contradiction_test(ConfusedHumanMode::UsePreviousLow);
-        assert_eq!(b.lo, 6);
-        assert_eq!(b.hi, 6);
+        b.probe_assert(&s, 6, true, 6, 6);
 
         // the human, who now has perfect memory, walks backwards in time
-        assert_eq!(b.select_commit(&s), 5);
-        b.notify_result(BisectAttempt { commit: 5, bug_repros: true });
-        assert_eq!(b.lo, 4);
-        assert_eq!(b.hi, 5);
-
-        assert_eq!(b.select_commit(&s), 4);
-        b.notify_result(BisectAttempt { commit: 4, bug_repros: true });
-        assert_eq!(b.lo, 4);
-        assert_eq!(b.hi, 4);
-
-        assert_eq!(b.select_commit(&s), 3);
-        b.notify_result(BisectAttempt { commit: 3, bug_repros: true });
-        assert_eq!(b.lo, 0);
-        assert_eq!(b.hi, 3);
+        b.probe_assert(&s, 5, true, 4, 5);
+        b.probe_assert(&s, 4, true, 4, 4);
+        b.probe_assert(&s, 3, true, 0, 3);
 
         // now they are truly in the twilight zone!
-        assert_eq!(b.memory, Some(vec![]));
+        assert!(b.memory.unwrap().is_empty());
     }
 }
