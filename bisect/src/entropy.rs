@@ -82,6 +82,7 @@ impl SimulationState {
 mod tests {
     use crate::sim::test_helpers::run_pdf_invariant_test;
     use super::*;
+    use std::f64::EPSILON;
 
     #[test]
     fn test_entropy() {
