@@ -1,3 +1,5 @@
+#![cfg(test)]
+
 use crate::sim::{BisectStrategy, SimulationState};
 use crate::strategies::*;
 

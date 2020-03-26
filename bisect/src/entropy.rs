@@ -1,5 +1,4 @@
 use crate::sim::SimulationState;
-use std::f64::EPSILON;
 use std::collections::HashMap;
 
 fn entropy(pdf: &[f64]) -> f64 {
@@ -21,6 +20,7 @@ impl SimulationState {
         (p * entropy_repro) + ((1.0 - p) * entropy_no_repro)
     }
 
+    #[cfg_attr(not(test), allow(unused))]
     pub fn min_expected_entropy_linear_search(&self) -> usize {
         assert!(!self.bug_found(), "can't search when bug already found");
         let mut last_e = self.hypothetical_expected_entropy(self.lower_bound);
