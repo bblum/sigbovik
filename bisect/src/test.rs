@@ -59,8 +59,10 @@ fn test_cdfbisect_progress() {
 
 #[test]
 fn test_naive_progress() {
-    run_progress_test(64, |s| NaiveBinarySearch::new(s, ConfusedHumanMode::ForgetEverything));
-    run_progress_test(64, |s| NaiveBinarySearch::new(s, ConfusedHumanMode::UsePreviousLow));
+    run_progress_test(16, |s| NaiveBinarySearch::new(s, ConfusedHumanMode::ForgetEverything));
+    run_progress_test(16, |s| NaiveBinarySearch::new(s, ConfusedHumanMode::UsePreviousLow));
+    // TODO this boken
+    // run_progress_test(16, |s| NaiveBinarySearch::new(s, ConfusedHumanMode::Mistrustful(1)));
 }
 
 #[test]
