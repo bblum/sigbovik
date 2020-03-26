@@ -87,7 +87,11 @@ impl SimulationState {
     }
 
     pub fn bug_found(&self) -> bool {
-        self.lower_bound + 1 == self.upper_bound
+        let res = self.lower_bound + 1 == self.upper_bound;
+        if res {
+            assert!(self.false_negative_rate == 0.0 || self.upper_bound == 1);
+        }
+        res
     }
 
     pub fn in_range_pdf(&self) -> &[f64] {
