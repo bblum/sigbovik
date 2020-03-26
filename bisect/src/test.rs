@@ -21,18 +21,11 @@ fn test_simulate_deterministic_naive() {
     let n = 1 << logn;
     for buggy_commit in 0..n {
         let s = SimulationState::new_with_bug_at(n, 0.0, buggy_commit);
-        let nb = NaiveBinarySearch::new(&s);
+        let nb = NaiveBinarySearch::new(&s, ConfusedHumanMode::ForgetEverything);
         let res = s.simulate_til_confident(nb, 1.0);
         assert_eq!(res.steps, logn);
         assert_eq!(res.confidence, 1.0);
         assert_eq!(res.suspected_buggy_commit, buggy_commit);
-    }
-}
-
-#[test]
-fn test_cdfbisect_progress() {
-    for &bisect_point in &[0.01, 0.1, 0.5, 0.9, 0.99] {
-        run_progress_test(16, |s| CdfBisect::new(s, bisect_point));
     }
 }
 
@@ -51,6 +44,24 @@ fn test_linear_dumbness() {
         let expected_steps = n - std::cmp::max(buggy_commit, 1);
         assert_eq!(res.steps, expected_steps);
     }
+}
+
+#[test]
+fn test_cdfbisect_progress() {
+    for &bisect_point in &[0.01, 0.1, 0.5, 0.9, 0.99] {
+        run_progress_test(16, |s| CdfBisect::new(s, bisect_point));
+    }
+}
+
+#[test]
+fn test_naive_progress() {
+    run_progress_test(16, |s| NaiveBinarySearch::new(s, ConfusedHumanMode::ForgetEverything));
+    run_progress_test(16, |s| NaiveBinarySearch::new(s, ConfusedHumanMode::UsePreviousLow));
+}
+
+#[test]
+fn test_linear_progress() {
+    run_progress_test(16, LinearSearch::new);
 }
 
 #[test]
