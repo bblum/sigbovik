@@ -77,7 +77,8 @@ impl SimulationState {
         let one = self.cdf[self.upper_bound-1];
         self.assert_kinda_equals_one(one);
         for i in self.upper_bound..self.cdf.len() {
-            // renormalize because epsilon tightens as the pdf size tightens
+            // it was already one, but make it a better one
+            // (renormalize because epsilon tightens as the pdf size tightens)
             self.cdf[i] = one;
         }
     }
