@@ -21,7 +21,7 @@ enum Memory {
 }
 
 // mistrustful(3) == will run each passing commit 4 times before moving on
-// mistrustful(0) is equivalent to usepreviouslow
+// mistrustful(0) is equivalent to forgeteverything
 pub enum ConfusedHumanMode {
     ForgetEverything,
     UsePreviousLow,
@@ -38,7 +38,12 @@ impl NaiveBinarySearch {
                 ConfusedHumanMode::UsePreviousLow => Memory::PreviousLows(vec![]),
                 ConfusedHumanMode::Mistrustful(max_retries) => {
                     assert_ne!(max_retries, 0, "just use ForgetEverything in this case");
-                    Memory::Retry { max_retries, active_retry: None }
+                    if s.false_negative_rate == 0.0 {
+                        // don't bother retrying commits in this mode, obviously
+                        Memory::BlissfulIgnorance
+                    } else {
+                        Memory::Retry { max_retries, active_retry: None }
+                    }
                 },
             },
         }
@@ -175,7 +180,8 @@ mod tests {
         -> (SimulationState, NaiveBinarySearch)
     {
         let retries = if let ConfusedHumanMode::Mistrustful(n) = how { n } else { 0 };
-        let s = SimulationState::new(8, 0.0);
+        // need to have nonzero fnrate here for mistrustful to do its retries
+        let s = SimulationState::new(8, 0.5);
         let mut b = NaiveBinarySearch::new(&s, how);
 
         // push the human to the end of the range with some negative flakes.

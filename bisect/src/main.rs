@@ -17,7 +17,7 @@ fn output(f: &mut File, s: String) {
 }
 
 fn run_trial<S: BisectStrategy>(strat_fn: impl Fn(&SimulationState) -> S) {
-    let strat_name = strat_fn(&SimulationState::new(1, 0.0)).name();
+    let strat_name = strat_fn(&SimulationState::new(1, 0.5)).name();
     let filename_suffix: usize = rand::thread_rng().gen();
     let filename = format!("trial-{}-{}.txt", strat_name, filename_suffix);
     println!("(emitting output to {})", filename);
