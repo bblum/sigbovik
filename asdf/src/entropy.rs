@@ -38,34 +38,6 @@ impl SimulationState {
         self.upper_bound-2
     }
 
-    pub fn backwards_broken_min_expected_entropy_linear_search(&self) -> usize {
-        assert!(!self.bug_found(), "can't search when bug already found");
-        let mut last_e = None;
-        // if there's a plateau (e.g. two neighbors tied for min (e.g. in a totally
-        // uniform PDF of odd length)), binary search will err towards the right.
-        // so, we should too.
-        let mut rightmost_equivalent_e = None;
-        for i in (self.lower_bound..self.upper_bound-1).rev() {
-            let e = self.hypothetical_expected_entropy(i);
-            if let Some(last_e) = last_e {
-                if last_e < e - self.epsilon() {
-                    // entropy is lower at i+1 than at i (note reverse iteration order)
-                    // since it's guaranteed to have a unique local minimum, that was it
-                    return rightmost_equivalent_e.unwrap_or(i+1);
-                } else if last_e > e + self.epsilon() {
-                    rightmost_equivalent_e = None;
-                } else if rightmost_equivalent_e.is_none() {
-                    // plateau
-                    rightmost_equivalent_e = Some(i+1);
-                }
-            }
-            last_e = Some(e);
-        }
-        // if we fall out of the loop, it's because the min was at the front!
-        // (or because there are only two commits left to test.)
-        self.lower_bound
-    }
-
     pub fn min_expected_entropy_binary_search(&self) -> usize {
         assert!(!self.bug_found(), "can't search when bug already found");
         let mut min = self.lower_bound;
