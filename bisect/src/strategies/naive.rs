@@ -7,6 +7,7 @@ pub struct NaiveBinarySearch {
     memory: Option<Vec<usize>>,
 }
 
+// TODO add mistrustful mode, of a certain N number of reruns
 pub enum ConfusedHumanMode { ForgetEverything, UsePreviousLow }
 
 impl NaiveBinarySearch {
