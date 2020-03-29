@@ -102,6 +102,22 @@ mod tests {
         assert!(entropy(&v4d) < entropy(&v4c));
     }
 
+    #[test]
+    fn test_entropy_stability() {
+        let v4e = vec![0.00000_00, 0.00000_00, 0.00001_00, 0.99999_00];
+        let v4f = vec![0.00000_00, 0.00000_00, 0.00000_99, 0.99999_01];
+        let v4g = vec![0.00000_33, 0.00000_33, 0.00000_33, 0.99999_01];
+        assert_eq!(v4e.iter().sum::<f64>(), 1.0);
+        assert_eq!(v4f.iter().sum::<f64>(), 1.0);
+        assert_eq!(v4g.iter().sum::<f64>(), 1.0);
+
+        // as you'd expect, v4f's max is higher
+        assert!(entropy(&v4e) > entropy(&v4f));
+        // but! v4e tells you more about the first 3 than v4g does, despite lower max.
+        assert!(entropy(&v4e) < entropy(&v4g));
+    }
+
+
     // this test validates `strategies::MinExpectedEntropy`'s reliance on binary search
     // to find the bisect point of minimum expected entropy, instead of linear
     #[test]
