@@ -495,4 +495,30 @@ mod tests {
             }
         })
     }
+
+    #[test]
+    fn test_figure_1() {
+        let mut s = SimulationState::new_with_bug_at(16, 0.5, 11);
+
+        s.adjust_pdf_no_repro(7);
+        s.adjust_pdf_bug_repros(11);
+        assert_eq!(s.pdf[0], 0.0625);
+        assert_eq!(s.pdf[11], 0.125);
+
+        s.adjust_pdf_no_repro(9);
+        assert_eq!(s.pdf[0], 0.05);
+        assert_eq!(s.pdf[9], 0.1);
+        assert_eq!(s.pdf[10], 0.2);
+
+        s.adjust_pdf_no_repro(10);
+        assert!(s.pdf[11] < 1.0 / 3.0 + s.epsilon());
+        assert!(s.pdf[11] > 1.0 / 3.0 - s.epsilon());
+
+        for _ in 0..17 {
+            s.adjust_pdf_no_repro(10);
+        }
+        assert!(s.pdf[11] < 0.99999 - s.epsilon());
+        s.adjust_pdf_no_repro(10);
+        assert!(s.pdf[11] > 0.99999 + s.epsilon());
+    }
 }
