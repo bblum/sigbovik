@@ -121,10 +121,10 @@ how to \texttt{git bisect} when your test suite is having a bad day
 
 % \category{D.D.R.}{Exercise and Fitness}{Arcade Dance Games}
 
-\keywords pdflatex, cdflatex
+\keywords pdflatex, cdflatex, epsilon
 % bracket, groove, in, jumps, the
 
-\newcommand\confidents{\ensuremath{\mathcal{Z}}\xspace}
+\newcommand\confidents{\ensuremath{z}\xspace}
 \newcommand\pdf{\ensuremath{\mathsf{pdf}}\xspace}
 \newcommand\cdf{\ensuremath{\mathsf{cdf}}\xspace}
 
@@ -160,7 +160,7 @@ I'm sure there's a paper about, like, hygienic image macros or empire machines o
 % I'm sure tom7 is up to some wacky hijinks or something just a few page-turns away.
 
 If you're feeling adventurous,
-implement a strategy and throw it in this simulator I implemented to see how it stacks up:
+implement a strategy and throw it in this simulator I made to see how it fares:
 \url{https://github.com/bblum/sigbovik/blob/master/bisect}.
 You just gotta implement {\tt trait BisectStrategy},
 and it even does all the hard work of applying Bayes's rule
@@ -174,6 +174,7 @@ Check it out.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{pdfs, but not the portable document format kind, and our friend rev. bayes}
+\label{sec:pdfs}
 
 Ok, so let's model the problem as a sequence of steps on a probability distribution function
 (henceforth, PDF; and also, CDF for the cumulative kind).
@@ -265,7 +266,7 @@ Now let's say the test passes at $j=9$, then at $j=10$.
 for $p=1$, this pinpoints the bug at $j=11$, and the search is over.
 But for $p=0.5$, there's still 2/3 odds we'd be wrong!
 In fact, from here it takes 18 further probes at $j=10$ until we are at least five 9's confident that $c_{11}$ is the culprit.%
-\footnote{See {\tt fn test\_figure\_1()}!}
+\footnote{See {\tt fn test\_figure\_1()}.}
 Bayes's rule gonna get ya.
 
 % cdf 9 -- 0.75
@@ -328,7 +329,7 @@ but if you consider the flaky test itself to be the bug, it's the same problem.%
 \footnote{Incidentally, the symmetric case
 -- where a bug repros with $p=1$, but the test also flakes with some $q<1$ --
 is also the same problem.}
-Athena's ``deflakes'' the test at each commit by running 10 times,
+Athena ``deflakes'' the test at each commit by running it 10 times,
 treating the combined result as ``basically as good as $p=1$'',
 and then runs an otherwise classical binary search.
 %\footnote{Upcoming, I will call this strategy \textsf{Human-Mistrustful}$(10)$.}
@@ -385,11 +386,11 @@ Another way to frame it is that the $c_{(a+b)/2}$ bisect point
 cuts the probability mass, rather than the range, in half,
 % How about in Nondeterminism World,
 % we ignore the range length, and instead bisect at the midpoint of probability mass,
-i.e., $\mathsf{max}_j (i)$ s.t. $\cdf(j) \le 0.5)$.
+i.e., $\mathsf{max}_j (j$; $\cdf(j) \le 0.5)$.
 This approach
 fits the ``binary search'' spirit,
-and will terminate in Nondeterminism World,
-i.e.,
+and will also terminate in Nondeterminism World:
+%i.e.,
 if $b$ is the solution, it converges to repeatedly probing $b-1$,
 so it can pass any fixed $\confidents$ threshold.
 %(which is more than you can say for the range-based $c_{(0+b)/2}$).
@@ -431,7 +432,7 @@ necessarily corresponds to reaching $\confidents$ the fastest.
 %It just sounds kinda nice?
 %What is the best threshold, perhaps as a function of $p$, and why?
 I show my work in \cref{fig:let-me-shown-that-my-work},
-because that's what they taught me to do in high school.
+because that's what they taught me to do in high school algebra class.
 
 \begin{figure}[t]
 	\begin{tabular}{c}
@@ -544,10 +545,10 @@ in his words,
 % Nevertheless, it seems promising, and easy to implement.
 
 There is a ray of hope, however:
-thanks to the nondecreasing-PDF invariant I mentioned on the previous page,
+thanks to the nondecreasing-PDF invariant I mentioned in \cref{sec:pdfs}, %on the previous page,
 the expected entropy has a unique local minimum.%
 \footnote{See {\tt fn test\_expected\_entropy\_has\_unique\_local\_minimum()}.}
-Thus we can binary search for the global minimum, making this at least $O(n\mathsf{log}n)$
+Thus we can binary search for the global minimum, making this at worst $O(n\mathsf{log}n)$
 instead of $O(n^2)$.
 
 \subsection{bisect randomly}
@@ -579,7 +580,7 @@ they'll just keep probing $c_{b-1}$ until enough probability mass (invisible to 
 moves to $b$ and the simulator says they can stop.
 If this instead repros the bug at $c_{b-1}$ after all, the human gets confused!
 They'll assume the bug might have been present as early as $c_0$,
-forgets their lower bound, and begins binary searching anew in the range $[0,b-1]$.
+forgets their lower bound, and begins binary searching anew in the range $[0,b)$.
 It's easy to see this makes progress.
 Let's call this the ``confused, forgetful human'' strategy.
 
@@ -587,7 +588,7 @@ Another confused human variant is for them to remember their previous lower boun
 After all, just because their best lower bound $b-1$ was contradicted
 doesn't say anything about some earlier bound $a<b-1$ they might have observed.
 So this human will maintain a stack of lower bounds, and when $b-1$ is contradicted,
-they'll pop off the stack and resume searching in $[a,b-1]$ instead.
+they'll pop off the stack and resume searching in $[a,b)$ instead.
 Let's call this the ``confused human who remembers''.
 %
 Incidentally, while implementing this strategy, I accidentally wrote the comment,
@@ -600,7 +601,8 @@ Incidentally, while implementing this strategy, I accidentally wrote the comment
 and giggled a lot to myself as I imagined {\birbaslo sigbovik}~fanfiction.
 
 
-Finally, let's imagine the human knows maybe something is up with this $p$ stuff in advance. %before they start searching.
+Finally, let's imagine the human knows in advance that maybe something is up with this $p$ stuff.
+%in advance. %before they start searching.
 Wishing to carry on classically as though $p$ were 1,
 they'll try to emulate $p$ being higher by retrying any passing test ``just to be sure'', before moving on.
 If they retry the test $r$ times,
@@ -628,7 +630,7 @@ The {\tt SimulationState} is initialized with fixed $n$ and $p$,
 and repeatedly invokes a given {\tt BisectStrategy},
 hitting the PDF with Bayes's rule accordingly,
 until $\confidents > 0.99999$.
-I provide implementations for all the strategies from the previous section in {\tt src/strategies/}.
+I provide implementations for all \cref{sec:strats}'s strategies in {\tt src/strategies/}.
 It's written in Rust so it's self-documenting.
 
 I learned a lot about floating point.
@@ -637,7 +639,7 @@ I mean that when your project is fundamentally a long multiplication chain of in
 your precious $\cdf(n)$ inevitably drifts farther from 1 than you can bound with any arbitrary $\epsilon$, and you start drowning in imprecision \cite{drowningpoint}.
 I suppose I could have used the {\tt BigRational} library,
 but I chose Rust over Haskell for this so I could {\it avoid} runaway memory consumption...
-so I resigned myself to explicitly renormalizing my PDFs by $1/\cdf(n)$ each time I updated them.
+so, I resigned myself to explicitly renormalizing my PDFs by $1/\cdf(n)$ each time I updated them.
 After that, I was able to write some assertions
 to bound the imprecision drift within $k(\text{\tt std::f64::EPSILON})$ \cite{epsilon}.
 But yeah, I definitely spent some sanity points writing a function named {\tt fn assert\_kinda\_equals\_one(\&self)}.
@@ -679,6 +681,7 @@ I also didn't bother measuring execution time,
 as prior work has shown that one's personal laptop is a fraught environment for stable performance evaluation \cite{htm},
 but it was still very obvious that {\sf entropy} was far, far slower per step than all other strategies.
 %I guess I'd say it took minutes to run {\sf cdfbisect} up to $p=0.01$, and hours/overnight for the same for {\sf entropy}.
+It was even slower than {\sf rand-uniform}!
 
 \subsection{computer strategies}
 
@@ -733,7 +736,7 @@ In this notation, $r=1$ means they retry once whenever the test passes, meaning 
 $r=0$ is equivalent to the forgetful strategy, and $r=9$ is what Athena does (\cref{sec:prior}).%
 % actually it's an enhanced version of athena so that it will terminate
 
-\cref{fig:resulce} was getting a little crowded so I've plotted all the human-friendly strategies on \cref{fig:human}.
+\cref{fig:resulce} was getting a little crowded so I've plotted all the human-friendly strategies separately on \cref{fig:human}.
 It's pretty self-explanatory imo.
 
 \begin{figure}[t]
@@ -763,11 +766,12 @@ restarting the search until it correctly identified the buggy commit 65536 times
 and counting the number of restarts.
 With $\confidents > 0.99999$ this was not very interesting:
 the strategies collectively made 0 errors 81\% of the time, and were wrong more than twice only 0.6\%.
-But $\confidents > 0.5$ was a different story.
+But $\confidents > 0.5$ is a different story.
 As \cref{fig:wrongs} shows, most strategies
 -- even the comically slow {\sf rand-uniform} --
 converged to being wrong about half the time, i.e., 65536 wrongs per 65536 rights.
-{\sf athena} was most resilient, at least for higher $p$.
+For higher $p$,
+{\sf athena} was most resilient.
 
 \begin{figure}[t]
 	\begin{tabular}{c}

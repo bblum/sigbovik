@@ -916,7 +916,7 @@
 
 % Standard headings:
 
-\newcommand{\acks}{\section*{acknowledgements}}
+\newcommand{\acks}{\section*{acknowledgments}}
 
 \newcommand{\keywords}{\paragraph*{keywords}}
 
