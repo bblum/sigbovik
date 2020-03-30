@@ -48,6 +48,7 @@ urlcolor=urlc,
 \usepackage{multirow}
 \usepackage{xspace}
 \usepackage[nameinlink,nosort]{cleveref}
+\usepackage{mathspec}
 \usepackage{xeCJK}
 \usepackage[usenames,dvipsnames]{xcolor}
 \usepackage[utopia]{mathdesign}
@@ -85,6 +86,14 @@ urlcolor=urlc,
 %\lst@AddToHook{TextStyle}{\let\lst@basicstyle\ttfamily\normalsize}
 %\makeatother
 
+\renewcommand{\figurename}{figure}
+
+\crefformat{section}{#2{section~#1}#3}
+\Crefformat{section}{#2{Section~#1}#3}
+\Crefformat{figure}{#2{Figure~#1}#3}
+\crefformat{figure}{#2{figure~#1}#3}
+%\Crefformat{Figure}{#2{figure~#1}#3}
+
 \begin{document}
 
 \conferenceinfo{{\birbaslo sigbovik~'20}}{pittsburgh, PA, USA}
@@ -112,7 +121,7 @@ how to \texttt{git bisect} when your test suite is having a bad day
 
 % \category{D.D.R.}{Exercise and Fitness}{Arcade Dance Games}
 
-\keywords pdflatex
+\keywords pdflatex, cdflatex
 % bracket, groove, in, jumps, the
 
 \newcommand\confidents{\ensuremath{\mathcal{Z}}\xspace}
@@ -135,7 +144,7 @@ You can't even pinpoint the bug at some $c_{b}$ for sure anymore;
 you can at best know
 that it \textasciitilde{}prooobably\textasciitilde~won't reproduce in any $c_{i<b}$,
 with some confidence $\confidents$.
-Now evaluate your strategy by the expected number of steps to achieve, let's say for tradition's sake, $\confidents \ge 0.99999$.
+Now evaluate your strategy by the expected number of steps to achieve, let's say for tradition's sake, $\confidents > 0.99999$.
 Is it still optimal to bisect at the midpoint?%
 \footnote{Spoiler: No, or I wouldn't have bothered with this paper.}
 What would be a better strategy, as a function of $p$?
@@ -170,12 +179,15 @@ Ok, so let's model the problem as a sequence of steps on a probability distribut
 (henceforth, PDF; and also, CDF for the cumulative kind).
 Initially, $\pdf(i) = 1/n$ for all $0 \le i < n$.
 When the bug reproduces at some commit $b$,
-you're certain no $c_{i>b}$ introduced the bug, so each $\pdf(i>b)$ becomes $0$,
-and each $\pdf(i\le b)$ renormalizes by a factor of $n/b$, to preserve the $\int \pdf(i) \text{d} i = 1$ invariant.%
+you're certain no $c_{i>b}$ introduced the bug, so each $\pdf(i>b) \leftarrow 0$
+and each $\pdf(i\le b)$ renormalizes by a factor of $n/b$, to preserve the
+%$\int \pdf(i) \text{d} i = 1$
+$\sum_i \pdf(i) = 1$
+invariant.%
 \footnote{Implemented as {\tt fn adjust\_pdf\_bug\_repros()} in the simulator.}
 
-In the deterministic case ($p=1$),
-the symmetric thing happens when the test passes at some $c_j$: $\pdf(i\le j) = 0$.
+In the deterministic case, $p=1$,
+the symmetric thing happens when the test passes at some $c_j$: $\pdf(i\le j) \leftarrow 0$.
 But when $p<1$, we must generalized it \cite{mario3}. Here's Bayes's rule:
 \[
 P(A|B) = \frac{P(B|A) \times P(A)}{P(B)}
@@ -237,7 +249,7 @@ $
 
 
 Let's do a nice concrete example.
-Say $n=16$, the test passes at $j=7$, and then the bug repros at $j=11$.
+Say $n=16$, the test passes at $j=7$, and then fails at $j=11$.
 In the deterministic case, all the probability mass will be concentrated uniformly in the range $[8,11]$.
 However, if the bug repros only half the time,
 %the renormalization factors around $c_7$ come out to $2/3$ and $1/3$
@@ -245,11 +257,11 @@ $\renorm{i \le 7} = 2/3$
 and
 $\renorm{i > 7} = 4/3$,
 and we get probability mass scattered all the way down to $c_0$,
-as shown in \Cref{fig:example}(a).
+as shown in \cref{fig:example}(a).
 Yuck, someone clean that up!
 
 Now let's say the test passes at $j=9$, then at $j=10$.
-\Cref{fig:example}(b) shows the updated PDFs/CDFs:
+\cref{fig:example}(b) shows the updated PDFs/CDFs:
 for $p=1$, this pinpoints the bug at $j=11$, and the search is over.
 But for $p=0.5$, there's still 2/3 odds we'd be wrong!
 In fact, from here it takes 18 further probes at $j=10$ until we are at least five 9's confident that $c_{11}$ is the culprit.%
@@ -278,16 +290,16 @@ Bayes's rule gonna get ya.
 	\begin{tabular}{c}
 	\includegraphics[width=0.45\textwidth]{example.pdf}
 	\\
-		(a) After two tests.
+		(a) after two tests
 		\\
 		\\
 
 	\includegraphics[width=0.45\textwidth]{example2.pdf}
 	\\
-		(b) After ``classical`` search terminates.
+		(b) after ``classical`` search terminates
 	\end{tabular}
 	%\caption{Example deterministic and nondeterministic PDFs and CDFs.}
-	\caption{Example \{,non\}deterministic \{P,C\}DFs.}
+	\caption{example \{,non\}deterministic \{P,C\}DFs}
 	\label{fig:example}
 \end{figure}
 
@@ -298,6 +310,7 @@ but past the earliest known bug repro, nothing can ever revive it back above 0.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{prior work}
+\label{sec:prior}
 
 I was kinda surprised to find no existing mathy solution to this problem lying around on the online.
 Wikipedia has a brief little subsection on ``noisy binary search'', which links a few papers older than I am.
@@ -309,21 +322,23 @@ This too changes the nature of the problem;
 notably, if $p=0.5$, you can't make any progress whatsoever.
 
 Dropbox has a CI service called Athena \cite{athena}
-which automatically searches for flaky tests, when otherwise no bug exists.
-In this case the goal is to keep the build green, but if you consider the flaky test itself to be the bug, it's the same problem.%
+which automatically searches for flaky tests. %, when otherwise no bug exists.
+In this case the goal is to keep the build green,
+but if you consider the flaky test itself to be the bug, it's the same problem.%
 \footnote{Incidentally, the symmetric case
 -- where a bug repros with $p=1$, but the test also flakes with some $q<1$ --
 is also the same problem.}
 Athena's ``deflakes'' the test at each commit by running 10 times,
 treating the combined result as ``basically as good as $p=1$'',
-and then runs an otherwise classical binary search.%
-\footnote{Upcoming, I will call this strategy \textsf{Human-Mistrustful}$(10)$.}
+and then runs an otherwise classical binary search.
+%\footnote{Upcoming, I will call this strategy \textsf{Human-Mistrustful}$(10)$.}
 In this setting, $p$ is not known in advance, so using Bayes's rule is off the table.
 But I will show that even without access to the PDF, a better strategy exists. % at least by my definition
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{strategies}
+\label{sec:strats}
 
 Ok, so how do we
 %cope with the fact that we'll never have a proper lower bound?
@@ -337,7 +352,7 @@ as quickly as possible?
 %
 %% ghhh this sentence only feels good if i know what i'm talking about
 Let's deconstruct the motives of classical binary search.
-Let $c_b$ be the earliest known buggy commit, and $c_a$ be the latest known safe commit.
+Let $c_b$ denote the earliest known buggy commit, and $c_a$ be the latest known safe commit.
 In Determinism World, bisecting at $c_{(a+b)/2}$
 minimizes the worst case maximum range remaining,
 as the two possible outcome ranges are the same length.
@@ -350,7 +365,7 @@ as the two possible outcome ranges are the same length.
 %and also,
 %we shouldn't be thinking about the range length,
 %because a pass is still progress even though $a$ doesn't ever budge,
-But in Nondeterminism World, $a$ doesn't ever budge from $0$,
+But in Nondeterminism World, $a$ doesn't ever budge from 0,
 so bisecting at $c_{(0+b)/2}$ will not even terminate.
 %will eventually fail to make progress.
 Sure, hitting the PDF with
@@ -363,8 +378,9 @@ it can't concentrate it onto one point.
 So let's not think about the range.
 
 \subsection{bisect probability mass}
+\label{sec:cdfbisect}
 
-Another way to think about Determinism World is that the $c_{(a+b)/2}$ bisect point
+Another way to frame it is that the $c_{(a+b)/2}$ bisect point
 % maximizes the expected probability mass that moves from one side to the other.
 cuts the probability mass, rather than the range, in half,
 % How about in Nondeterminism World,
@@ -402,8 +418,8 @@ which, surprisingly, simplifies to exactly the same thing as the bug repros case
 The maximum occurs where $\partial/\partial \cdf(j)$ is 0,
 which turns out to be at $\cdf(j)=0.5$ after all, and independent of $p$.%
 \footnote{I also worked out the {\it minimum} moved mass between the pass and fail case,
-which is almost always the pass case,
-and comes out to
+which is almost always the pass case.
+It comes out to
 %$\frac{p\cdf(j)(1-\cdf(j))}{1-p\cdf()}$
 $\frac{\cdf(j)(1-\cdf(j))}{1/p-\cdf(j)}$,
 which experiences its maximum at
@@ -414,6 +430,16 @@ But it's not clear that the amount of mass moved
 necessarily corresponds to reaching $\confidents$ the fastest.
 %It just sounds kinda nice?
 %What is the best threshold, perhaps as a function of $p$, and why?
+I show my work in \cref{fig:let-me-shown-that-my-work},
+because that's what they taught me to do in high school.
+
+\begin{figure}[t]
+	\begin{tabular}{c}
+		\includegraphics[width=0.45\textwidth]{horses.jpg}
+	\end{tabular}
+	\caption{derivation(?) of optimal(??) bisect point}
+	\label{fig:let-me-shown-that-my-work}
+\end{figure}
 
 
 %expected moved entropy
@@ -467,6 +493,7 @@ necessarily corresponds to reaching $\confidents$ the fastest.
 
 
 \subsection{bisect entropy}
+\label{sec:entropy}
 
 \newcommand\entropy{\ensuremath{\mathcal{H}}\xspace}
 
@@ -480,7 +507,7 @@ I thought for a while about how to link ``minimum expected entropy''
 to the stated goal %in Nondeterminism World:
 of
 %minimizing the expected steps until
-$\confidents = \mathsf{max}_i (\pdf(i)) \ge 0.99999$,
+$\confidents = \mathsf{max}_i (\pdf(i)) > 0.99999$,
 but couldn't really formalize the idea.
 The goal of five 9's is fairly arbitrary anyway,
 and also not necessarily stable under the entropy measurement,
@@ -492,13 +519,13 @@ Whereas bisecting at some fixed threshold of probability mass merely requires a 
 computing the expected entropy is $O(n)$ for {\it each} bisect point.
 A Very Smart Math Friend of mine \cite{primer} analyzed the easy case of the initial test,
 when the PDF is still uniform (i.e., $\forall i, \cdf(i) = i$),
-and found the closed form
+and found the closed form:
 \[
-	\entropy_{j,0} = p \mathsf{ln}(j)
+	\entropy_{0,j} = p \mathsf{ln}(j)
 	+
-	(1-pj) \mathsf{ln} (1-pj)
+	(1-pj) (\mathsf{ln} (1-pj))
 	-
-	j(1-p) \mathsf{ln} (j-p)
+	j(1-p) (\mathsf{ln} (j-p))
 \]
 whose derivative,
 in his words,
@@ -524,6 +551,7 @@ Thus we can binary search for the global minimum, making this at least $O(n\math
 instead of $O(n^2)$.
 
 \subsection{bisect randomly}
+\label{sec:random}
 
 Maybe a random world calls for a random algorithm!
 It's obvious this will terminate, but of course it won't be fast.
@@ -531,29 +559,62 @@ Intuitively, if we use the PDF to weight the random choice, it will be faster th
 But how much faster?
 
 You can tell at this point I'm starting to get statistics fatigue.
+Not unprecedented in these hallowed proceedings \cite{batch-myass}.
 
 \subsection{human}
+\label{sec:human}
 
-Humans are known to be less patient than computers (citation: see previous sentence).
+Humans are known to be less patient than computers (citation: \cref{sec:random}).
 If a human is unwilling to compute $\renorm{} \circ \pdf$ by hand every step,
 or, more prohibitively,
 simply doesn't know $p$ in advance so can't compute $\renorm{}$ at all,
 what should they do?
+Let's say a ``human strategy'' is any that doesn't use the PDF/CDF when deciding where to bisect.%
+%i.e., one that's easy for a human to do without bothering with Bayes's rule.%
+\footnote{In fact {\sf rand-uniform} from last section counts as a human strategy. Did you bring your dice?}
 
-Think back to Athena from the prior work section.
-The human
+The most straightforward thing for a human to do is to assume $p=1$ until they encounter evidence to the contrary.
+They'll conduct a normal binary search, and when they think they've found the bug at $c_b$,
+they'll just keep probing $c_{b-1}$ until enough probability mass (invisible to them)
+moves to $b$ and the simulator says they can stop.
+If this instead repros the bug at $c_{b-1}$ after all, the human gets confused!
+They'll assume the bug might have been present as early as $c_0$,
+forgets their lower bound, and begins binary searching anew in the range $[0,b-1]$.
+It's easy to see this makes progress.
+Let's call this the ``confused, forgetful human'' strategy.
+
+Another confused human variant is for them to remember their previous lower bounds.
+After all, just because their best lower bound $b-1$ was contradicted
+doesn't say anything about some earlier bound $a<b-1$ they might have observed.
+So this human will maintain a stack of lower bounds, and when $b-1$ is contradicted,
+they'll pop off the stack and resume searching in $[a,b-1]$ instead.
+Let's call this the ``confused human who remembers''.
+%
+Incidentally, while implementing this strategy, I accidentally wrote the comment,
+\begin{center}
+	\begin{tabular}{l}
+		{\tt // the human, who now has perfect memory,} \\
+		{\tt // walks backwards in time}
+	\end{tabular}
+\end{center}
+and giggled a lot to myself as I imagined {\birbaslo sigbovik}~fanfiction.
 
 
-% parameterize over 10
-% what should the human do when they think they're done? -> probe repeatedly at b-1
-% what should they do when 
-
-Regardless, it's easy to 
+Finally, let's imagine the human knows maybe something is up with this $p$ stuff in advance. %before they start searching.
+Wishing to carry on classically as though $p$ were 1,
+they'll try to emulate $p$ being higher by retrying any passing test ``just to be sure'', before moving on.
+If they retry the test $r$ times,
+the probability it fails given the bug is present is then $1-(1-p)^{1+r}$.
+%In general, for $r$ retries, that's $1-(1-p)^{r+1}$.
+But it comes at the cost of $r$ more steps for each new lower bound!
+As before, when this human thinks they're done, they'll repeatedly probe $c_{b-1}$ until contradicted
+(and we'll make them forgetful, to keep things simple).
+Let's call this the ``suspicious human of $r$ retries''.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{simulating it}
+\section{simulated it}
 
 At this point I threw in the towel on the maths front,
 and wrote a bunch of code to let the law of large numbers do my work for me.
@@ -566,16 +627,16 @@ to choose the next bisect point.
 The {\tt SimulationState} is initialized with fixed $n$ and $p$,
 and repeatedly invokes a given {\tt BisectStrategy},
 hitting the PDF with Bayes's rule accordingly,
-until $\confidents \ge 0.99999$.
-I provide implementations for all the strategies from the previous section.
+until $\confidents > 0.99999$.
+I provide implementations for all the strategies from the previous section in {\tt src/strategies/}.
 It's written in Rust so it's self-documenting.
 
 I learned a lot about floating point.
 I don't mean like NaNs and mantissa bits,
-I mean that when your problem is fundamentally a long multiplication sequence of increasingly high rationals,
-your precious $\cdf(n)$ inevitably drifts ever farther from 1, and you start drowning in imprecision \cite{drowningpoint}.
+I mean that when your project is fundamentally a long multiplication chain of increasingly high rationals,
+your precious $\cdf(n)$ inevitably drifts farther from 1 than you can bound with any arbitrary $\epsilon$, and you start drowning in imprecision \cite{drowningpoint}.
 I suppose I could have used the {\tt BigRational} library,
-but I chose Rust over Haskell for this so I could {\it avoid} runaway memory consumption,
+but I chose Rust over Haskell for this so I could {\it avoid} runaway memory consumption...
 so I resigned myself to explicitly renormalizing my PDFs by $1/\cdf(n)$ each time I updated them.
 After that, I was able to write some assertions
 to bound the imprecision drift within $k(\text{\tt std::f64::EPSILON})$ \cite{epsilon}.
@@ -584,9 +645,145 @@ But yeah, I definitely spent some sanity points writing a function named {\tt fn
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{evaluation}
+\section{experiments}
 
+Let's get right to the good stuff.
+\cref{fig:resulce} shows the overall results,
+plotting the average performance of each of the strategies from \cref{sec:strats}.
 
+\begin{figure}[ht]
+	\begin{tabular}{c}
+		\includegraphics[width=0.45\textwidth]{resulce.pdf}
+		\\
+		(a) full view
+		\\
+		\\
+		\includegraphics[width=0.45\textwidth]{resulce-detail.pdf}
+		\\
+		(b) detail view of high $p$ range; linear scale
+	\end{tabular}
+	\caption{perf results.
+	how many bisect steps each strategy takes to reach five 9s of confidence} %,
+	%simulated on a 1024-long {\tt git} {\tt log}; 65536 trials}
+	\label{fig:resulce}
+\end{figure}
+
+Each data point is simulated with $n=1024$ and averaged over 65536 trials.
+I chose a power of two for $n$ to minimize floating point drift (handwave),
+and a multiple of $n$ for trials so that {\tt buggy\_commit = trial \% n} would be uniform.
+
+Of course, each trial takes exponentially
+%\footnote{Yes, I am using this word in the literal sense.}
+longer and longer as $p \rightarrow 0$, so I didn't bother testing past 0.1.
+I also didn't bother measuring execution time,
+as prior work has shown that one's personal laptop is a fraught environment for stable performance evaluation \cite{htm},
+but it was still very obvious that {\sf entropy} was far, far slower per step than all other strategies.
+%I guess I'd say it took minutes to run {\sf cdfbisect} up to $p=0.01$, and hours/overnight for the same for {\sf entropy}.
+
+\subsection{computer strategies}
+
+Minimizing expected entropy
+%({\sf entropy}; \Cref{sec:entropy})
+turned out to be the best strategy, globally across all $p$.
+Bisecting probability mass
+%({\sf cdfbisect}; \Cref{sec:cdf})
+turns out to be preeetty close,
+although its performance varies depending on its bisect-point parameter $j$.
+Obviously, when $p=1$, $j$ should be 0.5 to reproduce classical binary search,
+but at around $p=0.8$, $j=0.333$ overtakes it.
+Ultimately at $p=0.1$, the former is about 4\% slower compared to the latter and to entropy,
+contradicting the ``independent of $p$'' hypothesis from \cref{sec:cdfbisect}.
+I investigated a little more to see how $p$ affected the optimal $j$, testing various $j$s in increments of 0.01:
+\begin{center}
+	\begin{tabular}{c|cc}
+		$p$ & best $j$ & {\sf cdfbisect}$(j)$ \\
+		\hline
+		1.0 & 0.50 & 10     \\
+		0.9 & 0.45 & 17.4   \\
+		0.8 & 0.41 & 21.9   \\
+		0.7 & 0.39 & 27.5   \\
+		0.6 & 0.40 & 34.6   \\
+		0.5 & 0.36 & 44.1   \\
+		0.4 & 0.35 & 58.3   \\
+		0.3 & 0.34 & 81.6   \\
+		0.2 & 0.36 & 127.9  \\
+		0.1 & 0.35 & 266.6  \\
+	\end{tabular}
+	%\begin{tabular}{l|c ccccc ccccc}
+	%	$p$				& 1 & 0.9 & 0.8 & 0.7 & 0.6
+	%						& 0.5 & 0.4 & 0.3 & 0.2 & 0.1 \\
+	%	\hline
+	%	best $j$			& 0.5 & 0.45 & 0.41 & 0.39 & 0.40
+	%						& 0.36 & 0.35 & 0.34 & 0.36 & 0.35 \\
+	%	best {\sf cdfbisect}$(j)$	& 10 & 17.4 & 21.9 & 27.5 & 34.6
+	%						& 44.1 & 58.3 & 81.6 & 127.9 & 266.6
+	%\end{tabular}
+\end{center}
+65536 trials here wasn't really enough to get variance under control,
+but it definitely seems to converge towards 0.333 or maybe 0.35 or something as $p \rightarrow 0$.
+Open question why for warp zone, I guess.
+
+{\sf rand-uniform} is obviously terrible but I threw it in there for kicks.
+{\sf rand-cdf} is not so terrible, doing even better than all the human strategies.
+
+\subsection{human strategies}
+
+I investigated how the suspicious human's number-of-retries parameter $r$ affects their performance.
+In this notation, $r=1$ means they retry once whenever the test passes, meaning two test runs on every passing commit.
+$r=0$ is equivalent to the forgetful strategy, and $r=9$ is what Athena does (\cref{sec:prior}).%
+% actually it's an enhanced version of athena so that it will terminate
+
+\cref{fig:resulce} was getting a little crowded so I've plotted all the human-friendly strategies on \cref{fig:human}.
+It's pretty self-explanatory imo.
+
+\begin{figure}[t]
+	\begin{tabular}{c}
+		\includegraphics[width=0.45\textwidth]{resulce-human.pdf}
+	\end{tabular}
+	\caption{version of \cref{fig:resulce} for human strategies}
+	\label{fig:human}
+\end{figure}
+
+One thing that surprised me was that the human who forgets all their past known lower bounds when {\it any} of them is contradicted
+performed better than the human who tried
+to rewind to their last not-yet-contradicted lower bound.
+I guess there's a moral here about not clinging to the past, moving on with life, or something.
+
+\subsection{why five 9s?}
+
+Let's talk about the arbitrary confidence threshold.
+There's a lot of knobs to tweak here and only so much time til April 1 (not to mention reader patience),
+but I did at least want to show what happens if you terminate the search when you're only 50\% confident.
+Compared to \cref{fig:resulce},
+the strategies all terminate in about half as many steps, with the same relative ranking and break-even points.
+What's more interesting is the number of times they were wrong.
+
+I had the simulator refuse to count a wrong result, %towards the 65536 trial count,
+restarting the search until it correctly identified the buggy commit 65536 times,
+and counting the number of restarts.
+With $\confidents > 0.99999$ this was not very interesting:
+the strategies collectively made 0 errors 81\% of the time, and were wrong more than twice only 0.6\%.
+But $\confidents > 0.5$ was a different story.
+As \cref{fig:wrongs} shows, most strategies
+-- even the comically slow {\sf rand-uniform} --
+converged to being wrong about half the time, i.e., 65536 wrongs per 65536 rights.
+{\sf athena} was most resilient, at least for higher $p$.
+
+\begin{figure}[t]
+	\begin{tabular}{c}
+		\includegraphics[width=0.45\textwidth]{wrongs.pdf}
+	\end{tabular}
+	\caption{how often each strategy was wrong, when terminating with only 50\% confidence.
+	the dashed line marks the approximate convergence point at 65536, equal to the number of right answers}
+	\label{fig:wrongs}
+\end{figure}
+
+{\sf confused-human-who-remembers}, alone, did not converge.
+They became more and more unable to cope with the repro rate approaching 0,
+utlimately being wrong 8 times as often as they were right.
+Oh, human... please learn to let go and love yourself for who you are.
+% japanese speakers should be able to hear the untranslated "kagayaiteru" here
+There's a better world out there, a sparkling radiant future waiting just for you!
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -600,15 +797,19 @@ The biggest open questions for me are:
 \end{enumerate}
 I have also prepared a set of backup questions in case those aren't enough for you:
 \begin{enumerate}
-	\setcounter{enumi}{3}
+	\setcounter{enumi}{3} % intentional
 	\item If you don't know $p$ in advance, is there an efficient way to multiplex the search with figuring it out on the fly?
-	\item What if false positives are also possible, with some $q \ne p$?
-	\item How do you account for the cost of {\tt git checkout} being nonzero (i.e., having to recompile your tests on new code)?
-		Clearly {\sf human-mistrustful} becomes better. Where is the break-even point?
+	\item What if false positives are also possible, with some flake rate $q \ne p$?
+		% TODO make this convey the sigbovik spirit more
+	\item What if the cost of {\tt git} {\tt checkout} is nonzero (e.g., having to recompile your tests on new code)?
+		Clearly {\sf human-mistrustful} becomes better.
+		% Where is the break-even point?
+		What about some wacky hybrid {\sf cdfbisect-mistrustful}?
 \end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\setcounter{section}{6} % wee
 \section{conclusion}
 
 If you are a computer, you can do pretty well by bisecting the probability mass somewhere between 1/3 and 1/2.
@@ -623,7 +824,7 @@ Thanks to Jason Reed, Lynn Chordbug, and Sujay Jayakar for thinking about this p
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\renewcommand{\refname}{references}
+\renewcommand{\refname}{referents}
 \bibliographystyle{abbrvnat}
 \bibliography{citations}
 
