@@ -40,7 +40,8 @@ impl NaiveBinarySearch {
                     assert_ne!(max_retries, 0, "just use ForgetEverything in this case");
                     if s.false_negative_rate == 0.0 {
                         // don't bother retrying commits in this mode, obviously
-                        Memory::BlissfulIgnorance
+                        // Memory::BlissfulIgnorance
+                        Memory::Retry { max_retries, active_retry: None }
                     } else {
                         Memory::Retry { max_retries, active_retry: None }
                     }

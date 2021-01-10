@@ -25,21 +25,26 @@ fn run_trial<S: BisectStrategy>(strat_fn: impl Fn(&SimulationState) -> S) {
 
     let n = 1024;
     let conf_thresh = 0.99999;
+    let conf_thresh = 0.50001;
     let trials = 65536;
+    let trials = 16384;
 
-    output(&mut f, format!("==== searching for best bisect_poince~~ ===="));
     output(&mut f, format!("==== {}; n = {}, confidence goal = {}, trials = {} ====",
                            strat_name, n, conf_thresh, trials));
 
     for &false_negative_prob in &[
-        0.0,
-        0.00001, 0.0001, 0.001, 0.01,
-        0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,
-        0.99, 0.999, 0.9999, 0.99999, // these will take FOREVER
+        0.9,
+        // 0.0,
+        // 0.00001, 0.0001, 0.001, 0.01,
+        // 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,
+        // 0.99, // 0.999, 0.9999, 0.99999, // these will take FOREVER
     ] {
         let mut result_steps = vec![];
         let mut wrongs = 0;
         for i in 0..trials {
+            if i % 1024 == 0 {
+                println!("making progress; trial {}", i);
+            }
             'inner: loop {
                 // TODO: time these suckas
                 let s = SimulationState::new_with_bug_at(n, false_negative_prob, i % n);
@@ -78,13 +83,15 @@ fn main() {
         run_trial(LinearSearch::new);
         run_trial(|s| NaiveBinarySearch::new(s, ConfusedHumanMode::UsePreviousLow));
         run_trial(|s| NaiveBinarySearch::new(s, ConfusedHumanMode::ForgetEverything));
+        run_trial(|s| NaiveBinarySearch::new(s, ConfusedHumanMode::Mistrustful(0)));
         run_trial(|s| ChooseRandomly::new(s, RandomMode::Uniformly));
         run_trial(|s| ChooseRandomly::new(s, RandomMode::WeightedByCDF));
     }
 
+    run_trial(|s| NaiveBinarySearch::new(s, ConfusedHumanMode::UsePreviousLow));
     // run_trial(|s| ChooseRandomly::new(s, RandomMode::Uniformly));
     // run_trial(MinExpectedEntropy::new);
-    // run_trial(|s| CdfBisect::new(s, 0.35));
+    // run_trial(|s| CdfBisect::new(s, 1.0 / 3.0));
     // run_trial(|s| NaiveBinarySearch::new(s, ConfusedHumanMode::UsePreviousLow));
     // run_trial(|s| NaiveBinarySearch::new(s, ConfusedHumanMode::ForgetEverything));
 }

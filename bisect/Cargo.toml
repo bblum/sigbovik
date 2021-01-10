@@ -8,4 +8,3 @@ edition = "2018"
 
 [dependencies]
 rand = "0.7.3"
-streaming-stats = "0.2.3"

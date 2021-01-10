@@ -272,7 +272,17 @@ impl SimulationState {
             let prev_pdf = self.pdf.clone();
 
             let commit = strat.select_commit(&self);
-            let result = self.simulate_step(commit);
+            let result = if self.false_negative_rate == 0.0 && commit < self.lower_bound {
+                let result = BisectAttempt {
+                    commit,
+                    bug_repros: false,
+                };
+                // count it against mistrustful's number of steps!
+                self.history.push(result);
+                result
+            } else {
+                self.simulate_step(commit)
+            };
             strat.notify_result(result);
 
             if self.pdf[commit] < EPSILON {
